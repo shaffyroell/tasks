@@ -1,0 +1,6 @@
+# Never commit credentials
+accounts.json
+*.secret
+*.key
+.env
+.env.*

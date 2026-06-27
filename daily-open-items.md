@@ -49,15 +49,25 @@ duplicate. `Ref` formats:
 - Slack → `slack:<workspaceName>:<channel>/<ts>`
 - Meeting → `ff:<transcriptId>`
 
-### 2. Gather Gmail (last ~21 days)
-Search: `in:inbox newer_than:21d -category:promotions -category:social -category:updates -category:forums`
-(across the connected mailboxes). For each business thread, look at the **last
-message**:
+### 2. Gather email — all configured mailboxes (last ~21 days)
+The sweep covers **every** mailbox it can reach:
+- The **connected Gmail inbox** (user default) — note this already aggregates
+  send-as aliases / forwards (e.g. `myswimscore`, `techtowerops` land here too).
+- **Any account listed in `email-accounts.json`** (gitignored) — separate Gmail
+  or Outlook mailboxes, each read with its own credentials. See `EMAIL_SETUP.md`.
+
+In each mailbox search:
+`in:inbox newer_than:21d -category:promotions -category:social -category:updates -category:forums`
+For each business thread, look at the **last message**:
 - Last message is **from someone else** and it asks/expects something → `Needs Response`.
 - Last message is **from Shaffy** but it's an open deal/proposal/quote → `Follow Up` (or `Waiting`).
 - Thread is purely informational, resolved, or automated → skip.
-Capture sender/company in `Who`, a one-line `Action Needed`, and
+Capture sender/company in `Who` (prefix with the mailbox name when it's not the
+default, e.g. `personal-gmail · John D.`), a one-line `Action Needed`, and
 `Link = https://mail.google.com/mail/u/0/#all/<threadId>`.
+
+> Email thread IDs are globally unique, so `Ref = gmail:<threadId>` stays stable
+> across mailboxes (no need to qualify by account).
 
 ### 3. Gather Slack — all configured workspaces (last ~7 days)
 The sweep covers **every** Slack workspace it can reach:

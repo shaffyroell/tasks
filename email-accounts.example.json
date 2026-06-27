@@ -1,0 +1,29 @@
+{
+  "_comment": "Copy to email-accounts.json (gitignored) and add one entry per SEPARATE mailbox you want the daily sweep to cover. You do NOT need an entry for addresses that already funnel into the connected inbox as send-as aliases or forwards (e.g. myswimscore / techtowerops already land in the techtower inbox). Only add genuinely separate accounts. See EMAIL_SETUP.md.",
+  "gmailOAuth": {
+    "_note": "Shared across all Gmail mailboxes below. From a Google Cloud OAuth 'Desktop app' client. Leave blank if you only use the connected default.",
+    "clientId": "",
+    "clientSecret": ""
+  },
+  "accounts": [
+    {
+      "name": "techtower",
+      "provider": "gmail",
+      "email": "shaffy@techtower.ai",
+      "default": true,
+      "_note": "Connected via the Gmail connector — no token needed. Also receives the myswimscore / techtowerops aliases."
+    },
+    {
+      "name": "personal-gmail",
+      "provider": "gmail",
+      "email": "you@gmail.com",
+      "refreshToken": "PLACEHOLDER_xxx"
+    },
+    {
+      "name": "outlook-work",
+      "provider": "outlook",
+      "email": "you@company.com",
+      "refreshToken": "PLACEHOLDER_xxx"
+    }
+  ]
+}

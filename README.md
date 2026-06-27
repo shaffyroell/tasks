@@ -11,6 +11,7 @@ to in calls.
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
 - **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
+- **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 
 ## Slack coverage
 
@@ -19,6 +20,13 @@ TechTower Slack works out of the box via the connected Slack connector. To sweep
 workspace to `slack-workspaces.json` (gitignored) — see
 [`SLACK_SETUP.md`](./SLACK_SETUP.md). A user token only reads what you can already
 access, and workspaces where you can't get an app approved stay manual.
+
+## Email coverage
+
+The connected Gmail inbox already aggregates its send-as aliases / forwards
+(e.g. myswimscore, techtowerops). To sweep **separate** mailboxes — another Gmail
+login or an Outlook account — add one entry per account to `email-accounts.json`
+(gitignored) — see [`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
 
 ## How it runs
 

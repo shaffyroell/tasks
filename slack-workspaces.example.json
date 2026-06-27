@@ -1,0 +1,18 @@
+{
+  "_comment": "Copy to slack-workspaces.json (gitignored) and fill in one entry per Slack workspace you want the daily sweep to cover. 'userToken' is an xoxp- token with the search:read scope, which reads only what YOU can access in that workspace. See SLACK_SETUP.md.",
+  "workspaces": [
+    {
+      "name": "TechTower",
+      "domain": "techtower-ai.slack.com",
+      "userId": "U07CJK9H78A",
+      "userToken": "xoxp-...",
+      "default": true
+    },
+    {
+      "name": "Crewline",
+      "domain": "crewline.slack.com",
+      "userId": "U0XXXXXXX",
+      "userToken": "xoxp-..."
+    }
+  ]
+}

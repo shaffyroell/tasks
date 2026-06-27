@@ -10,6 +10,15 @@ to in calls.
 - **Tracker (output):** Notion → **📥 Open Items — Daily Tracker**
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
 - **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
+- **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
+
+## Slack coverage
+
+TechTower Slack works out of the box via the connected Slack connector. To sweep
+**additional** workspaces in the same daily run, add one `xoxp-` user token per
+workspace to `slack-workspaces.json` (gitignored) — see
+[`SLACK_SETUP.md`](./SLACK_SETUP.md). A user token only reads what you can already
+access, and workspaces where you can't get an app approved stay manual.
 
 ## How it runs
 

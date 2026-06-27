@@ -1,5 +1,6 @@
 # Never commit credentials
 accounts.json
+slack-workspaces.json
 *.secret
 *.key
 .env

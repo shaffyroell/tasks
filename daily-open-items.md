@@ -46,7 +46,7 @@ Query the data source (`45a1139d-c188-4a05-936d-adbea5d6715e`) for all rows that
 are **not** `Done`. Build a lookup by `Ref` so you can update instead of
 duplicate. `Ref` formats:
 - Email → `gmail:<threadId>`
-- Slack → `slack:<permalink-or-channel/ts>`
+- Slack → `slack:<workspaceName>:<channel>/<ts>`
 - Meeting → `ff:<transcriptId>`
 
 ### 2. Gather Gmail (last ~21 days)
@@ -59,10 +59,22 @@ message**:
 Capture sender/company in `Who`, a one-line `Action Needed`, and
 `Link = https://mail.google.com/mail/u/0/#all/<threadId>`.
 
-### 3. Gather Slack (last ~7 days)
-Search `<@U07CJK9H78A>` (Shaffy's mentions) and DMs. For each hit, read enough
+### 3. Gather Slack — all configured workspaces (last ~7 days)
+The sweep covers **every** Slack workspace it can reach:
+- **TechTower** via the connected Slack connector (user `U07CJK9H78A`).
+- **Any workspace listed in `slack-workspaces.json`** (gitignored), each via its
+  own `xoxp-` user token with `search:read`. See `SLACK_SETUP.md`.
+
+For each workspace, search the user's mentions (`<@userId>`) and DMs. Read enough
 thread context to tell if it's still open. If Shaffy already answered or someone
-else resolved it, skip. Otherwise add with `Link =` the message permalink.
+else resolved it, skip. Otherwise add a row, prefix `Who` with the workspace name
+(e.g. `Crewline · @jane`), and set `Link =` the message permalink. Use a
+workspace-qualified `Ref` so the same message in different workspaces never
+collides: `slack:<workspaceName>:<channel>/<ts>`.
+
+> A user token only sees what that user can already access (their DMs, mentions,
+> and member channels). Workspaces where no token can be minted (no admin
+> approval) are out of automated scope — note them as a manual check, don't fail.
 
 ### 4. Gather meeting next-steps (last ~7 days)
 List recent Fireflies transcripts (`mine: true`). For each, pull `action_items`

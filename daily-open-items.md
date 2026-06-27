@@ -51,10 +51,17 @@ duplicate. `Ref` formats:
 
 ### 2. Gather email — all configured mailboxes (last ~21 days)
 The sweep covers **every** mailbox it can reach:
-- The **connected Gmail inbox** (user default) — note this already aggregates
-  send-as aliases / forwards (e.g. `myswimscore`, `techtowerops` land here too).
+- The **connected Gmail inbox** (user default).
 - **Any account listed in `email-accounts.json`** (gitignored) — separate Gmail
   or Outlook mailboxes, each read with its own credentials. See `EMAIL_SETUP.md`.
+
+> **Reply-detection needs Sent mail.** The connected inbox *receives* alias mail
+> (`myswimscore`, `techtowerops`) but does **not** contain replies sent from
+> those separate accounts. Any address Shaffy sends replies from must be its own
+> connected account, or threads he already answered there will be wrongly flagged
+> as open. When in doubt for a thread whose last visible message is inbound but
+> belongs to an unconnected account, mark it `Follow Up` (Low), not
+> `Needs Response`.
 
 In each mailbox search:
 `in:inbox newer_than:21d -category:promotions -category:social -category:updates -category:forums`

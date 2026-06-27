@@ -23,10 +23,12 @@ access, and workspaces where you can't get an app approved stay manual.
 
 ## Email coverage
 
-The connected Gmail inbox already aggregates its send-as aliases / forwards
-(e.g. myswimscore, techtowerops). To sweep **separate** mailboxes — another Gmail
-login or an Outlook account — add one entry per account to `email-accounts.json`
-(gitignored) — see [`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
+The connected inbox *receives* alias mail (myswimscore, techtowerops) but does
+**not** contain replies you send from those separate accounts — and reply-
+detection depends on seeing your Sent mail. So connect **every mailbox you send
+replies from** as its own account in `email-accounts.json` (gitignored).
+`shaffy@myswimscore.com` needs an entry for exactly this reason — see
+[`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
 
 ## How it runs
 

@@ -4,17 +4,24 @@ The daily workflow reads **multiple mailboxes** by looping over the accounts in
 `email-accounts.json` (gitignored). Each account is read with its own
 credentials and merged into the same Notion tracker.
 
-## First, check whether you even need an entry
+## Why every account you SEND from needs its own entry
 
-The connected Gmail inbox **already aggregates** several addresses. The first run
-pulled mail addressed to `shaffy@techtower.ai`, `shaffy@myswimscore.com`, and
-`shaffy@techtowerops.com` — all from one inbox, because they're **send-as
-aliases / forwards**.
+The connected inbox **receives** mail for several addresses (`myswimscore`,
+`techtowerops` forward into it). But receiving is only half the picture: the
+sweep decides "does this need a response?" by checking whether **the last message
+in the thread is from you**. To know that, it has to see your **Sent** mail.
 
-> ✅ If an address already lands in your connected inbox, it's covered — do
-> nothing.
-> ➕ Only add a separate entry for a **genuinely separate mailbox**: a different
-> Gmail login, or an Outlook/Microsoft 365 account.
+Mail you send **from a separate account** (e.g. replying as
+`shaffy@myswimscore.com` from that login) **does not** land in the connected
+inbox's Sent folder. So without connecting that account, the sweep can't see your
+reply and will keep flagging answered threads as open.
+
+> ✅ **Connect every mailbox you actually send replies from** — that's what makes
+> reply-detection correct. `shaffy@myswimscore.com` needs its own entry for this
+> reason.
+> ➖ The one exception: an address configured as a true Gmail **"Send as" alias
+> inside the connected account** — those sent messages do show up here, so no
+> separate entry is needed.
 
 ## Gmail mailbox (separate account) — one-time OAuth
 

@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to email-accounts.json (gitignored) and add one entry per SEPARATE mailbox you want the daily sweep to cover. You do NOT need an entry for addresses that already funnel into the connected inbox as send-as aliases or forwards (e.g. myswimscore / techtowerops already land in the techtower inbox). Only add genuinely separate accounts. See EMAIL_SETUP.md.",
+  "_comment": "Copy to email-accounts.json (gitignored) and add one entry per mailbox you SEND from. Connecting each account matters because the sweep needs to see your SENT mail to know whether you already replied. Receiving alias mail in the connected inbox is NOT enough. See EMAIL_SETUP.md.",
   "gmailOAuth": {
     "_note": "Shared across all Gmail mailboxes below. From a Google Cloud OAuth 'Desktop app' client. Leave blank if you only use the connected default.",
     "clientId": "",
@@ -11,13 +11,14 @@
       "provider": "gmail",
       "email": "shaffy@techtower.ai",
       "default": true,
-      "_note": "Connected via the Gmail connector — no token needed. Also receives the myswimscore / techtowerops aliases."
+      "_note": "Connected via the Gmail connector. Receives myswimscore / techtowerops alias mail, but does NOT contain replies you SEND from those addresses."
     },
     {
-      "name": "personal-gmail",
+      "name": "myswimscore",
       "provider": "gmail",
-      "email": "you@gmail.com",
-      "refreshToken": "PLACEHOLDER_xxx"
+      "email": "shaffy@myswimscore.com",
+      "refreshToken": "PLACEHOLDER_xxx",
+      "_note": "Separate mailbox — connect so the sweep can see your SENT replies and won't keep flagging already-answered threads."
     },
     {
       "name": "outlook-work",

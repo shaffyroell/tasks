@@ -11,7 +11,7 @@ reflects what Shaffy still needs to respond to or act on.
 - **Schema:** `Item` (title), `Source` (Email/Slack/Meeting), `Status`
   (Needs Response / Follow Up / To Do / Waiting / Done), `Priority`
   (High/Medium/Low), `Who`, `Action Needed`, `Link`, `Ref`, `First Seen`,
-  `Last Updated`.
+  `Last Updated`, `Attio` (what was written back to the CRM, if anything).
 
 ---
 
@@ -32,10 +32,10 @@ Only add things that genuinely need Shaffy's input or action:
 accept/decline notifications, n8n/Make/workflow error alerts, system notices,
 and anything already handled (Shaffy replied and nothing is outstanding).
 
-> Pipeline source-of-truth also lives in **Attio** (techtower + crewline
-> workspaces) and Lemlist. This session uses the hosted Gmail/Slack/Notion/
-> Fireflies connectors only. If an Attio connector is added later, cross-check
-> open deals there too.
+> **Attio (TechTower)** is wired as a write-back target — see step 6. The sweep
+> keeps the CRM trail current (notes + follow-up tasks) for pipeline items; it
+> does not yet pull deals *out* of Attio into the tracker. Pipeline also lives in
+> Lemlist; not read here.
 
 ---
 
@@ -107,7 +107,28 @@ per meeting into one row where sensible. `Link = https://app.fireflies.ai/view/<
   set `Status = Done`, `Last Updated` today. Do not delete.
 - Keep `First Seen` unchanged on updates.
 
-### 6. Report
+### 6. Write follow-up activity back to Attio (TechTower)
+Only runs if `attio.json` is present (see `ATTIO_SETUP.md`). Direction is
+**Tracker → Attio**: keep the CRM trail current for pipeline-related open items.
+For each **open** item (skip `Done`) whose `Who` resolves to a real
+person/company:
+1. Match the record in Attio by email address (`people.email_addresses`) or
+   company domain (`companies.domains`), checking the configured `objects` in
+   order. If nothing matches → write nothing; set the tracker row's `Attio`
+   column to `not in Attio`.
+2. On the matched record:
+   - **Add a note** summarizing the latest interaction + the open action.
+   - **Ensure a follow-up task** assigned to Shaffy, due in `followUpDueDays`.
+   - If `nextStepAttribute` / `lastContactedAttribute` are mapped, set them.
+3. **Idempotency:** tag every note/task body with `[ref:<item Ref>]` and check
+   for an existing one first — never create duplicate notes or tasks across runs.
+4. **Guardrails:** never advance/close a deal stage unless `allowStageChange` is
+   true **and** it's explicitly approved in this run. Never create new
+   people/companies and never delete anything.
+5. Record what was written in the tracker row's `Attio` column
+   (e.g. `Note + task on "AgroCares" deal`).
+
+### 7. Report
 Post a short summary to Shaffy: counts by Source and Status, and call out the
 top 3 `High` / `Needs Response` items. Keep it tight.
 

@@ -12,6 +12,7 @@ to in calls.
 - **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
+- **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)
 
 ## Slack coverage
 
@@ -29,6 +30,15 @@ detection depends on seeing your Sent mail. So connect **every mailbox you send
 replies from** as its own account in `email-accounts.json` (gitignored).
 `shaffy@myswimscore.com` needs an entry for exactly this reason — see
 [`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
+
+## Attio CRM write-back
+
+For pipeline items, the sweep keeps Attio (TechTower) current: on the matched
+person/company/deal it **adds a note** and **ensures a follow-up task**, recording
+what it did in the tracker's `Attio` column. It's strictly additive — stage
+changes need approval, and nothing is ever created-new or deleted. Add an API
+token to `attio.json` (gitignored) to enable it — see
+[`ATTIO_SETUP.md`](./ATTIO_SETUP.md).
 
 ## How it runs
 

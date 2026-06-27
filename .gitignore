@@ -2,6 +2,7 @@
 accounts.json
 slack-workspaces.json
 email-accounts.json
+attio.json
 *.secret
 *.key
 .env

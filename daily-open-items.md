@@ -223,16 +223,23 @@ open to-do to the right Notion destination as well as the master tracker:
    - Matches a `type:pipeline` entry, or is internal/hiring/ops, or matches no
      client → write to the **TechTower internal board** (`internalBoard`).
 3. **Write target:**
+   - **Title field differs by board** — write the to-do text into the target's
+     `titleField` from the registry: **`Task`** on the client v2 dashboards,
+     **`Item`** on the master/internal tracker. Using the wrong field name fails
+     the create.
    - **Client dashboards (v2 template) →** write rows into that client's
      **"✅ To Dos" database** (on its "6. To Dos" sub-page;
-     `todoDataSourceId` in the registry). Set `Task`, `For`
+     `todoDataSourceId` in the registry). Set the title field, `For`
      (`Needed from client` | `TechTower`), `Status`, `Source`, `Link`, and a
-     stable `Ref` for dedup. **Write every `Task` in the house style — load and
+     stable `Ref` for dedup. **Write every to-do in the house style — load and
      follow [`STYLE.md`](./STYLE.md)** (verb-first, concise, specific,
-     client-safe: no pricing / internal commercials / other-client references).
-     Upsert on `Ref` so re-runs never duplicate.
+     client-safe: no pricing / internal commercials / other-client references;
+     **never use arrows**). Upsert on `Ref` so re-runs never duplicate.
    - **Internal board →** the TechTower internal "Daily To-Do List" / managed
      section, with full internal detail (`Needs from You` / `AI Can Do`).
+   - **Completion = set `Status` to Done — never delete.** The Notion connector
+     has no archive/trash capability, so reconciliation only updates `Status`
+     (and advances items); it must not rely on deleting rows.
 4. If a client has no dashboard page yet, flag it (don't fail); a page can be
    created from the client-dashboard template.
 

@@ -32,15 +32,15 @@
     }
   },
 
-  "_dealStageSync_note": "Used by deal-stage-sync.md (the daily STAGE automation) — separate from the conservative write-back above. That sweep never moves stages; THIS one does, by design. Gated by enabled:false until you opt in.",
-  "dealStageSync": {
+  "_attioIngest_note": "Used by attio-ingest.md = W1 (the daily ingest that writes ALL raw comms to Attio as notes + keeps deal stages current). This is the single write-path into Attio; W2 (daily-open-items.md) reads Attio and produces Notion to-dos. Gated by enabled:false until you opt in.",
+  "attioIngest": {
     "enabled": false,
     "autoApply": true,
     "createNewDeals": false,
     "recencyWeeks": 6,
     "lookbackDays": 2,
     "stageAttribute": "stage",
-    "noteMarkerPrefix": "[stage-sync]",
+    "noteMarkerPrefix": "[attio-ingest]",
     "digestChannel": "",
     "activeStages": ["1.  Positive reply", "2. Planning call", "3. Demo planned", "4. Scope agreed", "5. Proposal sent", "6. Active client", "7. Active Project Client", "8. Completed Client", "8.a Finished, need to finalize invoicing"],
     "statusTitles": {

@@ -1,8 +1,23 @@
-# Daily Open-Items Sweep
+# W2 — Daily Open-Items / Per-Client To-Dos (Notion)
 
-**Run this every morning (~7:00 Europe/Amsterdam).** It scans Gmail, Slack, and
-recent meeting notes (Fireflies), then reconciles the Notion tracker so it always
-reflects what Shaffy still needs to respond to or act on.
+**Run this every morning (~7:15 Europe/Amsterdam), right after W1
+(`attio-ingest.md`).** It produces the **per-client To-Dos in Notion** — what
+Shaffy still needs to respond to or act on, routed to each client's board.
+
+**Hybrid inputs (read in this order):**
+1. **Attio (primary)** — the raw layer W1 just wrote: latest deal **stage**, the
+   newest `[attio-ingest …]` comms notes, and any open follow-up tasks. This is
+   the authoritative "what's happening with whom."
+2. **Fresh sources** — also read **Gmail**, **Slack** (client / Connect
+   channels), and **meeting notes (Granola + Fireflies)** directly, to catch
+   action items not yet (or only thinly) captured in Attio.
+3. **Existing Notion to-dos** — read the current tracker and **reconcile**: mark
+   items **Done** when evidence shows they were handled, **advance** ones that
+   moved forward, then add genuinely new to-dos (dedup on `Ref`).
+
+It reconciles the **per-client** Notion tracker so it always reflects open
+actions. (Architecture: W1 `attio-ingest.md` writes all raw comms to Attio; this
+W2 reads Attio + fresh sources and derives the to-dos. See `README.md`.)
 
 **Client-specific values come from the client config** (`CLIENT_CONFIG_JSON` env
 secret, else `client.json` / `clients/<client>.json`) — so this workflow is the

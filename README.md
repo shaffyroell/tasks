@@ -1,16 +1,35 @@
-# Daily Email + Slack Open-Items Workflow
+# Client Comms Automation — Attio + Notion
 
-A daily automation that scans **Gmail, Slack, and meeting notes (Fireflies)** and
-keeps a single Notion tracker of everything Shaffy still needs to respond to or
-act on — pipeline emails, Slack threads to weigh in on, and next-steps committed
-to in calls.
+Two daily workflows run as a pipeline so the CRM is the source of truth and the
+to-do list stays current:
+
+- **W1 — Ingest → Attio** ([`attio-ingest.md`](./attio-ingest.md)): reads all raw
+  comms (**Gmail, Slack, Granola + Fireflies, calendar**) and writes them into
+  **Attio** — a dated note on every active deal/client + a deal **stage** move
+  when the evidence warrants. Runs first (~07:00). Attio holds everything.
+- **W2 — Act → Notion** ([`daily-open-items.md`](./daily-open-items.md)): derives
+  the **per-client To-Dos in Notion**. Hybrid input — reads **Attio (primary)**
+  plus fresh Gmail/Slack/Granola/Fireflies, and **reconciles** existing to-dos
+  (mark done / advanced) before adding new ones. Runs ~15 min after W1 (~07:15).
+
+```
+Gmail · Slack · Granola · Fireflies · Calendar
+        │
+        ▼   W1  attio-ingest.md
+     ┌───────────┐
+     │   Attio   │  ← source of truth: stages + raw comms notes
+     └───────────┘
+        │
+        ▼   W2  daily-open-items.md  (+ fresh sources, reconcile)
+   Per-client To-Dos in Notion
+```
 
 ## Where things live
 
-- **Tracker (output):** Notion → **📥 Open Items — Daily Tracker**
+- **W1 — Ingest to Attio (source of truth):** [`attio-ingest.md`](./attio-ingest.md)
+- **W2 — Per-client To-Dos (Notion):** [`daily-open-items.md`](./daily-open-items.md)
+- **Tracker (W2 output):** Notion → **📥 Open Items — Daily Tracker**
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
-- **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
-- **Deal-stage + notes sync (Attio = source of truth):** [`deal-stage-sync.md`](./deal-stage-sync.md)
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 - **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)

@@ -19,8 +19,8 @@ workspace. One company = one config = one Claude workspace = one tracker.
   page https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144).
 - **Email:** `stack.email.provider` (gmail | outlook), scoped to
   `stack.email.domains` (TechTower: techtower.ai, techtowerops.com).
-- **Chat:** `stack.chat.provider` (slack | teams | google_chat), identity
-  `stack.chat.userId` (TechTower: `U07CJK9H78A`).
+- **Chat:** `stack.chat.provider` (slack | google_chat; Teams out of scope),
+  identity `stack.chat.userId` (TechTower: `U07CJK9H78A`).
 - **Meetings:** `stack.meetings.provider` (fireflies | otter | gemini | granola).
 - **CRM:** `stack.crm` (attio, always on — the canonical client/prospect list).
   Used both to **recognize** which emails/chats are client/pipeline and as the
@@ -47,10 +47,15 @@ Only add things that genuinely need Shaffy's input or action:
 1. **Pipeline / client emails** — a real person (prospect, client, or partner)
    is waiting on the owner to reply, or the owner owes a follow-up. This includes
    threads where the owner sent the last message but the deal needs a nudge
-   (→ `Follow Up` / `Waiting`). **Use Attio as the canonical list of who counts:**
-   since all clients/prospects live in Attio (`stack.crm`), if the counterparty
-   matches an Attio person/company, treat it as pipeline. Genuine new inbound not
-   yet in Attio still counts — flag it so it can be added.
+   (→ `Follow Up` / `Waiting`). **Use Attio as a signal for who counts:**
+   most clients/prospects live in Attio (`stack.crm`), so a counterparty matching
+   an Attio person/company is a strong pipeline signal.
+   ⚠️ **Attio data is currently incomplete** (missing company domains & deal
+   names, people not linked to deals — a separate cleanup workflow, see
+   `ROADMAP.md`). So treat an Attio match as a **positive signal, not a gate**:
+   never drop an item just because it isn't matched, don't rely on people↔deal
+   links, and fall back to email-domain + conversational cues. Genuine new inbound
+   not yet in Attio still counts — flag it to be added.
 2. **Slack messages Shaffy should weigh in on** — @mentions, DMs, or threads
    where a question is open and Shaffy hasn't answered.
 3. **Meeting next-steps** — action items Shaffy committed to in recent calls
@@ -63,7 +68,9 @@ and anything already handled (Shaffy replied and nothing is outstanding).
 > **Attio is always on** for the standard client profile: it's the canonical
 > client/prospect list used to recognize pipeline (step 1 criteria) **and** the
 > write-back target for follow-up notes/tasks (step 6). Load the relevant Attio
-> records early so email/chat counterparties can be matched against them.
+> records early so email/chat counterparties can be matched against them — but
+> matching is **best-effort** until the Attio hygiene workflow lands (`ROADMAP.md`):
+> incomplete domains/deal names mean some clients won't match, so never gate on it.
 
 ---
 
@@ -140,7 +147,7 @@ Use the company's chat tool. Items here get `Source = Chat`.
   (user = `stack.chat.userId`; TechTower `U07CJK9H78A`), plus any workspace in
   `slack-workspaces.json` / `SLACK_WORKSPACES_JSON`, each via its own `xoxp-`
   user token (`search:read`). See `SLACK_SETUP.md`.
-- **Microsoft Teams / Google Chat** — use that connector instead.
+- **Google Chat** — use that connector instead. (Microsoft Teams is out of scope.)
 
 For each workspace/space, search the user's mentions and DMs. Read enough thread
 context to tell if it's still open; if the owner already answered or someone else

@@ -16,6 +16,7 @@ to in calls.
 - **Supported tools & connections:** [`CONNECTIONS.md`](./CONNECTIONS.md)
 - **Onboard a new client (plug-and-play):** [`ONBOARDING.md`](./ONBOARDING.md)
 - **Scheduling:** [`SCHEDULING.md`](./SCHEDULING.md)
+- **Roadmap & related workflows:** [`ROADMAP.md`](./ROADMAP.md)
 
 ## Slack coverage
 

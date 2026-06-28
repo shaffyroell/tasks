@@ -3,7 +3,7 @@
   "_supported_providers": {
     "tracker": ["notion"],
     "email": ["gmail", "outlook"],
-    "chat": ["slack", "teams", "google_chat", "none"],
+    "chat": ["slack", "google_chat", "none"],
     "meetings": ["fireflies", "otter", "gemini", "granola", "none"],
     "crm": ["attio", "hubspot", "pipedrive", "salesforce", "none"]
   },

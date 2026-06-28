@@ -264,6 +264,20 @@ account item has no deal yet, hand it to **W0 (`new-deal-discovery.md`)** rather
 than creating records from W2. W2's own writes are limited to the **internal
 SwimScore Notion** tracker.
 
+### 6b. Stale-deal follow-ups → SwimScore Notion (New sales pillar)
+W1 computes each open deal's **last contact date** and hands W2 the deals that have
+gone quiet (per `hubspot.json.staleFollowUp`: >14d flag, >21d high priority; skip
+Closed Won/Lost and dead leads). For each flagged deal, **upsert a To-Do on the
+SwimScore Notion board** under **New sales** (dedup on `Ref = hubspot:stale:<dealId>`):
+- **Task** (house style): `Follow up with <clinic> — quiet <N>d (<contact>)`.
+- **Owner** Shaffy · **Priority** High if >21d else Medium · **Link** the HubSpot deal.
+- **Suggested message** (if `draftSuggestedMessage` and a nudge actually fits): drop a
+  short, specific draft into the page body, written from the deal's HubSpot context
+  (who they are, last touch + date, their open question / pain point, the agreed next
+  step). Keep it ready-to-send and personal — not a generic "just checking in." If no
+  genuine message fits, add the task without a draft (flag only). Mark the To-Do
+  **Done** once W1 sees a fresh contact on that deal.
+
 ### 7. Report
 Post a short summary to Shaffy: counts by Source and Status, and call out the
 top 3 `High` / `Needs Response` items. Keep it tight.

@@ -2,21 +2,21 @@
 
 The sweep runs as a **recurring scheduled session** in the Claude Code web app,
 pointed at this repo. It runs in your authenticated account, so the connected
-integrations (Gmail, Slack, Notion, Fireflies) are available without extra
-tokens; separate accounts/workspaces come from environment secrets.
+integrations (HubSpot, Gmail, Slack, Granola, Lemlist, Shopify, Notion) are
+available without extra tokens.
 
 Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 
 > **Simplest: one routine.** Schedule **one** daily session with the prompt
 > **`/daily-crm`** — it runs **W0 → W1 → W2 in order**, so each step reads what the
 > previous wrote (no timing race). Enable `newDealDiscovery.enabled` and
-> `attioIngest.enabled` in `attio.json`.
+> `ingest.enabled` in `hubspot.json` (both already true).
 >
 > **Or three staggered sessions** (if you want them on separate cadences):
 > 1. **W0 — New-deal discovery** (`new-deal-discovery.md`) → creates new deals —
 >    **06:50**.
-> 2. **W1 — Attio ingest** (`attio-ingest.md`) → notes + stage moves — **07:00**.
-> 3. **W2 — Per-client To-Dos** (`daily-open-items.md`) → Notion — **07:15**.
+> 2. **W1 — HubSpot deal sync** (`hubspot-sync.md`) → notes + stages + stale flags — **07:00**.
+> 3. **W2 — SwimScore Notion to-dos** (`daily-open-items.md`) — **07:15**.
 
 ## Routines = slash commands (committed)
 
@@ -26,19 +26,19 @@ prompt is a single line:
 | Command | Runs |
 |---|---|
 | `/daily-crm` | **W0 → W1 → W2 in order** (recommended — one routine, guaranteed ordering) |
-| `/new-deals` | W0 only — discover + create new deals in Attio |
-| `/attio-ingest` | W1 only — ingest comms → Attio |
-| `/notion-todos` | W2 only — per-client To-Dos → Notion |
+| `/new-deals` | W0 only — discover + create new deals in HubSpot |
+| `/hubspot-sync` | W1 only — update deals (notes + stages) + stale-deal flags |
+| `/notion-todos` | W2 only — SwimScore Notion board to-dos |
 
 **Recommended:** one daily routine with the prompt **`/daily-crm`** — it runs
-discovery → ingest → to-dos in sequence, so each reads the prior step's fresh
+discovery → deal-sync → to-dos in sequence, so each reads the prior step's fresh
 output. Use the split commands only if you want them on separate cadences.
 
 ## 1. Create the scheduled session (the "routine")
 
 In the Claude Code web app:
 1. Open this repo's environment (`shaffyroell/tasks`, branch
-   `claude/deals-stage-attio-mapping-37w20d` or wherever this is merged).
+   `claude/client-pipeline-email-sync-jfk7m0` or wherever this is merged).
 2. Create a new **scheduled / recurring task** (look for **Schedule /
    Automations / Routines**).
 3. **Cadence:** daily, **07:00 Europe/Amsterdam**. If the scheduler is UTC-only,
@@ -47,12 +47,12 @@ In the Claude Code web app:
 4. **Prompt:** `/daily-crm`
    (or, if the scheduler doesn't expand slash commands, paste the body of
    `.claude/commands/daily-crm.md`).
-5. Enablement: already on in the committed `attio.json`
-   (`newDealDiscovery.enabled` and `attioIngest.enabled` = true). Nothing to set —
-   flip either to `false` and commit to pause that stage.
+5. Enablement: already on in the committed `hubspot.json`
+   (`newDealDiscovery.enabled`, `ingest.enabled`, `staleFollowUp.enabled` = true).
+   Nothing to set — flip any to `false` and commit to pause that stage.
 
 If you'd rather run W1 and W2 as **two** staggered routines instead of one:
-W1 `/attio-ingest` at 07:00, W2 `/notion-todos` at 07:15.
+W1 `/hubspot-sync` at 07:00, W2 `/notion-todos` at 07:15.
 
 ### Model / cost
 

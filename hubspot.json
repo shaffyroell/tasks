@@ -70,6 +70,25 @@
     "allowStageAdvance": true,
     "allowStageClose": false
   },
+  "slackChannels": {
+    "_note": "Channels the daily sweep reads for deal/account + internal signal. Read threads, not just top messages.",
+    "outbound": "C0B1UDGSK5H",
+    "pipelineClients": "C0BAC0G9D8V",
+    "businessStrategy": "C09L3ML4QTF",
+    "clinicPortalDev": "C0B7C1FA08N",
+    "wellnessPortalDev": "C09FQ19TFF1",
+    "legal": "C09PU9QHBPH",
+    "dailyStatus": "C0ABE28MPAA"
+  },
+  "staleFollowUp": {
+    "_note": "When a deal's LAST CONTACT (most recent inbound/outbound across email, Lemlist, Slack, call) is older than thresholdDays, flag it: add a To-Do to the SwimScore Notion board (New sales pillar) with a SUGGESTED follow-up message drafted from the deal's HubSpot notes/context. Only when a nudge is actually warranted (active/open deal, not Closed; not already waiting on a booked future call). Skip dead/cold-rejected leads.",
+    "enabled": true,
+    "thresholdDays": 14,
+    "escalateDays": 21,
+    "excludeStages": ["3744104177", "3744104178"],
+    "draftSuggestedMessage": true,
+    "notionPillar": "New sales"
+  },
   "newDealDiscovery": {
     "enabled": true,
     "lookbackDays": 2,

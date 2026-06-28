@@ -1,67 +1,45 @@
 ---
 name: daily-crm
-description: Daily CEO sweep. Reads ALL recent email, Slack, Granola and Lemlist; classifies each meaningful item as ACCOUNT or INTERNAL; routes account items to HubSpot deals (find-or-create + link people, note, stage) and internal items to SwimScore Notion (find the item, read what it's for, update status). HubSpot is the single source of truth for the pipeline. Use as the scheduled daily run.
+description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, updates HubSpot deal notes + stages on any development, flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
 ---
 
-**Think like the CEO of this business**, not a note-taker. Read everything, decide
-what actually matters, and make the systems reflect reality: the **pipeline lives
-in HubSpot**, **internal execution lives in SwimScore Notion**. Work the steps in
-order. Config: committed `hubspot.json` (+ `clients.json` if agency routing is on).
+Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
+the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
+`hubspot.json`. Open with a per-source preflight (HubSpot, Gmail, Slack, Granola,
+Lemlist, Shopify, Notion); work the steps in order.
 
-## 1. Read everything from the last few days
-- **All email** — every Gmail thread with a new inbound/outbound message (native
-  Gmail MCP only). Read the substance, asks, and commitments.
-- **All Slack** — every relevant channel: client / Slack-Connect channels **and**
-  the internal channels where the business is run. Read threads, not just top
-  messages.
-- **All call notes** — every Granola note in the window; these hold the real
-  decisions.
-- **All Lemlist replies** — `get_inbox_conversations` → `get_inbox_conversation`;
-  note the `aiLeadInterest` signal (positive/neutral/negative).
-- **B2B Shopify website inbound** — clinic/wholesale inquiries via
-  www.myswimscore.com (often arrive as email to info@myswimscore.com). **B2B
-  only** — individual B2C patient orders are out of scope.
+1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
+   `get_inbox_conversation` for the thread + `aiLeadInterest`). New genuine B2B
+   interest with no deal → create it via W0 (`new-deal-discovery.md`): deal named
+   after the clinic + linked contact + company + domain. Existing deal with new
+   content → update (step 5). Negative replies are not deals.
 
-## 2. Classify each meaningful item — ACCOUNT or INTERNAL
-For every item that matters, decide:
-- **ACCOUNT** — an external party (prospect, client, partner, clinic) — anything
-  about winning, running, or growing a deal. → goes to **HubSpot** (step 3).
-- **INTERNAL** — SwimScore's own operations: product, team, hiring, finance,
-  roadmap, internal decisions. → goes to **SwimScore Notion** (step 4).
+2. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
+   truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →
+   attach to the deal. Catch B2B website inbound (Shopify "New customer message") → W0.
 
-When an item is genuinely both (e.g. a client request that spawns internal work),
-log the account side to HubSpot **and** the internal task to Notion.
+3. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
+   lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
+   wellness-portal-dev, legal, daily-status, + others). Read threads.
 
-## 3. ACCOUNT items → HubSpot (single source of truth)
-For each account item, resolve it to a **deal** (contact email → deal; company
-domain → deal; or name match):
-- **Deal exists?** Run W1 (`hubspot-sync.md`): check the deal's existing notes,
-  and **if this conversation isn't already captured, add a consolidated
-  `[hubspot-ingest]` note** (what happened per channel, decisions/commitments,
-  risks, next step). Move `dealstage` when the evidence warrants; honor
-  `autoApply` + `allowStageClose` (never auto-close Won/Lost); never silently
-  demote an active deal.
-- **No deal yet?** Run W0 (`new-deal-discovery.md`): **create the deal, link the
-  company and the people** (find-or-create contact + company, associate both),
-  and add a `[new-deal]` note. Don't force-fit new inbound onto an existing deal.
-- Close any gap where a real account conversation has no HubSpot note.
+4. **Calls — read recent Granola notes** for decisions, pain points, next steps.
 
-## 4. INTERNAL items → SwimScore Notion
-Run W2 (`daily-open-items.md`) against `internalTracker` in `hubspot.json`:
-- **Check if the item already exists** in SwimScore Notion (dedup on `Ref` / a
-  title match). **Read what it's for**, then **update it to the latest status**
-  (advance it, or mark Done if the evidence shows it's handled).
-- If it's genuinely new, add it in the house style per `STYLE.md` (verb-first,
-  concise, no arrows).
-- If `internalTracker.dataSourceId` is still a placeholder (Notion not connected
-  yet), **list the internal items in the digest** for manual handling instead of
-  failing.
+5. **Update HubSpot per client — only on a development.** Check existing notes
+   first (no duplicates); add/refresh a `[hubspot-ingest]` note (Background →
+   timestamped Timeline → Latest → Next step) and advance the stage on clear
+   evidence. Honor autoApply; never auto-close Won/Lost; never silently demote.
 
-## 5. Report
-End with a CEO digest: **Accounts** — deals reviewed, notes added (gaps closed),
-stage moves (+ any Closed Won/Lost awaiting approval), new deals created and who
-was linked. **Internal** — Notion items updated/advanced/closed/added (or listed
-for manual handling). Call out the top risks and decisions that need the CEO.
+6. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`): for
+   each open deal, last-contact >14d (high >21d) and a nudge is warranted → add a
+   To-Do on the SwimScore Notion board under **New sales** (Owner Shaffy, Link the
+   deal, dedup `Ref hubspot:stale:<dealId>`) with a short, specific follow-up
+   message **drafted from the deal's HubSpot notes** (only if a real message fits).
 
-Open with a per-source preflight line (HubSpot, Gmail, Slack, Granola, Lemlist,
-Notion); stop and report if a critical source is down.
+7. **Update the SwimScore Notion board from all channels** (W2,
+   `daily-open-items.md`): reconcile internal to-dos across the six pillars from
+   business-strategy, product/portal, legal, finance, support — check what each is
+   for, mark Done / advance, dedup on `Ref`, add new in house style (`STYLE.md`).
+
+End with a CEO digest: deals updated (notes + stage moves, Closed awaiting
+approval), new deals, stale deals flagged (with/without drafted message), and
+Notion to-dos added/advanced/closed per pillar. Surface the top risks + decisions.

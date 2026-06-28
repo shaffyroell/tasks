@@ -15,8 +15,13 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 
 2. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
    of truth after Lemlist). For every serious conversation (calls held, proposals,
-   pricing, scheduling, commitments), find its deal and capture what moved. Catch B2B
-   website inbound (Shopify "New customer message") → W0 if no deal yet.
+   pricing, scheduling, commitments), find its deal and capture what moved.
+
+2b. **Shopify — check for B2B inbound** from the website (both surfaces): the
+   `"New customer message"` contact-form emails to `info@myswimscore.com` in Gmail,
+   AND recent Shopify customers/orders (`get-shop-info`, `list-customers`,
+   `list-orders`) for clinic/wholesale/partner signal. Keep only B2B intent → match
+   to a deal or hand to W0. Ignore individual B2C patient orders.
 
 3. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,

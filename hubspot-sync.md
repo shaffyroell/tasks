@@ -33,8 +33,22 @@ source is down — note the gap.
 every lead by email. Read every Gmail thread with a new inbound/outbound message in
 the last `ingest.lookbackDays` (widen after a gap). For each, find the deal it
 belongs to and capture what actually moved: calls held, proposals sent, pricing,
-scheduling, commitments. Also catch **B2B inbound via the website** (Shopify
-"New customer message" to info@myswimscore.com) → W0 if no deal yet.
+scheduling, commitments.
+
+## 2b. Shopify — B2B inbound from the website (always check)
+SwimScore's Shopify store (www.myswimscore.com) is a real inbound channel for **B2B
+clinic/partner** opportunities. Each run, check **both surfaces**:
+- **Gmail:** website contact-form submissions arrive as **"New customer message …"**
+  emails to `info@myswimscore.com` — search for them in the window.
+- **Shopify (MCP):** `get-shop-info` to confirm reachable, then scan recent
+  customers/orders (`list-customers` with an `order_date`/`created_at` filter,
+  `list-orders`) for **clinic / wholesale / partner** signals (practice name, bulk
+  intent, a provider email) rather than an individual patient.
+Keep **only B2B clinic/partner intent**: match it to an existing HubSpot deal, or
+hand a genuinely new one to **W0** (deal named after the clinic + contact + company
++ domain). **Ignore individual B2C patient orders** — B2C is out of scope here.
+*(Worked example already in HubSpot: Epoch Health came in as a Jun 21 Shopify
+"New customer message" and is now a Pilot-Discussion deal.)*
 
 ## 3. Slack — sweep the deal/account channels
 Read threads (not just top messages) in the channels in `hubspot.json.slackChannels`:

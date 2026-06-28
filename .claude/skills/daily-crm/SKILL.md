@@ -16,7 +16,13 @@ Lemlist, Shopify, Notion); work the steps in order.
 
 2. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
    truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →
-   attach to the deal. Catch B2B website inbound (Shopify "New customer message") → W0.
+   attach to the deal.
+
+2b. **Shopify — check for B2B inbound** (both surfaces): `"New customer message"`
+   contact-form emails to `info@myswimscore.com` in Gmail, AND recent Shopify
+   customers/orders (`get-shop-info`, `list-customers`, `list-orders`) for
+   clinic/wholesale/partner signal. Keep only B2B → match to a deal or hand to W0;
+   ignore individual B2C patient orders.
 
 3. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,

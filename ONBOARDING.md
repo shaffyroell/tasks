@@ -14,7 +14,8 @@ Either duplicate the master tracker, or create a fresh one from this schema
 Item (title) · Source (Email/Slack/Meeting) · Status (Needs Response/Follow Up/
 To Do/Waiting/Done) · Priority (High/Medium/Low) · Who (text) · Action Needed
 (text) · Link (url) · Ref (text) · First Seen (date) · Last Updated (date) ·
-Attio (text)
+Attio (text) · Handled By (AI/AI + Review/Human) · AI Can Do (text) ·
+Needs from You (text)
 ```
 Share it with the client's Notion integration, then copy the **data source ID**
 (the `collection://<id>` UUID).

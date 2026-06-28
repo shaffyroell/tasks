@@ -20,7 +20,8 @@ same for every client. See `ONBOARDING.md`. The values below are the **TechTower
 - **Schema:** `Item` (title), `Source` (Email/Slack/Meeting), `Status`
   (Needs Response / Follow Up / To Do / Waiting / Done), `Priority`
   (High/Medium/Low), `Who`, `Action Needed`, `Link`, `Ref`, `First Seen`,
-  `Last Updated`, `Attio` (what was written back to the CRM, if anything).
+  `Last Updated`, `Attio` (what was written back to the CRM, if anything),
+  `Handled By` (AI / AI + Review / Human), `AI Can Do`, `Needs from You`.
 
 ---
 
@@ -143,6 +144,27 @@ per meeting into one row where sensible. `Link = https://app.fireflies.ai/view/<
 - **Resolved** (Shaffy has since replied, or the meeting action is done) →
   set `Status = Done`, `Last Updated` today. Do not delete.
 - Keep `First Seen` unchanged on updates.
+
+### 5b. Triage each item — what AI can do vs what needs the human
+For every open (non-`Done`) item, set:
+- **`Handled By`** — `AI` (AI can complete it end-to-end, low-risk), `AI + Review`
+  (AI prepares/drafts; the owner approves before anything external goes out), or
+  `Human` (judgment, relationship, signature, or access only the owner has).
+- **`AI Can Do`** — the concrete slice AI can execute now (draft this reply,
+  compile these materials, build this draft, log to CRM).
+- **`Needs from You`** — the specific decision / approval / access only the owner
+  can give.
+
+Default client-facing sends and commercial decisions to `AI + Review`. Promote an
+item to `AI` only for a class of action the owner has pre-approved.
+
+**Optional execution pass** (only if `execution.enabled` in the client config):
+after triage, AI acts on the AI-doable slices — create Gmail **drafts** (never
+auto-send unless `execution.autoSend` is true **and** the item is
+`Handled By = AI`), draft docs, or stage CRM updates — and records what it
+prepared in `AI Can Do` / the page body. It never flips an item to `Done` on the
+owner's behalf. This is what lets the owner open the tracker and **only
+review/approve**, while AI clears the prep.
 
 ### 6. Write follow-up activity back to Attio (TechTower)
 Only runs if `attio.json` is present (see `ATTIO_SETUP.md`). Direction is

@@ -28,5 +28,10 @@
     "email": 21,
     "slack": 7,
     "meetings": 7
+  },
+  "execution": {
+    "_note": "Triage (Handled By / AI Can Do / Needs from You) always runs. 'enabled' lets AI also prepare the AI-doable slices (drafts, docs, staged CRM updates). 'autoSend' is OFF by default — only fully-AI, pre-approved items would ever send without review.",
+    "enabled": false,
+    "autoSend": false
   }
 }

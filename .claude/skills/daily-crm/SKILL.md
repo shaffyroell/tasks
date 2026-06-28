@@ -1,28 +1,49 @@
 ---
 name: daily-crm
-description: Daily CRM routine. Runs W0 (discover & create new deals in Attio) → W1 (ingest all client comms to Attio as dated notes + stage moves) → W2 (per-client to-dos in Notion). Use this as the scheduled daily run, or when asked to sync the CRM and to-dos for the day.
+description: Daily key-account sweep. Reads ALL recent email, Slack, and call notes (Granola/Fireflies), links each to the right Attio deal (adds a note only if it isn't already there), keeps stages honest, then reconciles per-client action items in Notion. Use as the scheduled daily run.
 ---
 
-Run the three daily workflows in order, so each reads what the previous wrote.
+Act like the person who **manages these key accounts**. Don't transcribe — read
+everything, understand what's happening with each account, and make Attio + Notion
+reflect it. Work the four steps below, in order.
 
-0. **W0 first** — new-deal discovery in `new-deal-discovery.md`: preflight → pull
-   yesterday's inbound (Gmail, native MCP) → keep only genuine NEW opportunities
-   not already in Attio (dedup hard; exclude SaaS/internal/vendors/recruiting/
-   personal) → for each, create the deal + link company + link person + add a
-   `[new-deal …]` thread-summary note (low-confidence intros listed for review,
-   not created) → discovery digest.
+## 1. Read everything from the last few days
+- **All emails** — every Gmail thread with a new inbound/outbound message
+  (native Gmail MCP only). Read the substance, commitments, and asks.
+- **All Slack** — sweep every client / Slack-Connect channel **and** the internal
+  channels where account work is discussed (e.g. `#<client>-internal`), last few
+  days; read threads, not just top messages.
+- **All call notes** — every Granola note and Fireflies transcript/summary in the
+  window; these hold the real decisions, read them in full.
 
-1. **Then W1** — Attio ingest in `attio-ingest.md`: preflight → working set
-   (active clients + deals with fresh activity, including anything W0 just
-   created) → gather Gmail/Slack/Granola/Fireflies/calendar → write a dated comms
-   note to each active deal/client with activity and move its stage when evidence
-   warrants (honor `attioIngest.autoApply`) → ingest digest. Native Gmail only.
+## 2. Link each conversation to the right Attio deal — note it if missing
+For every meaningful communication, find its account's **deal** (participant
+email → person → deal; company domain → company → deal; or name/alias). Then:
+- **Check the deal's existing notes first.** If this conversation/call is already
+  captured, **skip it** (no duplicates — match on the thread/meeting + content,
+  not just the date).
+- **If it's missing, add a note** (`create-note` on the deal) summarizing: what
+  happened, decisions & commitments (what we owe / they owe, by when), risks/
+  blockers, and the next step. If a meaningful comm has no note, that's a gap —
+  close it.
+- Run W0 (`new-deal-discovery.md`) first for genuinely NEW opportunities with no
+  deal yet (create deal + link company + person + note); don't force-fit new
+  inbound onto an existing deal.
+- **Keep the stage honest** — advance/hold per the evidence; never silently
+  demote an active client. Detail in `attio-ingest.md`.
 
-2. **Then W2** — per-client To-Dos in `daily-open-items.md`: read Attio first
-   (latest stages + the newest `[attio-ingest …]`/`[new-deal …]` notes + open
-   tasks), then fresh Gmail/Slack/Granola/Fireflies; reconcile existing to-dos
-   (mark Done / advance, dedup on `Ref`), add new ones routed per client, **each
-   written in the house style per `STYLE.md`** → summary.
+## 3. Reconcile action items in Notion (per client)
+Run W2 (`daily-open-items.md`): read Attio (the notes/stages you just wrote) plus
+the same fresh sources, then for each client's Notion board **see if the action
+items already exist** — mark Done what was handled, advance what moved, dedup on
+`Ref` — and add genuinely new to-dos, **each written in the house style per
+`STYLE.md`** (verb-first, concise, client-safe, no arrows).
 
-Stop and report if W0 or W1 preflight shows a critical source down. Config:
-`attio.json` (`newDealDiscovery` + `attioIngest`) + `clients.json`.
+## 4. Report
+End with a digest: accounts touched, notes added (with gaps closed), stage moves,
+new deals created, and the Notion to-dos added/updated/closed per client.
+
+Think critically per account the whole way through: progressing, stalling, or at
+risk? a commitment slipping? an upsell/renewal cue? That judgement is the job.
+Config = committed `attio.json` + `clients.json`. Open with a per-source preflight
+line; stop and report if a critical source is down.

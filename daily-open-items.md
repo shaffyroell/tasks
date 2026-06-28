@@ -4,10 +4,19 @@
 recent meeting notes (Fireflies), then reconciles the Notion tracker so it always
 reflects what Shaffy still needs to respond to or act on.
 
-- **Owner:** Shaffy (shaffy@techtower.ai)
-- **Destination:** Notion database **📥 Open Items — Daily Tracker**
-  - Page: https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
-  - Data source ID: `45a1139d-c188-4a05-936d-adbea5d6715e`
+**Client-specific values come from the client config** (`CLIENT_CONFIG_JSON` env
+secret, else `client.json` / `clients/<client>.json`) — so this workflow is the
+same for every client. See `ONBOARDING.md`. The values below are the **TechTower
+"client zero"** instance, shown as a worked example:
+
+- **Owner:** from `owner.primaryEmail` (TechTower: shaffy@techtower.ai), timezone
+  `owner.timezone`.
+- **Destination:** Notion tracker at `notion.dataSourceId`
+  (TechTower: `45a1139d-c188-4a05-936d-adbea5d6715e`,
+  page https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144).
+- **Slack identity:** `slack.primaryUserId` (TechTower: `U07CJK9H78A`).
+- **Sources & lookbacks:** `sources` toggles + `lookbackDays` (defaults 21d email
+  / 7d Slack / 7d meetings).
 - **Schema:** `Item` (title), `Source` (Email/Slack/Meeting), `Status`
   (Needs Response / Follow Up / To Do / Waiting / Done), `Priority`
   (High/Medium/Low), `Who`, `Action Needed`, `Link`, `Ref`, `First Seen`,
@@ -105,7 +114,8 @@ default, e.g. `personal-gmail · John D.`), a one-line `Action Needed`, and
 
 ### 3. Gather Slack — all configured workspaces (last ~7 days)
 The sweep covers **every** Slack workspace it can reach:
-- **TechTower** via the connected Slack connector (user `U07CJK9H78A`).
+- The connected Slack connector (user = `slack.primaryUserId`; TechTower
+  `U07CJK9H78A`).
 - **Any workspace listed in `slack-workspaces.json`** (gitignored), each via its
   own `xoxp-` user token with `search:read`. See `SLACK_SETUP.md`.
 

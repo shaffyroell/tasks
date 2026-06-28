@@ -1,0 +1,32 @@
+{
+  "_comment": "Per-client config — this is what makes the sweep plug-and-play. Copy to client.json (gitignored) per client; the workflow reads identity + destination + which sources to run from here, so onboarding a new client never means editing daily-open-items.md. Source at run time: CLIENT_CONFIG_JSON env secret, else client.json. Credentials live in the matching email/slack/attio configs (or *_JSON env secrets).",
+  "client": "acme",
+  "owner": {
+    "name": "Jane Client",
+    "primaryEmail": "jane@acme.com",
+    "timezone": "Europe/Amsterdam"
+  },
+  "notion": {
+    "trackerUrl": "https://www.notion.so/...",
+    "dataSourceId": "PASTE_DATA_SOURCE_ID"
+  },
+  "slack": {
+    "primaryUserId": "UXXXXXXX"
+  },
+  "schedule": {
+    "cron": "0 7 * * *",
+    "timezone": "Europe/Amsterdam",
+    "model": "sonnet"
+  },
+  "sources": {
+    "email": true,
+    "slack": true,
+    "fireflies": true,
+    "attioWriteBack": false
+  },
+  "lookbackDays": {
+    "email": 21,
+    "slack": 7,
+    "meetings": 7
+  }
+}

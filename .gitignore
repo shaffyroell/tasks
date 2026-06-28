@@ -3,6 +3,8 @@ accounts.json
 slack-workspaces.json
 email-accounts.json
 attio.json
+client.json
+clients/*.json
 *.secret
 *.key
 .env

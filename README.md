@@ -13,6 +13,8 @@ to in calls.
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 - **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)
+- **Onboard a new client (plug-and-play):** [`ONBOARDING.md`](./ONBOARDING.md)
+- **Scheduling:** [`SCHEDULING.md`](./SCHEDULING.md)
 
 ## Slack coverage
 

@@ -21,9 +21,9 @@ new records go unlinked.
 ## Future
 - **Attio read-in:** pull open / stalled / overdue deals *out* of Attio into the
   open-items tracker as their own items (not just write-back).
-- **Auto-create with review:** new-inbound deal creation exists in
-  `attio-ingest.md` (`createNewDeals`); promote from flag-only to
-  create-with-review in the open-items sweep too.
+- **Auto-create:** done — daily new-inbound deal creation (create + link company
+  + link person + note) is its own front workflow, `new-deal-discovery.md` (W0).
+  Low-confidence intros are listed for review rather than created.
 - **Weekly deep re-sweep:** a wider-lookback variant of `attio-ingest.md` to
   catch deals that went quiet (vs. the daily incremental run).
 - **Per-client onboarding template:** one-click Notion tracker duplication +

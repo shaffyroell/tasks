@@ -1,31 +1,40 @@
 # Client Comms Automation — Attio + Notion
 
-Two daily workflows run as a pipeline so the CRM is the source of truth and the
+Three daily workflows run as a pipeline so the CRM is the source of truth and the
 to-do list stays current:
 
+- **W0 — Discover → Attio** ([`new-deal-discovery.md`](./new-deal-discovery.md)):
+  scans yesterday's inbound mail for **genuine new opportunities not yet in
+  Attio** and **creates the deal + links company + links person + adds a note**.
+  Runs first (~06:50).
 - **W1 — Ingest → Attio** ([`attio-ingest.md`](./attio-ingest.md)): reads all raw
   comms (**Gmail, Slack, Granola + Fireflies, calendar**) and writes them into
   **Attio** — a dated note on every active deal/client + a deal **stage** move
-  when the evidence warrants. Runs first (~07:00). Attio holds everything.
+  when the evidence warrants (existing deals, incl. those W0 just created).
+  Runs ~07:00. Attio holds everything.
 - **W2 — Act → Notion** ([`daily-open-items.md`](./daily-open-items.md)): derives
   the **per-client To-Dos in Notion**. Hybrid input — reads **Attio (primary)**
   plus fresh Gmail/Slack/Granola/Fireflies, and **reconciles** existing to-dos
-  (mark done / advanced) before adding new ones. Runs ~15 min after W1 (~07:15).
+  (mark done / advanced) before adding new ones. Runs ~07:15.
 
 ```
 Gmail · Slack · Granola · Fireflies · Calendar
         │
-        ▼   W1  attio-ingest.md
+        ▼   W0  new-deal-discovery.md   (create new deals + link + note)
+        ▼   W1  attio-ingest.md         (notes + stage moves on existing deals)
      ┌───────────┐
-     │   Attio   │  ← source of truth: stages + raw comms notes
+     │   Attio   │  ← source of truth: deals, stages, raw comms notes
      └───────────┘
         │
-        ▼   W2  daily-open-items.md  (+ fresh sources, reconcile)
+        ▼   W2  daily-open-items.md     (+ fresh sources, reconcile)
    Per-client To-Dos in Notion
 ```
 
+One routine runs all three in order: the `/daily-crm` slash command.
+
 ## Where things live
 
+- **W0 — New-deal discovery (Attio):** [`new-deal-discovery.md`](./new-deal-discovery.md)
 - **W1 — Ingest to Attio (source of truth):** [`attio-ingest.md`](./attio-ingest.md)
 - **W2 — Per-client To-Dos (Notion):** [`daily-open-items.md`](./daily-open-items.md)
 - **Tracker (W2 output):** Notion → **📥 Open Items — Daily Tracker**

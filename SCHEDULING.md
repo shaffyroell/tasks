@@ -7,13 +7,16 @@ tokens; separate accounts/workspaces come from environment secrets.
 
 Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 
-> **Two scheduled sessions — a pipeline.** Schedule them as **separate** recurring
-> sessions, staggered so W2 reads what W1 just wrote:
-> 1. **W1 — Attio ingest** (`attio-ingest.md`) → writes all raw comms to Attio
->    (notes + stages) — **07:00**. Set `attioIngest.enabled` in `attio.json`.
-> 2. **W2 — Per-client To-Dos** (`daily-open-items.md`) → Notion, reading Attio
->    (W1's output) **plus** fresh Gmail/Slack/Granola/Fireflies — **07:15**.
-> Same setup steps below apply to each — change only the cadence time and prompt.
+> **Simplest: one routine.** Schedule **one** daily session with the prompt
+> **`/daily-crm`** — it runs **W0 → W1 → W2 in order**, so each step reads what the
+> previous wrote (no timing race). Enable `newDealDiscovery.enabled` and
+> `attioIngest.enabled` in `attio.json`.
+>
+> **Or three staggered sessions** (if you want them on separate cadences):
+> 1. **W0 — New-deal discovery** (`new-deal-discovery.md`) → creates new deals —
+>    **06:50**.
+> 2. **W1 — Attio ingest** (`attio-ingest.md`) → notes + stage moves — **07:00**.
+> 3. **W2 — Per-client To-Dos** (`daily-open-items.md`) → Notion — **07:15**.
 
 ## Routines = slash commands (committed)
 
@@ -22,13 +25,14 @@ prompt is a single line:
 
 | Command | Runs |
 |---|---|
-| `/daily-crm` | **W1 then W2 in order** (recommended — one routine, guaranteed ordering) |
+| `/daily-crm` | **W0 → W1 → W2 in order** (recommended — one routine, guaranteed ordering) |
+| `/new-deals` | W0 only — discover + create new deals in Attio |
 | `/attio-ingest` | W1 only — ingest comms → Attio |
 | `/notion-todos` | W2 only — per-client To-Dos → Notion |
 
-**Recommended:** one daily routine with the prompt **`/daily-crm`** — it runs the
-ingest to completion, then the to-dos, so W2 always reads W1's fresh output (no
-timing race). Use the split commands only if you want them on separate cadences.
+**Recommended:** one daily routine with the prompt **`/daily-crm`** — it runs
+discovery → ingest → to-dos in sequence, so each reads the prior step's fresh
+output. Use the split commands only if you want them on separate cadences.
 
 ## 1. Create the scheduled session (the "routine")
 
@@ -43,7 +47,8 @@ In the Claude Code web app:
 4. **Prompt:** `/daily-crm`
    (or, if the scheduler doesn't expand slash commands, paste the body of
    `.claude/commands/daily-crm.md`).
-5. Enable the workflow in `attio.json` → `attioIngest.enabled: true`.
+5. Enable the workflows in `attio.json` → `newDealDiscovery.enabled: true` and
+   `attioIngest.enabled: true`.
 
 If you'd rather run W1 and W2 as **two** staggered routines instead of one:
 W1 `/attio-ingest` at 07:00, W2 `/notion-todos` at 07:15.

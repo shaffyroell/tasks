@@ -32,7 +32,17 @@
     }
   },
 
-  "_attioIngest_note": "Used by attio-ingest.md = W1 (the daily ingest that writes ALL raw comms to Attio as notes + keeps deal stages current). This is the single write-path into Attio; W2 (daily-open-items.md) reads Attio and produces Notion to-dos. Gated by enabled:false until you opt in.",
+  "_newDealDiscovery_note": "Used by new-deal-discovery.md = W0 (runs FIRST). Scans yesterday's inbound mail for genuine NEW opportunities not yet in Attio and creates the deal + links company + links person + adds a [new-deal] note. Gated by enabled:false until you opt in.",
+  "newDealDiscovery": {
+    "enabled": false,
+    "lookbackDays": 2,
+    "ownerId": "9ecd9b0d-6feb-4582-829b-7dd2fced6d6d",
+    "minConfidence": "medium",
+    "createNewDeals": true,
+    "noteMarkerPrefix": "[new-deal]"
+  },
+
+  "_attioIngest_note": "Used by attio-ingest.md = W1 (the daily ingest that writes ALL raw comms to Attio as notes + keeps deal stages current). New-deal CREATION is W0's job (newDealDiscovery), so createNewDeals here stays false — W1 only updates existing deals. W2 (daily-open-items.md) then reads Attio and produces Notion to-dos.",
   "attioIngest": {
     "enabled": false,
     "autoApply": true,

@@ -1,22 +1,25 @@
 ---
-description: Daily CRM routine — run W1 (ingest → Attio) then W2 (To-Dos → Notion)
+description: Daily CRM routine — W0 (new deals) → W1 (ingest → Attio) → W2 (To-Dos → Notion)
 ---
-Run the two daily workflows in order, so W2 reads what W1 just wrote.
+Run the three daily workflows in order, so each reads what the previous wrote.
 
-1. **W1 first, to completion** — the Attio ingest defined in `attio-ingest.md`:
-   Step 0 preflight (open with the readiness line) → build the working set
-   (active clients + deals with fresh activity) → gather Gmail, Slack, Granola,
-   Fireflies, and calendar activity from the last 24–48h → write a dated comms
-   note to each active deal/client that had activity and move its stage when the
-   evidence warrants (§3 rules, §4 safety; honor `attioIngest.autoApply`) →
-   post the ingest digest. Use only the native Gmail MCP.
+0. **W0 first** — new-deal discovery in `new-deal-discovery.md`: preflight → pull
+   yesterday's inbound (Gmail, native MCP) → keep only genuine NEW opportunities
+   not already in Attio (dedup hard; exclude SaaS/internal/vendors/recruiting/
+   personal) → for each, create the deal + link company + link person + add a
+   `[new-deal …]` thread-summary note (low-confidence intros listed for review,
+   not created) → discovery digest.
 
-2. **Then W2** — the per-client To-Dos defined in `daily-open-items.md`:
-   read Attio first (latest stages + the newest `[attio-ingest …]` notes + open
-   tasks) as the primary signal, then also read fresh Gmail, Slack, and meeting
-   notes (Granola + Fireflies); reconcile existing per-client to-dos (mark Done
-   what was handled, advance what moved, dedup on `Ref`); add genuinely new
-   to-dos routed to each client's board → post the summary.
+1. **Then W1** — Attio ingest in `attio-ingest.md`: preflight → working set
+   (active clients + deals with fresh activity, including anything W0 just
+   created) → gather Gmail/Slack/Granola/Fireflies/calendar → write a dated comms
+   note to each active deal/client with activity and move its stage when evidence
+   warrants (honor `attioIngest.autoApply`) → ingest digest. Native Gmail only.
 
-Stop and report if W1's preflight shows a critical source down. Config comes from
-`attio.json` (`attioIngest` block) + `client.json`.
+2. **Then W2** — per-client To-Dos in `daily-open-items.md`: read Attio first
+   (latest stages + the newest `[attio-ingest …]`/`[new-deal …]` notes + open
+   tasks), then fresh Gmail/Slack/Granola/Fireflies; reconcile existing to-dos
+   (mark Done / advance, dedup on `Ref`), add new ones routed per client → summary.
+
+Stop and report if W0 or W1 preflight shows a critical source down. Config:
+`attio.json` (`newDealDiscovery` + `attioIngest`) + `client.json`.

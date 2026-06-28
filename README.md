@@ -13,24 +13,30 @@ to in calls.
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 - **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)
+- **Supported tools & connections:** [`CONNECTIONS.md`](./CONNECTIONS.md)
 - **Onboard a new client (plug-and-play):** [`ONBOARDING.md`](./ONBOARDING.md)
 - **Scheduling:** [`SCHEDULING.md`](./SCHEDULING.md)
 
 ## Slack coverage
 
 TechTower Slack works out of the box via the connected Slack connector. To sweep
-**additional** workspaces in the same daily run, add one `xoxp-` user token per
-workspace to `slack-workspaces.json` (gitignored) — see
-[`SLACK_SETUP.md`](./SLACK_SETUP.md). A user token only reads what you can already
-access, and workspaces where you can't get an app approved stay manual.
+**additional** workspaces in the same run, add one `xoxp-` user token per
+workspace to `slack-workspaces.json` — see [`SLACK_SETUP.md`](./SLACK_SETUP.md).
+
+**Long-term**, prefer **Slack Connect** — bring client conversations into shared
+channels inside your own Slack so the sweep needs only one connection you own,
+with no per-client tokens. Per-workspace tokens are the fallback for clients whose
+internal workspace you're embedded in. Full rationale in
+[`CONNECTIONS.md`](./CONNECTIONS.md).
 
 ## Email coverage
 
-The connected inbox *receives* alias mail (myswimscore, techtowerops) but does
-**not** contain replies you send from those separate accounts — and reply-
-detection depends on seeing your Sent mail. So connect **every mailbox you send
-replies from** as its own account in `email-accounts.json` (gitignored).
-`shaffy@myswimscore.com` needs an entry for exactly this reason — see
+This instance is **TechTower-only**: email is scoped to `stack.email.domains`
+(techtower.ai, techtowerops.com), so even though the connected inbox also receives
+SwimScore mail, that's ignored here — **SwimScore runs as its own duplicated
+workflow in a separate Claude account**. To add a genuinely separate mailbox you
+*send* from within the same business, connect it as its own account in
+`email-accounts.json` (reply-detection needs its Sent mail) — see
 [`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
 
 ## Attio CRM write-back

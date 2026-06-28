@@ -9,14 +9,27 @@ secret, else `client.json` / `clients/<client>.json`) — so this workflow is th
 same for every client. See `ONBOARDING.md`. The values below are the **TechTower
 "client zero"** instance, shown as a worked example:
 
-- **Owner:** from `owner.primaryEmail` (TechTower: shaffy@techtower.ai), timezone
-  `owner.timezone`.
-- **Destination:** Notion tracker at `notion.dataSourceId`
-  (TechTower: `45a1139d-c188-4a05-936d-adbea5d6715e`,
+**Capability-based:** the config declares which **provider** each capability uses,
+and the sweep uses whatever that company has connected in *their* Claude
+workspace. One company = one config = one Claude workspace = one tracker.
+
+- **Owner:** `owner.primaryEmail` (TechTower: shaffy@techtower.ai), tz `owner.timezone`.
+- **Tracker:** `stack.tracker` (TechTower: Notion, data source
+  `45a1139d-c188-4a05-936d-adbea5d6715e`,
   page https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144).
-- **Slack identity:** `slack.primaryUserId` (TechTower: `U07CJK9H78A`).
-- **Sources & lookbacks:** `sources` toggles + `lookbackDays` (defaults 21d email
-  / 7d Slack / 7d meetings).
+- **Email:** `stack.email.provider` (gmail | outlook), scoped to
+  `stack.email.domains` (TechTower: techtower.ai, techtowerops.com).
+- **Chat:** `stack.chat.provider` (slack | teams | google_chat), identity
+  `stack.chat.userId` (TechTower: `U07CJK9H78A`).
+- **Meetings:** `stack.meetings.provider` (fireflies | otter | gemini | granola).
+- **CRM write-back:** `stack.crm` (attio | hubspot | pipedrive | salesforce).
+- **Lookbacks:** `lookbackDays` (defaults 21d email / 7d chat / 7d meetings).
+
+> **Scope to one business.** This instance is **TechTower-only**. A connected
+> inbox may aggregate other brands (e.g. SwimScore mail forwards in) — ignore
+> anything outside `stack.email.domains`. Other businesses run as their **own**
+> duplicated workflow in a separate Claude account/tracker.
+
 - **Schema:** `Item` (title), `Source` (Email/Slack/Meeting), `Status`
   (Needs Response / Follow Up / To Do / Waiting / Done), `Priority`
   (High/Medium/Low), `Who`, `Action Needed`, `Link`, `Ref`, `First Seen`,
@@ -80,17 +93,20 @@ or expired credential surfaces loudly instead of silently dropping coverage.
 Query the data source (`45a1139d-c188-4a05-936d-adbea5d6715e`) for all rows that
 are **not** `Done`. Build a lookup by `Ref` so you can update instead of
 duplicate. `Ref` formats:
-- Email → `gmail:<threadId>`
-- Slack → `slack:<workspaceName>:<channel>/<ts>`
-- Meeting → `ff:<transcriptId>`
+- Email → `gmail:<threadId>` (or `outlook:<id>`)
+- Chat → `chat:<provider>:<workspace>/<channel>/<ts>`
+- Meeting → `ff:<transcriptId>` (or `<provider>:<id>`)
 
-### 2. Gather email — all configured mailboxes (last ~21 days)
-The sweep covers **every** mailbox it can reach:
-- The **connected Gmail inbox** (user default).
-- **Any account in the email config** — separate Gmail or Outlook mailboxes, each
-  read with its own credentials. Config source: the `EMAIL_ACCOUNTS_JSON` env
-  secret if set, else the gitignored `email-accounts.json` file. (Scheduled runs
-  clone fresh, so they rely on the env secret.) See `EMAIL_SETUP.md`.
+### 2. Gather email — provider per `stack.email.provider` (last ~21 days)
+Use the company's email provider (Gmail or Outlook) and every mailbox it can
+reach: the connected inbox plus any account in the email config
+(`EMAIL_ACCOUNTS_JSON` env secret, else `email-accounts.json`). See
+`EMAIL_SETUP.md`.
+
+> **Domain scope (important for shared inboxes):** only consider threads to/from
+> `stack.email.domains`. If the connected inbox also receives other brands (e.g.
+> SwimScore), those are **out of scope for this instance** — they belong to their
+> own duplicated workflow. If `domains` is empty, include everything.
 
 > **Reply-detection needs Sent mail.** The connected inbox *receives* alias mail
 > (`myswimscore`, `techtowerops`) but does **not** contain replies sent from
@@ -113,28 +129,30 @@ default, e.g. `personal-gmail · John D.`), a one-line `Action Needed`, and
 > Email thread IDs are globally unique, so `Ref = gmail:<threadId>` stays stable
 > across mailboxes (no need to qualify by account).
 
-### 3. Gather Slack — all configured workspaces (last ~7 days)
-The sweep covers **every** Slack workspace it can reach:
-- The connected Slack connector (user = `slack.primaryUserId`; TechTower
-  `U07CJK9H78A`).
-- **Any workspace listed in `slack-workspaces.json`** (gitignored), each via its
-  own `xoxp-` user token with `search:read`. See `SLACK_SETUP.md`.
+### 3. Gather chat — provider per `stack.chat.provider` (last ~7 days)
+Use the company's chat tool. Items here get `Source = Chat`.
+- **Slack** — cover every workspace it can reach: the connected Slack connector
+  (user = `stack.chat.userId`; TechTower `U07CJK9H78A`), plus any workspace in
+  `slack-workspaces.json` / `SLACK_WORKSPACES_JSON`, each via its own `xoxp-`
+  user token (`search:read`). See `SLACK_SETUP.md`.
+- **Microsoft Teams / Google Chat** — use that connector instead.
 
-For each workspace, search the user's mentions (`<@userId>`) and DMs. Read enough
-thread context to tell if it's still open. If Shaffy already answered or someone
-else resolved it, skip. Otherwise add a row, prefix `Who` with the workspace name
+For each workspace/space, search the user's mentions and DMs. Read enough thread
+context to tell if it's still open; if the owner already answered or someone else
+resolved it, skip. Otherwise add a row, prefix `Who` with the workspace name
 (e.g. `Crewline · @jane`), and set `Link =` the message permalink. Use a
-workspace-qualified `Ref` so the same message in different workspaces never
-collides: `slack:<workspaceName>:<channel>/<ts>`.
+provider-qualified `Ref` so the same message never collides across
+workspaces/tools: `chat:<provider>:<workspace>/<channel>/<ts>`.
 
 > A user token only sees what that user can already access (their DMs, mentions,
 > and member channels). Workspaces where no token can be minted (no admin
 > approval) are out of automated scope — note them as a manual check, don't fail.
 
-### 4. Gather meeting next-steps (last ~7 days)
-List recent Fireflies transcripts (`mine: true`). For each, pull `action_items`
-and keep only those assigned to **Shaffy** (or "Shaffy and team"). Consolidate
-per meeting into one row where sensible. `Link = https://app.fireflies.ai/view/<transcriptId>`.
+### 4. Gather meeting next-steps — provider per `stack.meetings.provider` (last ~7 days)
+List recent transcripts from the company's meeting-notes tool (Fireflies, Otter,
+Gemini, Granola, …). For each, pull the action items and keep only those assigned
+to the **owner** (or "owner + team"). Consolidate per meeting into one row where
+sensible. For Fireflies, `Link = https://app.fireflies.ai/view/<transcriptId>`.
 
 ### 5. Reconcile the tracker
 - **New** (Ref not present) → create a row. Set `First Seen` and `Last Updated`

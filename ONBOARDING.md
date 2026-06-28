@@ -6,6 +6,13 @@ schedule. ~20 minutes, no code edits.
 
 > TechTower is "client zero" — `client.json` is the worked example to copy.
 
+## 0. Map the client's stack (~2 min)
+Identify which tool the client uses per capability (email, chat, meeting notes,
+CRM) and connect those in **their** Claude workspace. Declare each in
+`stack.*.provider`. See [`CONNECTIONS.md`](./CONNECTIONS.md) for supported
+providers and how each connects. For external Slack access, prefer **Slack
+Connect** over collecting tokens (see that doc).
+
 ## 1. Create the client's Notion tracker (~3 min)
 Either duplicate the master tracker, or create a fresh one from this schema
 (Notion → create database → these columns):

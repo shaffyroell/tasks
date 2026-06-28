@@ -30,5 +30,29 @@
         "stageAttribute": "stage"
       }
     }
+  },
+
+  "_dealStageSync_note": "Used by deal-stage-sync.md (the daily STAGE automation) — separate from the conservative write-back above. That sweep never moves stages; THIS one does, by design. Gated by enabled:false until you opt in.",
+  "dealStageSync": {
+    "enabled": false,
+    "autoApply": true,
+    "createNewDeals": false,
+    "recencyWeeks": 6,
+    "lookbackDays": 2,
+    "stageAttribute": "stage",
+    "noteMarkerPrefix": "[stage-sync]",
+    "digestChannel": "",
+    "activeStages": ["1.  Positive reply", "2. Planning call", "3. Demo planned", "4. Scope agreed", "5. Proposal sent", "6. Active client", "7. Active Project Client", "8. Completed Client", "8.a Finished, need to finalize invoicing"],
+    "statusTitles": {
+      "positiveReply": "1.  Positive reply",
+      "planningCall": "2. Planning call",
+      "demoPlanned": "3. Demo planned",
+      "scopeAgreed": "4. Scope agreed",
+      "proposalSent": "5. Proposal sent",
+      "activeClient": "6. Active client",
+      "completedClient": "8. Completed Client",
+      "nurture": "Nurture / recontact",
+      "lost": "Lost - not interested"
+    }
   }
 }

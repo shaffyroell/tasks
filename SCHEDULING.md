@@ -7,6 +7,14 @@ tokens; separate accounts/workspaces come from environment secrets.
 
 Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 
+> **Two scheduled sessions.** This repo has two daily workflows. Schedule them as
+> **separate** recurring sessions, staggered so they don't overlap:
+> 1. **Open-items sweep** (`daily-open-items.md`) → Notion tracker — **07:00**.
+> 2. **Deal-stage sync** (`deal-stage-sync.md`) → Attio stages + notes — **07:15**
+>    (the stage automation; see its own §Scheduling). Set `dealStageSync.enabled`
+>    in `attio.json` to turn it on.
+> Same setup steps below apply to each — just change the cadence time and prompt.
+
 ## 1. Create the scheduled session
 
 In the Claude Code web app:

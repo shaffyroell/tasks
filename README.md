@@ -10,6 +10,7 @@ to in calls.
 - **Tracker (output):** Notion → **📥 Open Items — Daily Tracker**
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
 - **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
+- **Deal-stage + notes sync (Attio = source of truth):** [`deal-stage-sync.md`](./deal-stage-sync.md)
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 - **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)

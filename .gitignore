@@ -1,12 +1,17 @@
-# Never commit credentials
+# Never commit credentials / real tokens
 accounts.json
 slack-workspaces.json
 email-accounts.json
-attio.json
 client.json
-clients.json
 clients/*.json
 *.secret
+*.secret.json
 *.key
 .env
 .env.*
+
+# Real-token overrides (keep these OUT of git). attio.json/clients.json are
+# committed because they hold only IDs + flags (no credentials); if you ever need
+# a real Attio API token, put it in attio.local.json or the ATTIO_API_KEY env
+# secret — never in the committed attio.json.
+attio.local.json

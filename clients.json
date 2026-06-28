@@ -1,0 +1,110 @@
+{
+  "_comment": "Committed routing registry for W2 (daily-open-items.md) \u2014 IDs + flags only, NO credentials. To-dos route by matching the counterparty email domain / name alias to a client, then write into that client's To-Dos data source (titleField); everything else goes to internalBoard (master tracker).",
+  "internalBoard": {
+    "name": "TechTower \u2014 internal & pipeline (master tracker)",
+    "dashboardPageId": "92836c3b-058e-49fd-a9cb-f9d5b956a144",
+    "todoDataSourceId": "45a1139d-c188-4a05-936d-adbea5d6715e",
+    "todoDbUrl": "https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144",
+    "titleField": "Item"
+  },
+  "clients": [
+    {
+      "name": "Crewline",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-810b-a1b3-ea69810c2e43",
+      "todoDataSourceId": "b5b0d23a-efc0-4368-b0a0-c85bab97fca5",
+      "domains": [
+        "crewline.ai"
+      ],
+      "aliases": [
+        "Crewline",
+        "Freddie",
+        "Frederik",
+        "Hugo"
+      ],
+      "titleField": "Task"
+    },
+    {
+      "name": "Hassans",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-81fc-a50f-ec640d4277f6",
+      "todoDataSourceId": "b7df3cc7-d6a3-465f-9e34-e44383e75be4",
+      "domains": [
+        "hassans.gi"
+      ],
+      "aliases": [
+        "Hassans",
+        "Aaron"
+      ],
+      "titleField": "Task"
+    },
+    {
+      "name": "Norvell Jefferson",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-813c-9eb9-dfa97f8756df",
+      "todoDataSourceId": "548077b9-63b3-4cda-a9f8-c3fc7ec10380",
+      "domains": [
+        "norvelljefferson.com"
+      ],
+      "aliases": [
+        "Norvell Jefferson",
+        "NJ",
+        "Syb",
+        "Sybrand",
+        "Quirijn"
+      ],
+      "titleField": "Task"
+    },
+    {
+      "name": "Lancor",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-8188-8083-e8521d960182",
+      "todoDataSourceId": "166a872b-9560-49bb-8c41-b03925b2a230",
+      "domains": [
+        "lancor.com"
+      ],
+      "aliases": [
+        "Lancor",
+        "Justin",
+        "Lucy",
+        "Lucy Walrond",
+        "Zafirah",
+        "Grace"
+      ],
+      "titleField": "Task"
+    },
+    {
+      "name": "Wietec",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-8129-a89a-ec6e14481c2d",
+      "todoDataSourceId": "6165b087-b9f3-823e-b665-07a9b11d3560",
+      "domains": [
+        "wietecchina.cn"
+      ],
+      "aliases": [
+        "Wietec",
+        "Phil",
+        "Mike"
+      ],
+      "titleField": "Task"
+    },
+    {
+      "name": "SHIFT Invest",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-818c-9a5c-f0a5ef89ef3f",
+      "todoDataSourceId": "9aa5b087-b9f3-8215-9c59-07a6bd8385bd",
+      "domains": [
+        "shiftinvest.com"
+      ],
+      "aliases": [
+        "SHIFT Invest",
+        "Shift",
+        "Julie",
+        "Sheila",
+        "Thijs Gitmans"
+      ],
+      "titleField": "Task"
+    }
+  ],
+  "_clientDashboardTemplateId": "38d5b087-b9f3-81bc-bfc0-eb629bf5d54a"
+}

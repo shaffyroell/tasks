@@ -1,11 +1,11 @@
 {
-  "_comment": "Per-client config — copy to client.json (gitignored), one per company. The workflow is capability-based: declare which PROVIDER each capability uses and it adapts. One company = one config = one Claude workspace = one tracker. Source at run time: CLIENT_CONFIG_JSON env secret, else client.json.",
+  "_comment": "Per-client config — copy to client.json (gitignored), one per company. Capability-based: declare the PROVIDER per capability. STANDARD CLIENT PROFILE baked in below: Notion tracker (always) · email (always) · Attio CRM (always — the canonical client list) · shared Slack (some clients). One company = one config = one Claude workspace = one tracker.",
   "_supported_providers": {
     "tracker": ["notion"],
     "email": ["gmail", "outlook"],
-    "chat": ["slack", "teams", "google_chat"],
+    "chat": ["slack", "teams", "google_chat", "none"],
     "meetings": ["fireflies", "otter", "gemini", "granola", "none"],
-    "crm": ["attio", "hubspot", "pipedrive", "salesforce", "airtable", "none"]
+    "crm": ["attio", "hubspot", "pipedrive", "salesforce", "none"]
   },
   "client": "acme",
   "owner": {
@@ -20,25 +20,30 @@
       "trackerUrl": "https://www.notion.so/..."
     },
     "email": {
+      "_note": "Always on — every client communicates via email.",
       "enabled": true,
       "provider": "gmail",
-      "_domains_note": "Only mail to/from these domains counts as THIS company — keeps a shared/aggregated inbox scoped to one business. Leave [] to include everything in the connected inbox.",
       "domains": ["acme.com"]
     },
-    "chat": {
+    "crm": {
+      "_note": "Always on — every client is in Attio. Used BOTH as the canonical client/prospect list (to decide which emails/chats are pipeline) AND as the write-back target for follow-up notes/tasks. See ATTIO_SETUP.md.",
       "enabled": true,
+      "provider": "attio",
+      "workspace": "acme",
+      "useAsClientSource": true,
+      "writeBack": true
+    },
+    "chat": {
+      "_note": "Only SOME clients — set enabled:false if there's no shared Slack. Prefer a shared Slack Connect channel in your own workspace over per-client tokens (see CONNECTIONS.md).",
+      "enabled": false,
       "provider": "slack",
-      "userId": "UXXXXXXX"
+      "userId": "UXXXXXXX",
+      "viaSharedChannel": true
     },
     "meetings": {
-      "enabled": true,
-      "provider": "fireflies"
-    },
-    "crm": {
+      "_note": "Optional — enable if the client uses a meeting-notes tool you can read.",
       "enabled": false,
-      "provider": "attio",
-      "writeBack": true,
-      "workspace": "acme"
+      "provider": "fireflies"
     }
   },
   "schedule": { "cron": "0 7 * * *", "timezone": "Europe/Amsterdam", "model": "sonnet" },

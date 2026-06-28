@@ -22,7 +22,9 @@ workspace. One company = one config = one Claude workspace = one tracker.
 - **Chat:** `stack.chat.provider` (slack | teams | google_chat), identity
   `stack.chat.userId` (TechTower: `U07CJK9H78A`).
 - **Meetings:** `stack.meetings.provider` (fireflies | otter | gemini | granola).
-- **CRM write-back:** `stack.crm` (attio | hubspot | pipedrive | salesforce).
+- **CRM:** `stack.crm` (attio, always on — the canonical client/prospect list).
+  Used both to **recognize** which emails/chats are client/pipeline and as the
+  **write-back** target (step 6).
 - **Lookbacks:** `lookbackDays` (defaults 21d email / 7d chat / 7d meetings).
 
 > **Scope to one business.** This instance is **TechTower-only**. A connected
@@ -43,9 +45,12 @@ workspace. One company = one config = one Claude workspace = one tracker.
 Only add things that genuinely need Shaffy's input or action:
 
 1. **Pipeline / client emails** — a real person (prospect, client, or partner)
-   is waiting on Shaffy to reply, or Shaffy owes a follow-up. This includes
-   threads where Shaffy sent the last message but the deal needs a nudge
-   (→ `Follow Up` / `Waiting`).
+   is waiting on the owner to reply, or the owner owes a follow-up. This includes
+   threads where the owner sent the last message but the deal needs a nudge
+   (→ `Follow Up` / `Waiting`). **Use Attio as the canonical list of who counts:**
+   since all clients/prospects live in Attio (`stack.crm`), if the counterparty
+   matches an Attio person/company, treat it as pipeline. Genuine new inbound not
+   yet in Attio still counts — flag it so it can be added.
 2. **Slack messages Shaffy should weigh in on** — @mentions, DMs, or threads
    where a question is open and Shaffy hasn't answered.
 3. **Meeting next-steps** — action items Shaffy committed to in recent calls
@@ -55,10 +60,10 @@ Only add things that genuinely need Shaffy's input or action:
 accept/decline notifications, n8n/Make/workflow error alerts, system notices,
 and anything already handled (Shaffy replied and nothing is outstanding).
 
-> **Attio (TechTower)** is wired as a write-back target — see step 6. The sweep
-> keeps the CRM trail current (notes + follow-up tasks) for pipeline items; it
-> does not yet pull deals *out* of Attio into the tracker. Pipeline also lives in
-> Lemlist; not read here.
+> **Attio is always on** for the standard client profile: it's the canonical
+> client/prospect list used to recognize pipeline (step 1 criteria) **and** the
+> write-back target for follow-up notes/tasks (step 6). Load the relevant Attio
+> records early so email/chat counterparties can be matched against them.
 
 ---
 

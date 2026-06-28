@@ -5,6 +5,18 @@ per capability in `client.json` (`stack.*`), and the run uses whatever is
 connected in *that company's* Claude workspace. One company = one config = one
 Claude workspace = one tracker.
 
+## Standard client profile (baseline assumptions)
+
+Most clients fit this shape, so it's the default in `client.example.json`:
+
+| Capability | Default | Notes |
+|---|---|---|
+| **Notion tracker** | always | Each client has a Notion page (their tracker output) |
+| **Email** | always | Every client communicates via email |
+| **Attio CRM** | always | Every client is in Attio — it's the canonical client/prospect list (used to recognize pipeline) **and** the write-back target |
+| **Shared Slack** | some clients | Via a shared Slack Connect channel; `enabled:false` if none |
+| **Meeting notes** | optional | Enable per client if they use a readable notes tool |
+
 ## Capability → provider matrix
 
 | Capability | Providers | How it connects |
@@ -57,3 +69,31 @@ conversations. Ranked best → worst for the long term:
 **Recommended default:** Slack Connect for all new client relationships (one
 connection, you own it); per-workspace tokens only for embedded/guest cases.
 That keeps your own instance on a single Slack connection long-term.
+
+### Clients on Microsoft Teams
+
+Same principle, harder mechanics. Teams has no user token like Slack's `xoxp-`;
+reads go through a **Microsoft Graph app** (Entra/Azure AD registration).
+
+- **Client-side (their own instance):** if the client is a Teams shop, they
+  connect **their** Teams in **their** Claude — their tenant, their admin
+  consents their own app. Easy, because it's their tenant.
+- **Your instance reaching into a client's Teams:** much harder. Reading their
+  Teams messages means an app registration **in their tenant** with admin consent
+  (`Chat.Read` / `ChannelMessage.Read.All`), and Microsoft gates Teams message
+  export behind "protected APIs" that can require approval and **per-message
+  metered billing**. As an external guest you usually can't register apps there.
+- **✅ Long-term analog to Slack Connect: Teams *shared channels* (Teams Connect)
+  hosted in YOUR Microsoft 365 tenant.** Invite client users into a shared
+  channel that lives in your tenant, so a **single Graph app in your tenant**
+  (your admin consent) can read it — no per-client-tenant registrations. You
+  already run a Graph app for Outlook, so adding Teams scopes to it is
+  incremental.
+- **Fallback:** if neither is possible, treat that client's Teams as a **manual
+  check** (preflight reports `chat: manual`), rather than forcing fragile access.
+
+**Cross-platform reality:** with some clients on Slack and some on Teams, your own
+TechTower instance ends up owning **two chat hubs** — your Slack (with Connect)
+and your M365/Teams (with shared channels). That's still *your* tenants and one
+app each, not N client workspaces. Per-client instances stay single-provider
+(whatever that client uses).

@@ -227,8 +227,10 @@ open to-do to the right Notion destination as well as the master tracker:
      **"✅ To Dos" database** (on its "6. To Dos" sub-page;
      `todoDataSourceId` in the registry). Set `Task`, `For`
      (`Needed from client` | `TechTower`), `Status`, `Source`, `Link`, and a
-     stable `Ref` for dedup. Keep client-appropriate wording (no internal
-     commercials). Upsert on `Ref` so re-runs never duplicate.
+     stable `Ref` for dedup. **Write every `Task` in the house style — load and
+     follow [`STYLE.md`](./STYLE.md)** (verb-first, concise, specific,
+     client-safe: no pricing / internal commercials / other-client references).
+     Upsert on `Ref` so re-runs never duplicate.
    - **Internal board →** the TechTower internal "Daily To-Do List" / managed
      section, with full internal detail (`Needs from You` / `AI Can Do`).
 4. If a client has no dashboard page yet, flag it (don't fail); a page can be

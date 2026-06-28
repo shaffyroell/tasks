@@ -19,7 +19,8 @@ Run the three daily workflows in order, so each reads what the previous wrote.
 2. **Then W2** — per-client To-Dos in `daily-open-items.md`: read Attio first
    (latest stages + the newest `[attio-ingest …]`/`[new-deal …]` notes + open
    tasks), then fresh Gmail/Slack/Granola/Fireflies; reconcile existing to-dos
-   (mark Done / advance, dedup on `Ref`), add new ones routed per client → summary.
+   (mark Done / advance, dedup on `Ref`), add new ones routed per client, **each
+   written in the house style per `STYLE.md`** → summary.
 
 Stop and report if W0 or W1 preflight shows a critical source down. Config:
 `attio.json` (`newDealDiscovery` + `attioIngest`) + `client.json`.

@@ -6,4 +6,6 @@ repo. Read Attio first (latest deal stages + the newest `[attio-ingest …]` not
 + open tasks) as the primary signal, then also read fresh Gmail, Slack, and
 meeting notes (Granola + Fireflies). Reconcile the existing per-client Notion
 to-dos — mark Done what was handled, advance what moved, dedup on `Ref` — then add
-genuinely new to-dos routed to each client's board. Finish with the summary.
+genuinely new to-dos routed to each client's board. **Write every to-do in the
+house style — load and follow `STYLE.md`** (verb-first, concise, client-safe).
+Finish with the summary.

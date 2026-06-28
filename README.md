@@ -37,6 +37,7 @@ One routine runs all three in order: the `/daily-crm` slash command.
 - **W0 — New-deal discovery (Attio):** [`new-deal-discovery.md`](./new-deal-discovery.md)
 - **W1 — Ingest to Attio (source of truth):** [`attio-ingest.md`](./attio-ingest.md)
 - **W2 — Per-client To-Dos (Notion):** [`daily-open-items.md`](./daily-open-items.md)
+- **House writing style (client-facing to-dos):** [`STYLE.md`](./STYLE.md)
 - **Tracker (W2 output):** Notion → **📥 Open Items — Daily Tracker**
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)

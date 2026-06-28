@@ -1,26 +1,26 @@
 ---
-description: Daily CRM routine — W0 (new deals) → W1 (ingest → Attio) → W2 (To-Dos → Notion)
+description: Daily key-account sweep — read all email/Slack/calls, log to the right Attio deals (if not already noted), keep stages honest, reconcile Notion action items
 ---
-Run the three daily workflows in order, so each reads what the previous wrote.
+Act like the person who manages these key accounts. Work these steps in order:
 
-0. **W0 first** — new-deal discovery in `new-deal-discovery.md`: preflight → pull
-   yesterday's inbound (Gmail, native MCP) → keep only genuine NEW opportunities
-   not already in Attio (dedup hard; exclude SaaS/internal/vendors/recruiting/
-   personal) → for each, create the deal + link company + link person + add a
-   `[new-deal …]` thread-summary note (low-confidence intros listed for review,
-   not created) → discovery digest.
+1. **Read everything (last few days):** all Gmail threads (native MCP), all
+   relevant Slack channels (client + internal), and all Granola/Fireflies call
+   notes — the substance, decisions, and commitments, not just headlines.
 
-1. **Then W1** — Attio ingest in `attio-ingest.md`: preflight → working set
-   (active clients + deals with fresh activity, including anything W0 just
-   created) → gather Gmail/Slack/Granola/Fireflies/calendar → write a dated comms
-   note to each active deal/client with activity and move its stage when evidence
-   warrants (honor `attioIngest.autoApply`) → ingest digest. Native Gmail only.
+2. **W0 first** (`new-deal-discovery.md`): for genuinely NEW opportunities not yet
+   in Attio, create the deal + link company + person + add a `[new-deal]` note.
 
-2. **Then W2** — per-client To-Dos in `daily-open-items.md`: read Attio first
-   (latest stages + the newest `[attio-ingest …]`/`[new-deal …]` notes + open
-   tasks), then fresh Gmail/Slack/Granola/Fireflies; reconcile existing to-dos
-   (mark Done / advance, dedup on `Ref`), add new ones routed per client, **each
-   written in the house style per `STYLE.md`** → summary.
+3. **W1 — link comms to deals** (`attio-ingest.md`): for every meaningful
+   conversation, find its Attio deal, **check the deal's existing notes**, and add
+   a `[attio-ingest]` note **only if it isn't already there** (what happened,
+   decisions/commitments, risks, next step). Keep the stage honest; never silently
+   demote an active client. Close any gap where a real comm has no note.
 
-Stop and report if W0 or W1 preflight shows a critical source down. Config:
-`attio.json` (`newDealDiscovery` + `attioIngest`) + `client.json`.
+4. **W2 — reconcile Notion action items** (`daily-open-items.md`): per client, see
+   if the to-dos already exist — mark Done/advance, dedup on `Ref` — and add new
+   ones in the house style per `STYLE.md` (verb-first, concise, no arrows).
+
+End with a digest: accounts touched, notes added (gaps closed), stage moves, new
+deals, and Notion to-dos added/updated/closed. Think critically per account
+throughout (progressing, stalling, at risk, upsell/renewal). Config: committed
+`attio.json` + `clients.json`.

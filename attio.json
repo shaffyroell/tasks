@@ -45,7 +45,7 @@
     "autoApply": true,
     "createNewDeals": false,
     "recencyWeeks": 6,
-    "lookbackDays": 2,
+    "lookbackDays": 3,
     "stageAttribute": "stage",
     "noteMarkerPrefix": "[attio-ingest]",
     "digestChannel": "",

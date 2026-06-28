@@ -208,11 +208,12 @@ open to-do to the right Notion destination as well as the master tracker:
    - Matches a `type:pipeline` entry, or is internal/hiring/ops, or matches no
      client → write to the **TechTower internal board** (`internalBoard`).
 3. **Write target:**
-   - **Client dashboards (v2 template) →** write into **Section 6 — To Dos &
-     Decisions**: client asks go in the **"Needed from client"** table
-     (`Task | Due | Status`); our work goes in the **"TechTower actions"** table.
-     Keep client-appropriate wording (no internal commercials). Rewrite the
-     auto-managed rows each run so it's idempotent (no duplicates).
+   - **Client dashboards (v2 template) →** write rows into that client's
+     **"✅ To Dos" database** (on its "6. To Dos" sub-page;
+     `todoDataSourceId` in the registry). Set `Task`, `For`
+     (`Needed from client` | `TechTower`), `Status`, `Source`, `Link`, and a
+     stable `Ref` for dedup. Keep client-appropriate wording (no internal
+     commercials). Upsert on `Ref` so re-runs never duplicate.
    - **Internal board →** the TechTower internal "Daily To-Do List" / managed
      section, with full internal detail (`Needs from You` / `AI Can Do`).
 4. If a client has no dashboard page yet, flag it (don't fail); a page can be

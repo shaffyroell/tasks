@@ -34,9 +34,10 @@ exec-search / recruiting, AI agents) — an inbound inquiry, a warm intro
 proposal/pricing discussion.
 
 **EXCLUDE:** automated/SaaS notifications (Attio, Mercury, Stripe, Google,
-LinkedIn, Calendly, Substack, billing/receipts), internal colleagues (own sending
-domains: `@techtower.ai`, `@runtechtower`, `@gettechtower`, `@norvelljefferson.com`,
-…), vendors pitching **to** TechTower, **recruiting/hiring** applicants and dev
+LinkedIn, Calendly, Substack, billing/receipts), internal colleagues (TechTower's
+own sending domains only: `@techtower.ai`, `@runtechtower`, `@gettechtower`,
+`@techtowerops.com`, `@usetechtower.com`, …), vendors pitching **to** TechTower,
+**recruiting/hiring** applicants and dev
 shops, anything personal / SwimScore, and anyone **already a deal** — dedup the
 sender's company/domain/person against existing Attio deals (and the people/
 companies they link to).

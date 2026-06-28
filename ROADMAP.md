@@ -3,28 +3,29 @@
 Things this sweep depends on or could grow into — tracked separately so the daily
 open-items workflow stays focused.
 
-## Needed: Attio data hygiene & enrichment (separate workflow)
-The daily sweep uses Attio as a *signal* for who's a client/prospect, but Attio is
-currently **under-tagged**:
-- Many **company domains** are missing → email senders can't be matched to companies.
-- Many **deal names** are missing/inconsistent.
-- **People are not linked to deals** → can't tie a contact to their pipeline.
+## Done: Attio data hygiene & enrichment + stage automation
+The pipeline cleanup that this sweep depended on is **done** (one-off pass):
+- Backfilled deal stages from email/meeting evidence (23-status mess → clean set;
+  stale → `Nurture / recontact`, explicit declines → `Lost`).
+- Created genuine new inbound deals found in the last 4 months of mail.
+- Linked **people → deals** and **companies → deals**, backfilled company
+  `domains`, and set `value` + `type_of_client_8`.
 
-Until this is fixed, the sweep treats an Attio match as a positive signal only
-(never a gate) and does not rely on people↔deal links. A dedicated workflow
-should:
-- Backfill company `domains` from known contact emails / web lookup.
-- Normalize and de-duplicate deal names.
-- Link people → deals (and companies → deals) so pipeline is traversable.
-- Flag records that still can't be auto-resolved for human review.
-
-This is a prerequisite for two upgrades below.
+Keeping it current is now a **daily workflow** — see
+[`attio-ingest.md`](./attio-ingest.md): it reads Gmail/Slack/Granola/
+Fireflies/calendar, moves deal stages on fresh evidence, and appends a dated
+comms note to each deal (active clients get a running log) so **Attio is the
+source of truth**. Matching still relies on links staying populated, so don't let
+new records go unlinked.
 
 ## Future
-- **Attio read-in:** once data is clean, pull open / stalled / overdue deals
-  *out* of Attio into the tracker as their own open items (not just write-back).
-- **Auto-create Attio records** for genuine new inbound not yet in the CRM
-  (currently flag-only; would move to AI-create-with-review).
+- **Attio read-in:** pull open / stalled / overdue deals *out* of Attio into the
+  open-items tracker as their own items (not just write-back).
+- **Auto-create:** done — daily new-inbound deal creation (create + link company
+  + link person + note) is its own front workflow, `new-deal-discovery.md` (W0).
+  Low-confidence intros are listed for review rather than created.
+- **Weekly deep re-sweep:** a wider-lookback variant of `attio-ingest.md` to
+  catch deals that went quiet (vs. the daily incremental run).
 - **Per-client onboarding template:** one-click Notion tracker duplication +
   guided token collection (see ONBOARDING.md for the manual version today).
 

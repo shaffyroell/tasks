@@ -1,15 +1,45 @@
-# Daily Email + Slack Open-Items Workflow
+# Client Comms Automation — Attio + Notion
 
-A daily automation that scans **Gmail, Slack, and meeting notes (Fireflies)** and
-keeps a single Notion tracker of everything Shaffy still needs to respond to or
-act on — pipeline emails, Slack threads to weigh in on, and next-steps committed
-to in calls.
+Three daily workflows run as a pipeline so the CRM is the source of truth and the
+to-do list stays current:
+
+- **W0 — Discover → Attio** ([`new-deal-discovery.md`](./new-deal-discovery.md)):
+  scans yesterday's inbound mail for **genuine new opportunities not yet in
+  Attio** and **creates the deal + links company + links person + adds a note**.
+  Runs first (~06:50).
+- **W1 — Ingest → Attio** ([`attio-ingest.md`](./attio-ingest.md)): reads all raw
+  comms (**Gmail, Slack, Granola + Fireflies, calendar**) and writes them into
+  **Attio** — a dated note on every active deal/client + a deal **stage** move
+  when the evidence warrants (existing deals, incl. those W0 just created).
+  Runs ~07:00. Attio holds everything.
+- **W2 — Act → Notion** ([`daily-open-items.md`](./daily-open-items.md)): derives
+  the **per-client To-Dos in Notion**. Hybrid input — reads **Attio (primary)**
+  plus fresh Gmail/Slack/Granola/Fireflies, and **reconciles** existing to-dos
+  (mark done / advanced) before adding new ones. Runs ~07:15.
+
+```
+Gmail · Slack · Granola · Fireflies · Calendar
+        │
+        ▼   W0  new-deal-discovery.md   (create new deals + link + note)
+        ▼   W1  attio-ingest.md         (notes + stage moves on existing deals)
+     ┌───────────┐
+     │   Attio   │  ← source of truth: deals, stages, raw comms notes
+     └───────────┘
+        │
+        ▼   W2  daily-open-items.md     (+ fresh sources, reconcile)
+   Per-client To-Dos in Notion
+```
+
+One routine runs all three in order: the `/daily-crm` slash command.
 
 ## Where things live
 
-- **Tracker (output):** Notion → **📥 Open Items — Daily Tracker**
+- **W0 — New-deal discovery (Attio):** [`new-deal-discovery.md`](./new-deal-discovery.md)
+- **W1 — Ingest to Attio (source of truth):** [`attio-ingest.md`](./attio-ingest.md)
+- **W2 — Per-client To-Dos (Notion):** [`daily-open-items.md`](./daily-open-items.md)
+- **House writing style (client-facing to-dos):** [`STYLE.md`](./STYLE.md)
+- **Tracker (W2 output):** Notion → **📥 Open Items — Daily Tracker**
   - https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144
-- **Workflow definition (what runs each morning):** [`daily-open-items.md`](./daily-open-items.md)
 - **Adding more Slack workspaces:** [`SLACK_SETUP.md`](./SLACK_SETUP.md)
 - **Adding more email accounts:** [`EMAIL_SETUP.md`](./EMAIL_SETUP.md)
 - **Attio CRM write-back:** [`ATTIO_SETUP.md`](./ATTIO_SETUP.md)

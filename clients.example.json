@@ -4,13 +4,17 @@
     "name": "Your agency — internal & pipeline",
     "dashboardPageId": "PASTE_INTERNAL_DASHBOARD_PAGE_ID",
     "todoDataSourceId": "PASTE_INTERNAL_TODO_DATA_SOURCE_ID",
-    "todoDbUrl": "https://www.notion.so/..."
+    "todoDbUrl": "https://www.notion.so/...",
+    "_titleField_note": "Notion DBs differ in the name of their title column. The master/internal tracker uses 'Item'; the client v2 dashboards use 'Task'. W2 MUST write the to-do text into THIS field name for the target, or create fails.",
+    "titleField": "Item"
   },
   "clients": [
     {
       "name": "Example Client",
       "type": "client",
       "dashboardPageId": "PASTE_CLIENT_DASHBOARD_PAGE_ID",
+      "todoDataSourceId": "PASTE_CLIENT_TODOS_DATA_SOURCE_ID",
+      "titleField": "Task",
       "domains": ["client.com"],
       "aliases": ["Key Contact Name"]
     },

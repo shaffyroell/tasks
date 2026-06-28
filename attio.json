@@ -1,50 +1,47 @@
 {
-  "_comment": "Copy to attio.json (gitignored). Holds the Attio API token + field mapping used to WRITE follow-up activity back to the CRM. Writes are conservative by design: log a note + ensure a follow-up task; stage changes require approval; nothing is ever deleted. See ATTIO_SETUP.md.",
   "default": "techtower",
   "workspaces": {
     "techtower": {
-      "apiKey": "PLACEHOLDER_attio_xxx",
-
+      "_apiKey_note": "Attio runs via the connected account in this environment, so no token is needed and this stays empty. ONLY if a scheduled run's preflight shows Attio unavailable headless: put a real token in attio.local.json (gitignored) or the ATTIO_API_KEY env secret \u2014 NEVER here in git.",
+      "apiKey": "",
       "_objects_note": "Object slugs the sweep will try to match a contact/company against, in priority order. Confirm these exist via GET /v2/objects.",
-      "objects": ["deals", "people", "companies"],
-
+      "objects": [
+        "deals",
+        "people",
+        "companies"
+      ],
       "_match_note": "Which attribute to match the email sender / company on, per object.",
       "match": {
         "people": "email_addresses",
         "companies": "domains",
         "deals": "associated_people"
       },
-
       "writeBack": {
         "addNote": true,
         "createFollowUpTask": true,
         "followUpDueDays": 2,
         "assigneeEmail": "shaffy@techtower.ai",
-
         "_optional_attrs": "If these custom attributes exist on the object, the sweep will set them. Leave blank to skip. Use the attribute slug from GET /v2/objects/{object}/attributes.",
         "nextStepAttribute": "",
         "lastContactedAttribute": "",
-
         "_stage_note": "Auto-advancing a deal stage is OFF by default and ALWAYS requires explicit approval in the run. Never set this to auto-close/auto-win.",
         "allowStageChange": false,
         "stageAttribute": "stage"
       }
     }
   },
-
-  "_newDealDiscovery_note": "Used by new-deal-discovery.md = W0 (runs FIRST). Scans yesterday's inbound mail for genuine NEW opportunities not yet in Attio and creates the deal + links company + links person + adds a [new-deal] note. Gated by enabled:false until you opt in.",
+  "_newDealDiscovery_note": "W0 (new-deal-discovery.md). Scans yesterday's inbound for genuine NEW opportunities not in Attio and creates deal + links company + person + adds a [new-deal] note. enabled=true turns it on. Committed config (no secrets).",
   "newDealDiscovery": {
-    "enabled": false,
+    "enabled": true,
     "lookbackDays": 2,
     "ownerId": "9ecd9b0d-6feb-4582-829b-7dd2fced6d6d",
     "minConfidence": "medium",
     "createNewDeals": true,
     "noteMarkerPrefix": "[new-deal]"
   },
-
-  "_attioIngest_note": "Used by attio-ingest.md = W1 (the daily ingest that writes ALL raw comms to Attio as notes + keeps deal stages current). New-deal CREATION is W0's job (newDealDiscovery), so createNewDeals here stays false — W1 only updates existing deals. W2 (daily-open-items.md) then reads Attio and produces Notion to-dos.",
+  "_attioIngest_note": "W1 (attio-ingest.md). Daily ingest: writes ALL raw comms to Attio as notes + keeps stages current. createNewDeals stays false (creation is W0's job). enabled=true turns it on. Committed config (no secrets).",
   "attioIngest": {
-    "enabled": false,
+    "enabled": true,
     "autoApply": true,
     "createNewDeals": false,
     "recencyWeeks": 6,
@@ -52,7 +49,17 @@
     "stageAttribute": "stage",
     "noteMarkerPrefix": "[attio-ingest]",
     "digestChannel": "",
-    "activeStages": ["1.  Positive reply", "2. Planning call", "3. Demo planned", "4. Scope agreed", "5. Proposal sent", "6. Active client", "7. Active Project Client", "8. Completed Client", "8.a Finished, need to finalize invoicing"],
+    "activeStages": [
+      "1.  Positive reply",
+      "2. Planning call",
+      "3. Demo planned",
+      "4. Scope agreed",
+      "5. Proposal sent",
+      "6. Active client",
+      "7. Active Project Client",
+      "8. Completed Client",
+      "8.a Finished, need to finalize invoicing"
+    ],
     "statusTitles": {
       "positiveReply": "1.  Positive reply",
       "planningCall": "2. Planning call",

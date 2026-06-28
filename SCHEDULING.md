@@ -7,21 +7,52 @@ tokens; separate accounts/workspaces come from environment secrets.
 
 Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 
-## 1. Create the scheduled session
+> **Simplest: one routine.** Schedule **one** daily session with the prompt
+> **`/daily-crm`** — it runs **W0 → W1 → W2 in order**, so each step reads what the
+> previous wrote (no timing race). Enable `newDealDiscovery.enabled` and
+> `attioIngest.enabled` in `attio.json`.
+>
+> **Or three staggered sessions** (if you want them on separate cadences):
+> 1. **W0 — New-deal discovery** (`new-deal-discovery.md`) → creates new deals —
+>    **06:50**.
+> 2. **W1 — Attio ingest** (`attio-ingest.md`) → notes + stage moves — **07:00**.
+> 3. **W2 — Per-client To-Dos** (`daily-open-items.md`) → Notion — **07:15**.
+
+## Routines = slash commands (committed)
+
+The workflows are committed as slash commands in `.claude/commands/`, so a routine
+prompt is a single line:
+
+| Command | Runs |
+|---|---|
+| `/daily-crm` | **W0 → W1 → W2 in order** (recommended — one routine, guaranteed ordering) |
+| `/new-deals` | W0 only — discover + create new deals in Attio |
+| `/attio-ingest` | W1 only — ingest comms → Attio |
+| `/notion-todos` | W2 only — per-client To-Dos → Notion |
+
+**Recommended:** one daily routine with the prompt **`/daily-crm`** — it runs
+discovery → ingest → to-dos in sequence, so each reads the prior step's fresh
+output. Use the split commands only if you want them on separate cadences.
+
+## 1. Create the scheduled session (the "routine")
 
 In the Claude Code web app:
 1. Open this repo's environment (`shaffyroell/tasks`, branch
-   `claude/daily-email-slack-workflow-egmpho` or wherever this is merged).
-2. Create a new **scheduled / recurring task** (look for Schedule / Automations).
+   `claude/deals-stage-attio-mapping-37w20d` or wherever this is merged).
+2. Create a new **scheduled / recurring task** (look for **Schedule /
+   Automations / Routines**).
 3. **Cadence:** daily, **07:00 Europe/Amsterdam**. If the scheduler is UTC-only,
    use **05:00 UTC** (= 07:00 CEST summer; it's 06:00 CET in winter — adjust if
    you care about the winter hour).
-4. **Prompt:**
+4. **Prompt:** `/daily-crm`
+   (or, if the scheduler doesn't expand slash commands, paste the body of
+   `.claude/commands/daily-crm.md`).
+5. Enablement: already on in the committed `attio.json`
+   (`newDealDiscovery.enabled` and `attioIngest.enabled` = true). Nothing to set —
+   flip either to `false` and commit to pause that stage.
 
-   > Run the daily open-items sweep defined in `daily-open-items.md` in this repo.
-   > Begin with the Step 0 preflight and open your reply with the readiness line,
-   > then gather (email, Slack, Fireflies), reconcile the Notion tracker, run the
-   > Attio write-back if configured, and finish with the summary.
+If you'd rather run W1 and W2 as **two** staggered routines instead of one:
+W1 `/attio-ingest` at 07:00, W2 `/notion-todos` at 07:15.
 
 ### Model / cost
 
@@ -33,19 +64,25 @@ here — ballpark low-cents to ~$0.50 per daily run vs. ~$1–3 on Opus. Note th
 model/runtime cost is the same regardless of *where* it's scheduled — hosting it
 elsewhere doesn't reduce token usage, only changes where scheduling lives.
 
-## 2. Add environment secrets
+## 2. Environment secrets — usually NONE needed
 
-In the environment's **secrets / env vars**, add only the ones you use (paste the
-full JSON contents as the value):
+The routine reads its config straight from git: **`attio.json`** (enable flags +
+IDs, empty apiKey) and **`clients.json`** (per-client Notion routing) are
+**committed** (they contain no credentials), so there is **nothing to paste** for
+the core pipeline. All sources (Attio, Gmail, Slack, Granola, Fireflies, Notion)
+run through your **connected account** in the scheduled session.
 
-| Secret | Needed for |
+Add a secret **only if** the first run's preflight shows a source ⚠️ unavailable
+headless — then add just that one:
+
+| Secret | Only if… |
 |---|---|
-| `EMAIL_ACCOUNTS_JSON` | Extra mailboxes beyond the connected inbox (e.g. myswimscore) |
-| `SLACK_WORKSPACES_JSON` | Extra Slack workspaces beyond the connected one |
-| `ATTIO_JSON` | Attio CRM write-back |
+| `ATTIO_API_KEY` | Attio shows ⚠️ in a scheduled run (connector not available headless) |
+| `EMAIL_ACCOUNTS_JSON` | you add a mailbox beyond the connected inbox |
+| `SLACK_WORKSPACES_JSON` | you add a Slack workspace beyond the connected one |
 
-The gitignored `*.json` files are **not** in the scheduled clone — secrets are the
-only credential path for scheduled runs.
+Real tokens go in env secrets (or the gitignored `attio.local.json`) — **never**
+in the committed `attio.json`.
 
 ## 3. Network policy
 

@@ -1,8 +1,23 @@
-# Daily Open-Items Sweep
+# W2 — Daily Open-Items / Per-Client To-Dos (Notion)
 
-**Run this every morning (~7:00 Europe/Amsterdam).** It scans Gmail, Slack, and
-recent meeting notes (Fireflies), then reconciles the Notion tracker so it always
-reflects what Shaffy still needs to respond to or act on.
+**Run this every morning (~7:15 Europe/Amsterdam), right after W1
+(`attio-ingest.md`).** It produces the **per-client To-Dos in Notion** — what
+Shaffy still needs to respond to or act on, routed to each client's board.
+
+**Hybrid inputs (read in this order):**
+1. **Attio (primary)** — the raw layer W1 just wrote: latest deal **stage**, the
+   newest `[attio-ingest …]` comms notes, and any open follow-up tasks. This is
+   the authoritative "what's happening with whom."
+2. **Fresh sources** — also read **Gmail**, **Slack** (client / Connect
+   channels), and **meeting notes (Granola + Fireflies)** directly, to catch
+   action items not yet (or only thinly) captured in Attio.
+3. **Existing Notion to-dos** — read the current tracker and **reconcile**: mark
+   items **Done** when evidence shows they were handled, **advance** ones that
+   moved forward, then add genuinely new to-dos (dedup on `Ref`).
+
+It reconciles the **per-client** Notion tracker so it always reflects open
+actions. (Architecture: W1 `attio-ingest.md` writes all raw comms to Attio; this
+W2 reads Attio + fresh sources and derives the to-dos. See `README.md`.)
 
 **Client-specific values come from the client config** (`CLIENT_CONFIG_JSON` env
 secret, else `client.json` / `clients/<client>.json`) — so this workflow is the
@@ -208,14 +223,23 @@ open to-do to the right Notion destination as well as the master tracker:
    - Matches a `type:pipeline` entry, or is internal/hiring/ops, or matches no
      client → write to the **TechTower internal board** (`internalBoard`).
 3. **Write target:**
+   - **Title field differs by board** — write the to-do text into the target's
+     `titleField` from the registry: **`Task`** on the client v2 dashboards,
+     **`Item`** on the master/internal tracker. Using the wrong field name fails
+     the create.
    - **Client dashboards (v2 template) →** write rows into that client's
      **"✅ To Dos" database** (on its "6. To Dos" sub-page;
-     `todoDataSourceId` in the registry). Set `Task`, `For`
+     `todoDataSourceId` in the registry). Set the title field, `For`
      (`Needed from client` | `TechTower`), `Status`, `Source`, `Link`, and a
-     stable `Ref` for dedup. Keep client-appropriate wording (no internal
-     commercials). Upsert on `Ref` so re-runs never duplicate.
+     stable `Ref` for dedup. **Write every to-do in the house style — load and
+     follow [`STYLE.md`](./STYLE.md)** (verb-first, concise, specific,
+     client-safe: no pricing / internal commercials / other-client references;
+     **never use arrows**). Upsert on `Ref` so re-runs never duplicate.
    - **Internal board →** the TechTower internal "Daily To-Do List" / managed
      section, with full internal detail (`Needs from You` / `AI Can Do`).
+   - **Completion = set `Status` to Done — never delete.** The Notion connector
+     has no archive/trash capability, so reconciliation only updates `Status`
+     (and advances items); it must not rely on deleting rows.
 4. If a client has no dashboard page yet, flag it (don't fail); a page can be
    created from the client-dashboard template.
 

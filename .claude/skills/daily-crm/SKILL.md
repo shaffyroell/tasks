@@ -1,49 +1,64 @@
 ---
 name: daily-crm
-description: Daily key-account sweep. Reads ALL recent email, Slack, and call notes (Granola/Fireflies), links each to the right Attio deal (adds a note only if it isn't already there), keeps stages honest, then reconciles per-client action items in Notion. Use as the scheduled daily run.
+description: Daily CEO sweep. Reads ALL recent email, Slack, Granola and Lemlist; classifies each meaningful item as ACCOUNT or INTERNAL; routes account items to HubSpot deals (find-or-create + link people, note, stage) and internal items to SwimScore Notion (find the item, read what it's for, update status). HubSpot is the single source of truth for the pipeline. Use as the scheduled daily run.
 ---
 
-Act like the person who **manages these key accounts**. Don't transcribe — read
-everything, understand what's happening with each account, and make Attio + Notion
-reflect it. Work the four steps below, in order.
+**Think like the CEO of this business**, not a note-taker. Read everything, decide
+what actually matters, and make the systems reflect reality: the **pipeline lives
+in HubSpot**, **internal execution lives in SwimScore Notion**. Work the steps in
+order. Config: committed `hubspot.json` (+ `clients.json` if agency routing is on).
 
 ## 1. Read everything from the last few days
-- **All emails** — every Gmail thread with a new inbound/outbound message
-  (native Gmail MCP only). Read the substance, commitments, and asks.
-- **All Slack** — sweep every client / Slack-Connect channel **and** the internal
-  channels where account work is discussed (e.g. `#<client>-internal`), last few
-  days; read threads, not just top messages.
-- **All call notes** — every Granola note and Fireflies transcript/summary in the
-  window; these hold the real decisions, read them in full.
+- **All email** — every Gmail thread with a new inbound/outbound message (native
+  Gmail MCP only). Read the substance, asks, and commitments.
+- **All Slack** — every relevant channel: client / Slack-Connect channels **and**
+  the internal channels where the business is run. Read threads, not just top
+  messages.
+- **All call notes** — every Granola note in the window; these hold the real
+  decisions.
+- **All Lemlist replies** — `get_inbox_conversations` → `get_inbox_conversation`;
+  note the `aiLeadInterest` signal (positive/neutral/negative).
 
-## 2. Link each conversation to the right Attio deal — note it if missing
-For every meaningful communication, find its account's **deal** (participant
-email → person → deal; company domain → company → deal; or name/alias). Then:
-- **Check the deal's existing notes first.** If this conversation/call is already
-  captured, **skip it** (no duplicates — match on the thread/meeting + content,
-  not just the date).
-- **If it's missing, add a note** (`create-note` on the deal) summarizing: what
-  happened, decisions & commitments (what we owe / they owe, by when), risks/
-  blockers, and the next step. If a meaningful comm has no note, that's a gap —
-  close it.
-- Run W0 (`new-deal-discovery.md`) first for genuinely NEW opportunities with no
-  deal yet (create deal + link company + person + note); don't force-fit new
-  inbound onto an existing deal.
-- **Keep the stage honest** — advance/hold per the evidence; never silently
-  demote an active client. Detail in `attio-ingest.md`.
+## 2. Classify each meaningful item — ACCOUNT or INTERNAL
+For every item that matters, decide:
+- **ACCOUNT** — an external party (prospect, client, partner, clinic) — anything
+  about winning, running, or growing a deal. → goes to **HubSpot** (step 3).
+- **INTERNAL** — SwimScore's own operations: product, team, hiring, finance,
+  roadmap, internal decisions. → goes to **SwimScore Notion** (step 4).
 
-## 3. Reconcile action items in Notion (per client)
-Run W2 (`daily-open-items.md`): read Attio (the notes/stages you just wrote) plus
-the same fresh sources, then for each client's Notion board **see if the action
-items already exist** — mark Done what was handled, advance what moved, dedup on
-`Ref` — and add genuinely new to-dos, **each written in the house style per
-`STYLE.md`** (verb-first, concise, client-safe, no arrows).
+When an item is genuinely both (e.g. a client request that spawns internal work),
+log the account side to HubSpot **and** the internal task to Notion.
 
-## 4. Report
-End with a digest: accounts touched, notes added (with gaps closed), stage moves,
-new deals created, and the Notion to-dos added/updated/closed per client.
+## 3. ACCOUNT items → HubSpot (single source of truth)
+For each account item, resolve it to a **deal** (contact email → deal; company
+domain → deal; or name match):
+- **Deal exists?** Run W1 (`hubspot-sync.md`): check the deal's existing notes,
+  and **if this conversation isn't already captured, add a consolidated
+  `[hubspot-ingest]` note** (what happened per channel, decisions/commitments,
+  risks, next step). Move `dealstage` when the evidence warrants; honor
+  `autoApply` + `allowStageClose` (never auto-close Won/Lost); never silently
+  demote an active deal.
+- **No deal yet?** Run W0 (`new-deal-discovery.md`): **create the deal, link the
+  company and the people** (find-or-create contact + company, associate both),
+  and add a `[new-deal]` note. Don't force-fit new inbound onto an existing deal.
+- Close any gap where a real account conversation has no HubSpot note.
 
-Think critically per account the whole way through: progressing, stalling, or at
-risk? a commitment slipping? an upsell/renewal cue? That judgement is the job.
-Config = committed `attio.json` + `clients.json`. Open with a per-source preflight
-line; stop and report if a critical source is down.
+## 4. INTERNAL items → SwimScore Notion
+Run W2 (`daily-open-items.md`) against `internalTracker` in `hubspot.json`:
+- **Check if the item already exists** in SwimScore Notion (dedup on `Ref` / a
+  title match). **Read what it's for**, then **update it to the latest status**
+  (advance it, or mark Done if the evidence shows it's handled).
+- If it's genuinely new, add it in the house style per `STYLE.md` (verb-first,
+  concise, no arrows).
+- If `internalTracker.dataSourceId` is still a placeholder (Notion not connected
+  yet), **list the internal items in the digest** for manual handling instead of
+  failing.
+
+## 5. Report
+End with a CEO digest: **Accounts** — deals reviewed, notes added (gaps closed),
+stage moves (+ any Closed Won/Lost awaiting approval), new deals created and who
+was linked. **Internal** — Notion items updated/advanced/closed/added (or listed
+for manual handling). Call out the top risks and decisions that need the CEO.
+
+Open with a per-source preflight line (HubSpot, Gmail, Slack, Granola, Lemlist,
+Notion); stop and report if a critical source is down.

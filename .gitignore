@@ -10,8 +10,8 @@ clients/*.json
 .env
 .env.*
 
-# Real-token overrides (keep these OUT of git). attio.json/clients.json are
+# Real-token overrides (keep these OUT of git). hubspot.json/clients.json are
 # committed because they hold only IDs + flags (no credentials); if you ever need
-# a real Attio API token, put it in attio.local.json or the ATTIO_API_KEY env
-# secret — never in the committed attio.json.
-attio.local.json
+# a real HubSpot private-app token, put it in hubspot.local.json or the
+# HUBSPOT_TOKEN env secret — never in the committed hubspot.json.
+hubspot.local.json

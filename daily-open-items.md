@@ -1,23 +1,32 @@
-# W2 — Daily Open-Items / Per-Client To-Dos (Notion)
+# W2 — Daily Internal To-Dos (SwimScore Notion)
 
 **Run this every morning (~7:15 Europe/Amsterdam), right after W1
-(`attio-ingest.md`).** It produces the **per-client To-Dos in Notion** — what
-Shaffy still needs to respond to or act on, routed to each client's board.
+(`hubspot-sync.md`).** It produces the **internal SwimScore To-Dos in Notion** —
+what still needs to be acted on internally (product, team, hiring, finance,
+roadmap, ops), plus any owner follow-ups the account work surfaced. Target the
+SwimScore Notion tracker in `hubspot.json` → `internalTracker`.
+
+> **Notion connection:** if `internalTracker.dataSourceId` is still a placeholder
+> (Notion not connected via MCP yet), **don't fail** — gather the items and list
+> them in the digest for manual handling. Once the SwimScore Notion data-source id
+> is set, this writes/reconciles there.
 
 **Hybrid inputs (read in this order):**
-1. **Attio (primary)** — the raw layer W1 just wrote: latest deal **stage**, the
-   newest `[attio-ingest …]` comms notes, and any open follow-up tasks. This is
-   the authoritative "what's happening with whom."
-2. **Fresh sources** — also read **Gmail**, **Slack** (client / Connect
-   channels), and **meeting notes (Granola + Fireflies)** directly, to catch
-   action items not yet (or only thinly) captured in Attio.
-3. **Existing Notion to-dos** — read the current tracker and **reconcile**: mark
-   items **Done** when evidence shows they were handled, **advance** ones that
-   moved forward, then add genuinely new to-dos (dedup on `Ref`).
+1. **HubSpot (primary, accounts)** — the layer W1 just wrote: latest deal
+   **stage** and the newest `[hubspot-ingest …]` notes. This is the authoritative
+   "what's happening with whom" for the pipeline.
+2. **Fresh sources** — also read **Gmail**, **Slack** (client / Connect + internal
+   channels), **Granola** call notes, and **Lemlist** replies directly, to catch
+   internal action items and owner follow-ups not captured in HubSpot.
+3. **Existing Notion to-dos** — read the current SwimScore tracker and
+   **reconcile**: **check what each item is for**, mark items **Done** when
+   evidence shows they were handled, **advance** ones that moved forward, then add
+   genuinely new to-dos (dedup on `Ref`).
 
-It reconciles the **per-client** Notion tracker so it always reflects open
-actions. (Architecture: W1 `attio-ingest.md` writes all raw comms to Attio; this
-W2 reads Attio + fresh sources and derives the to-dos. See `README.md`.)
+It reconciles the SwimScore internal Notion tracker so it always reflects open
+actions. (Architecture: W1 `hubspot-sync.md` writes all account comms to HubSpot
+deals; this W2 reads HubSpot + fresh sources and derives the internal to-dos. See
+`README.md`.)
 
 **Client-specific values come from the client config** (`CLIENT_CONFIG_JSON` env
 secret, else `client.json` / `clients/<client>.json`) — so this workflow is the
@@ -59,33 +68,29 @@ workspace. One company = one config = one Claude workspace = one tracker.
 
 Only add things that genuinely need Shaffy's input or action:
 
-1. **Pipeline / client emails** — a real person (prospect, client, or partner)
-   is waiting on the owner to reply, or the owner owes a follow-up. This includes
-   threads where the owner sent the last message but the deal needs a nudge
-   (→ `Follow Up` / `Waiting`). **Use Attio as a signal for who counts:**
-   most clients/prospects live in Attio (`stack.crm`), so a counterparty matching
-   an Attio person/company is a strong pipeline signal.
-   ⚠️ **Attio data is currently incomplete** (missing company domains & deal
-   names, people not linked to deals — a separate cleanup workflow, see
-   `ROADMAP.md`). So treat an Attio match as a **positive signal, not a gate**:
-   never drop an item just because it isn't matched, don't rely on people↔deal
-   links, and fall back to email-domain + conversational cues. Genuine new inbound
-   not yet in Attio still counts — flag it to be added.
-2. **Slack messages Shaffy should weigh in on** — @mentions, DMs, or threads
-   where a question is open and Shaffy hasn't answered.
-3. **Meeting next-steps** — action items Shaffy committed to in recent calls
-   (Fireflies `action_items` assigned to Shaffy / "Shaffy and team").
+1. **Account follow-ups owed by the owner** — a real person (prospect, client, or
+   partner) is waiting on a reply, or the owner owes a follow-up. **Use HubSpot as
+   the signal for who counts:** clients/prospects live in HubSpot deals, so a
+   counterparty matching a HubSpot contact/company is a strong pipeline signal.
+   Treat a HubSpot match as a **positive signal, not a gate** — never drop an item
+   just because it isn't matched; fall back to email-domain + conversational cues.
+   Genuine new inbound with no deal yet is handed to **W0** to create the deal.
+2. **Internal SwimScore items** — product, team, hiring, finance, roadmap, ops:
+   anything internal that needs action, routed to the SwimScore Notion board under
+   the right pillar (see the Kanban pillars in `SWIMSCORE_NOTION.md`).
+3. **Slack messages the owner should weigh in on** — @mentions, DMs, or threads
+   where a question is open and unanswered.
+4. **Meeting next-steps** — action items committed to in recent calls (Granola
+   notes; Lemlist replies that imply an owner action).
 
 **Exclude:** newsletters, promotions, automated/no-reply mail, calendar
 accept/decline notifications, n8n/Make/workflow error alerts, system notices,
-and anything already handled (Shaffy replied and nothing is outstanding).
+and anything already handled (the owner replied and nothing is outstanding).
 
-> **Attio is always on** for the standard client profile: it's the canonical
-> client/prospect list used to recognize pipeline (step 1 criteria) **and** the
-> write-back target for follow-up notes/tasks (step 6). Load the relevant Attio
-> records early so email/chat counterparties can be matched against them — but
-> matching is **best-effort** until the Attio hygiene workflow lands (`ROADMAP.md`):
-> incomplete domains/deal names mean some clients won't match, so never gate on it.
+> **HubSpot is the account signal**; the **SwimScore Notion board** is where
+> internal to-dos live. Account notes + stages are W1's job in HubSpot; W2 only
+> reconciles the internal Notion board. Load the relevant HubSpot deals early so
+> email/chat counterparties can be matched — best-effort, never a hard gate.
 
 ---
 
@@ -106,13 +111,15 @@ Check and record ✅ / ⚠️ for each:
 3. **Slack** — connected workspace responds. For each workspace in
    `SLACK_WORKSPACES_JSON` / `slack-workspaces.json`: confirm a non-placeholder
    token and a test `search` call succeeds.
-4. **Fireflies** — recent-transcripts call responds.
-5. **Attio** (write-back) — only if `ATTIO_JSON` / `attio.json` exists with a
-   non-placeholder key; confirm a `GET /v2/objects` call succeeds. If absent,
-   note "Attio write-back: off" (not an error).
+4. **Granola** — recent meeting-notes call responds. **Lemlist** —
+   `get_campaigns` responds.
+5. **HubSpot** (account signal) — `get_user_details` responds. **Notion**
+   (internal tracker) — only if `internalTracker.dataSourceId` is set (not a
+   placeholder); if it's a placeholder, note "Notion: not connected — internal
+   items listed for manual handling" (not an error).
 
 Open the morning summary with one readiness line, e.g.:
-`Preflight: Notion ✅ · Gmail techtower ✅ / myswimscore ⚠️ token missing · Slack TechTower ✅ · Fireflies ✅ · Attio off`.
+`Preflight: HubSpot ✅ · Gmail ✅ · Slack ✅ · Granola ✅ · Lemlist ✅ · Notion ⚠️ not connected`.
 A source marked ⚠️ is simply not swept this run — say so explicitly so a missing
 or expired credential surfaces loudly instead of silently dropping coverage.
 
@@ -247,26 +254,14 @@ open to-do to the right Notion destination as well as the master tracker:
 > This routing is the **agency** feature for TechTower fanning out across many
 > client dashboards.
 
-### 6. Write follow-up activity back to Attio (TechTower)
-Only runs if `attio.json` is present (see `ATTIO_SETUP.md`). Direction is
-**Tracker → Attio**: keep the CRM trail current for pipeline-related open items.
-For each **open** item (skip `Done`) whose `Who` resolves to a real
-person/company:
-1. Match the record in Attio by email address (`people.email_addresses`) or
-   company domain (`companies.domains`), checking the configured `objects` in
-   order. If nothing matches → write nothing; set the tracker row's `Attio`
-   column to `not in Attio`.
-2. On the matched record:
-   - **Add a note** summarizing the latest interaction + the open action.
-   - **Ensure a follow-up task** assigned to Shaffy, due in `followUpDueDays`.
-   - If `nextStepAttribute` / `lastContactedAttribute` are mapped, set them.
-3. **Idempotency:** tag every note/task body with `[ref:<item Ref>]` and check
-   for an existing one first — never create duplicate notes or tasks across runs.
-4. **Guardrails:** never advance/close a deal stage unless `allowStageChange` is
-   true **and** it's explicitly approved in this run. Never create new
-   people/companies and never delete anything.
-5. Record what was written in the tracker row's `Attio` column
-   (e.g. `Note + task on "AgroCares" deal`).
+### 6. Account follow-ups live in HubSpot (handled by W1)
+Account-side activity — notes on the deal and stage moves — is written by **W1
+(`hubspot-sync.md`)**, since HubSpot is the single source of truth. W2 does **not**
+re-write the CRM; for any account item it surfaces here, point the tracker row's
+`Link` / context at the matched HubSpot deal and let W1 own the note + stage. If an
+account item has no deal yet, hand it to **W0 (`new-deal-discovery.md`)** rather
+than creating records from W2. W2's own writes are limited to the **internal
+SwimScore Notion** tracker.
 
 ### 7. Report
 Post a short summary to Shaffy: counts by Source and Status, and call out the

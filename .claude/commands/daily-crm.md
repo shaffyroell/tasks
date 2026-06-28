@@ -1,26 +1,37 @@
 ---
-description: Daily key-account sweep — read all email/Slack/calls, log to the right Attio deals (if not already noted), keep stages honest, reconcile Notion action items
+description: Daily CEO sweep — read all email/Slack/Granola/Lemlist, classify each item ACCOUNT vs INTERNAL, route accounts to HubSpot deals and internal items to SwimScore Notion
 ---
-Act like the person who manages these key accounts. Work these steps in order:
+Think like the CEO of this business. HubSpot is the single source of truth for the
+pipeline; SwimScore Notion holds internal execution. Work these steps in order.
 
 1. **Read everything (last few days):** all Gmail threads (native MCP), all
-   relevant Slack channels (client + internal), and all Granola/Fireflies call
-   notes — the substance, decisions, and commitments, not just headlines.
+   relevant Slack channels (client + internal), all Granola call notes, and all
+   fresh Lemlist replies (`get_inbox_conversations` → `get_inbox_conversation`,
+   note `aiLeadInterest`).
 
-2. **W0 first** (`new-deal-discovery.md`): for genuinely NEW opportunities not yet
-   in Attio, create the deal + link company + person + add a `[new-deal]` note.
+2. **Classify each meaningful item — ACCOUNT or INTERNAL.** ACCOUNT = an external
+   prospect/client/partner (winning, running, or growing a deal). INTERNAL =
+   SwimScore's own ops (product, team, hiring, finance, roadmap). If an item is
+   both, log the account side to HubSpot and the internal task to Notion.
 
-3. **W1 — link comms to deals** (`attio-ingest.md`): for every meaningful
-   conversation, find its Attio deal, **check the deal's existing notes**, and add
-   a `[attio-ingest]` note **only if it isn't already there** (what happened,
-   decisions/commitments, risks, next step). Keep the stage honest; never silently
-   demote an active client. Close any gap where a real comm has no note.
+3. **ACCOUNT → HubSpot.** Resolve the item to a deal (contact email / company
+   domain / name). **Deal exists?** Run W1 (`hubspot-sync.md`): check existing
+   notes and add a consolidated `[hubspot-ingest]` note only if missing (what
+   happened per channel, decisions/commitments, risks, next step); move
+   `dealstage` when warranted (honor autoApply + never auto-close Won/Lost; never
+   silently demote an active deal). **No deal yet?** Run W0
+   (`new-deal-discovery.md`): create the deal + link the company + link the people
+   + add a `[new-deal]` note.
 
-4. **W2 — reconcile Notion action items** (`daily-open-items.md`): per client, see
-   if the to-dos already exist — mark Done/advance, dedup on `Ref` — and add new
-   ones in the house style per `STYLE.md` (verb-first, concise, no arrows).
+4. **INTERNAL → SwimScore Notion.** Run W2 (`daily-open-items.md`) against
+   `internalTracker` in `hubspot.json`: check if the item already exists, read
+   what it's for, and update it to the latest status (advance / mark Done), or add
+   it new in the house style per `STYLE.md`. If `internalTracker.dataSourceId` is
+   still a placeholder (Notion not connected), list internal items in the digest
+   for manual handling instead of failing.
 
-End with a digest: accounts touched, notes added (gaps closed), stage moves, new
-deals, and Notion to-dos added/updated/closed. Think critically per account
-throughout (progressing, stalling, at risk, upsell/renewal). Config: committed
-`attio.json` + `clients.json`.
+End with a CEO digest: **Accounts** (deals reviewed, notes added/gaps closed,
+stage moves + any awaiting approval, new deals + who was linked) and **Internal**
+(Notion items updated/advanced/closed/added, or listed for manual handling). Call
+out the top risks and decisions that need the CEO. Config: committed `hubspot.json`
+(+ `clients.json` if agency routing is on).

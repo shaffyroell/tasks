@@ -47,8 +47,9 @@ In the Claude Code web app:
 4. **Prompt:** `/daily-crm`
    (or, if the scheduler doesn't expand slash commands, paste the body of
    `.claude/commands/daily-crm.md`).
-5. Enable the workflows in `attio.json` → `newDealDiscovery.enabled: true` and
-   `attioIngest.enabled: true`.
+5. Enablement: already on in the committed `attio.json`
+   (`newDealDiscovery.enabled` and `attioIngest.enabled` = true). Nothing to set —
+   flip either to `false` and commit to pause that stage.
 
 If you'd rather run W1 and W2 as **two** staggered routines instead of one:
 W1 `/attio-ingest` at 07:00, W2 `/notion-todos` at 07:15.
@@ -63,19 +64,25 @@ here — ballpark low-cents to ~$0.50 per daily run vs. ~$1–3 on Opus. Note th
 model/runtime cost is the same regardless of *where* it's scheduled — hosting it
 elsewhere doesn't reduce token usage, only changes where scheduling lives.
 
-## 2. Add environment secrets
+## 2. Environment secrets — usually NONE needed
 
-In the environment's **secrets / env vars**, add only the ones you use (paste the
-full JSON contents as the value):
+The routine reads its config straight from git: **`attio.json`** (enable flags +
+IDs, empty apiKey) and **`clients.json`** (per-client Notion routing) are
+**committed** (they contain no credentials), so there is **nothing to paste** for
+the core pipeline. All sources (Attio, Gmail, Slack, Granola, Fireflies, Notion)
+run through your **connected account** in the scheduled session.
 
-| Secret | Needed for |
+Add a secret **only if** the first run's preflight shows a source ⚠️ unavailable
+headless — then add just that one:
+
+| Secret | Only if… |
 |---|---|
-| `EMAIL_ACCOUNTS_JSON` | Extra mailboxes beyond the connected inbox (e.g. myswimscore) |
-| `SLACK_WORKSPACES_JSON` | Extra Slack workspaces beyond the connected one |
-| `ATTIO_JSON` | Attio CRM write-back |
+| `ATTIO_API_KEY` | Attio shows ⚠️ in a scheduled run (connector not available headless) |
+| `EMAIL_ACCOUNTS_JSON` | you add a mailbox beyond the connected inbox |
+| `SLACK_WORKSPACES_JSON` | you add a Slack workspace beyond the connected one |
 
-The gitignored `*.json` files are **not** in the scheduled clone — secrets are the
-only credential path for scheduled runs.
+Real tokens go in env secrets (or the gitignored `attio.local.json`) — **never**
+in the committed `attio.json`.
 
 ## 3. Network policy
 

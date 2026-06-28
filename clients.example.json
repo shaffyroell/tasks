@@ -1,0 +1,27 @@
+{
+  "_comment": "Agency routing registry — copy to clients.json (gitignored). Only needed in AGENCY mode (one instance routing across many client dashboards, like TechTower). A single-tenant client instance doesn't need this — it writes to its one tracker from client.json. Each to-do is routed to a client by matching the email domain / name alias below; pipeline + internal items go to internalBoard.",
+  "internalBoard": {
+    "name": "Your agency — internal & pipeline",
+    "dashboardPageId": "PASTE_INTERNAL_DASHBOARD_PAGE_ID",
+    "todoDataSourceId": "PASTE_INTERNAL_TODO_DATA_SOURCE_ID",
+    "todoDbUrl": "https://www.notion.so/..."
+  },
+  "clients": [
+    {
+      "name": "Example Client",
+      "type": "client",
+      "dashboardPageId": "PASTE_CLIENT_DASHBOARD_PAGE_ID",
+      "domains": ["client.com"],
+      "aliases": ["Key Contact Name"]
+    },
+    {
+      "name": "Example Prospect",
+      "type": "pipeline",
+      "dashboardPageId": null,
+      "domains": ["prospect.com"],
+      "aliases": [],
+      "_note": "type:pipeline routes to internalBoard, not its own page."
+    }
+  ],
+  "_clientDashboardTemplateId": "PASTE_TEMPLATE_PAGE_ID_FOR_NEW_CLIENT_DASHBOARDS"
+}

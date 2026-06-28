@@ -196,6 +196,29 @@ prepared in `AI Can Do` / the page body. It never flips an item to `Done` on the
 owner's behalf. This is what lets the owner open the tracker and **only
 review/approve**, while AI clears the prep.
 
+### 5c. Route each to-do to its destination (agency mode)
+If an agency registry is present (`clients.json` / `CLIENTS_JSON`), write each
+open to-do to the right Notion destination as well as the master tracker:
+
+1. **Classify** the item to a client by matching the counterparty's **email
+   domain** or a **name alias** in the registry (not Attio — it's under-tagged).
+2. **Route:**
+   - Matches a `type:client` entry → write to that client's **dashboard page**
+     (`dashboardPageId`).
+   - Matches a `type:pipeline` entry, or is internal/hiring/ops, or matches no
+     client → write to the **TechTower internal board** (`internalBoard`).
+3. **Write target** on each destination: maintain a managed
+   **"✅ Open To-Dos (auto-updated)"** section — rewrite it each run so it's
+   idempotent (no duplicates), one checkbox per open item with the `Needs from
+   You` / `AI Can Do` split. (Internal items may instead go into the internal
+   "Daily To-Do List" database.)
+4. If a client has no dashboard page yet, flag it (don't fail); a page can be
+   created from the client-dashboard template.
+
+> Single-tenant client instances skip this — they just use their own tracker.
+> This routing is the **agency** feature for TechTower fanning out across many
+> client dashboards.
+
 ### 6. Write follow-up activity back to Attio (TechTower)
 Only runs if `attio.json` is present (see `ATTIO_SETUP.md`). Direction is
 **Tracker → Attio**: keep the CRM trail current for pipeline-related open items.

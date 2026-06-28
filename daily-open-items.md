@@ -1,8 +1,15 @@
 # Daily Open-Items Sweep
 
 **Run this every morning (~7:00 Europe/Amsterdam).** It scans Gmail, Slack, and
-recent meeting notes (Fireflies), then reconciles the Notion tracker so it always
-reflects what Shaffy still needs to respond to or act on.
+recent meeting notes (**Fireflies + Granola**), then (a) reconciles the Notion
+tracker so it always reflects what Shaffy still needs to respond to or act on, and
+(b) keeps **Attio current as the primary CRM log** — for every pipeline contact it
+ensures the person exists, is linked to the right deal, and has a note + follow-up
+task for the open action.
+
+> **Two destinations, different jobs.** **Attio** is the canonical CRM record
+> (who, which deal, the activity trail) — it's the primary write target. **Notion**
+> stays the human-facing daily to-do view. The same swept items feed both.
 
 **Client-specific values come from the client config** (`CLIENT_CONFIG_JSON` env
 secret, else `client.json` / `clients/<client>.json`) — so this workflow is the
@@ -21,10 +28,14 @@ workspace. One company = one config = one Claude workspace = one tracker.
   `stack.email.domains` (TechTower: techtower.ai, techtowerops.com).
 - **Chat:** `stack.chat.provider` (slack | google_chat; Teams out of scope),
   identity `stack.chat.userId` (TechTower: `U07CJK9H78A`).
-- **Meetings:** `stack.meetings.provider` (fireflies | otter | gemini | granola).
-- **CRM:** `stack.crm` (attio, always on — the canonical client/prospect list).
-  Used both to **recognize** which emails/chats are client/pipeline and as the
-  **write-back** target (step 6).
+- **Meetings:** `stack.meetings.providers` — a list, one or more of
+  (fireflies | otter | gemini | granola). TechTower reads **both Fireflies and
+  Granola**; the sweep iterates every configured provider. (Legacy single
+  `stack.meetings.provider` is still accepted.)
+- **CRM:** `stack.crm` (attio, always on — the canonical client/prospect list and
+  the **primary write target**). Used both to **recognize** which emails/chats are
+  client/pipeline and as the place every pipeline contact + activity is logged
+  (step 6).
 - **Lookbacks:** `lookbackDays` (defaults 21d email / 7d chat / 7d meetings).
 
 > **Scope to one business.** This instance is **TechTower-only**. A connected
@@ -58,8 +69,9 @@ Only add things that genuinely need Shaffy's input or action:
    not yet in Attio still counts — flag it to be added.
 2. **Slack messages Shaffy should weigh in on** — @mentions, DMs, or threads
    where a question is open and Shaffy hasn't answered.
-3. **Meeting next-steps** — action items Shaffy committed to in recent calls
-   (Fireflies `action_items` assigned to Shaffy / "Shaffy and team").
+3. **Meeting next-steps** — action items Shaffy committed to in recent calls,
+   from **every** configured meeting tool (Fireflies `action_items` and Granola
+   notes/summaries) assigned to Shaffy / "Shaffy and team".
 
 **Exclude:** newsletters, promotions, automated/no-reply mail, calendar
 accept/decline notifications, n8n/Make/workflow error alerts, system notices,
@@ -91,13 +103,16 @@ Check and record ✅ / ⚠️ for each:
 3. **Slack** — connected workspace responds. For each workspace in
    `SLACK_WORKSPACES_JSON` / `slack-workspaces.json`: confirm a non-placeholder
    token and a test `search` call succeeds.
-4. **Fireflies** — recent-transcripts call responds.
-5. **Attio** (write-back) — only if `ATTIO_JSON` / `attio.json` exists with a
-   non-placeholder key; confirm a `GET /v2/objects` call succeeds. If absent,
-   note "Attio write-back: off" (not an error).
+4. **Meeting notes** — for each provider in `stack.meetings.providers`:
+   **Fireflies** recent-transcripts call responds; **Granola** `list_meetings`
+   responds. List which loaded.
+5. **Attio** (primary CRM log) — only if `ATTIO_JSON` / `attio.json` exists with a
+   non-placeholder key; confirm a `GET /v2/objects` call succeeds and that the
+   `deals` / `people` / `companies` object slugs resolve. If absent, note
+   "Attio: off — CRM logging skipped" (not a hard error; Notion still updates).
 
 Open the morning summary with one readiness line, e.g.:
-`Preflight: Notion ✅ · Gmail techtower ✅ / myswimscore ⚠️ token missing · Slack TechTower ✅ · Fireflies ✅ · Attio off`.
+`Preflight: Notion ✅ · Gmail techtower ✅ / myswimscore ⚠️ token missing · Slack TechTower ✅ · Fireflies ✅ · Granola ✅ · Attio ✅`.
 A source marked ⚠️ is simply not swept this run — say so explicitly so a missing
 or expired credential surfaces loudly instead of silently dropping coverage.
 
@@ -107,7 +122,8 @@ are **not** `Done`. Build a lookup by `Ref` so you can update instead of
 duplicate. `Ref` formats:
 - Email → `gmail:<threadId>` (or `outlook:<id>`)
 - Chat → `chat:<provider>:<workspace>/<channel>/<ts>`
-- Meeting → `ff:<transcriptId>` (or `<provider>:<id>`)
+- Meeting → `ff:<transcriptId>` (Fireflies) / `granola:<meetingId>` (Granola)
+  / `<provider>:<id>` (other)
 
 ### 2. Gather email — provider per `stack.email.provider` (last ~21 days)
 Use the company's email provider (Gmail or Outlook) and every mailbox it can
@@ -160,11 +176,26 @@ workspaces/tools: `chat:<provider>:<workspace>/<channel>/<ts>`.
 > and member channels). Workspaces where no token can be minted (no admin
 > approval) are out of automated scope — note them as a manual check, don't fail.
 
-### 4. Gather meeting next-steps — provider per `stack.meetings.provider` (last ~7 days)
-List recent transcripts from the company's meeting-notes tool (Fireflies, Otter,
-Gemini, Granola, …). For each, pull the action items and keep only those assigned
-to the **owner** (or "owner + team"). Consolidate per meeting into one row where
-sensible. For Fireflies, `Link = https://app.fireflies.ai/view/<transcriptId>`.
+### 4. Gather meeting next-steps — every provider in `stack.meetings.providers` (last ~7 days)
+Iterate **all** configured meeting tools (TechTower: Fireflies **and** Granola).
+For each, pull recent meetings, extract the action items, and keep only those
+assigned to the **owner** (or "owner + team"). Consolidate per meeting into one
+row where sensible.
+
+- **Fireflies** — `fireflies_get_transcripts` (last 7d) → for each, read its
+  `action_items`. `Link = https://app.fireflies.ai/view/<transcriptId>`,
+  `Ref = ff:<transcriptId>`.
+- **Granola** — `list_meetings` (`time_range: this_week` / `last_week`, or a 7-day
+  custom range) → `get_meetings` for the AI summary + notes, and pull owner
+  action items / commitments from them (or use `query_granola_meetings` with a
+  query like *"action items and follow-ups assigned to Shaffy in the last 7 days"*,
+  preserving its citation links). `Ref = granola:<meetingId>`, and use the
+  meeting's Granola URL as `Link` when available.
+
+> **Dedup across tools:** the same call may exist in both Fireflies and Granola.
+> If two meeting rows clearly describe the same meeting (same title/date/attendees),
+> keep one row and note both sources; the `Ref` prefix (`ff:` vs `granola:`) keeps
+> them distinct if you'd rather not merge.
 
 ### 5. Reconcile the tracker
 - **New** (Ref not present) → create a row. Set `First Seen` and `Last Updated`
@@ -223,30 +254,92 @@ open to-do to the right Notion destination as well as the master tracker:
 > This routing is the **agency** feature for TechTower fanning out across many
 > client dashboards.
 
-### 6. Write follow-up activity back to Attio (TechTower)
+### 6. Sync to Attio — the primary CRM log (TechTower)
 Only runs if `attio.json` is present (see `ATTIO_SETUP.md`). Direction is
-**Tracker → Attio**: keep the CRM trail current for pipeline-related open items.
-For each **open** item (skip `Done`) whose `Who` resolves to a real
-person/company:
-1. Match the record in Attio by email address (`people.email_addresses`) or
-   company domain (`companies.domains`), checking the configured `objects` in
-   order. If nothing matches → write nothing; set the tracker row's `Attio`
-   column to `not in Attio`.
-2. On the matched record:
+**Tracker → Attio**. Attio is the **primary CRM record**: every pipeline contact
+should exist, be linked to the right deal, and carry the activity trail. Notion
+remains the to-do view. Process each **open** item (skip `Done`) whose `Who`
+resolves to a real person/company:
+
+**a. Resolve the person.**
+1. Match a person in Attio by email (`people.email_addresses`) via
+   `POST /v2/objects/people/records/query`.
+2. **If the person exists** → use it.
+3. **If the person does not exist** and `ensurePersonExists` is true → **create**
+   the person (name + email; company domain if known). If `ensurePersonExists` is
+   false, write nothing and set the row's `Attio` column to `not in Attio` (legacy
+   additive mode).
+
+**b. Resolve the deal — one per company, keyed by domain.** (when `linkPeopleToDeals` is true)
+The deal is **owned by the company**, deduped on the email **domain**
+(`companies.domains`). There is at most **one deal per company**.
+1. Find the company by the contact's email domain (`companies.domains`).
+2. Determine the deal in priority order:
+   - the deal **already on that company** (one-per-company → there should be at
+     most one; if several exist, pick the open/most-recent and flag
+     `multiple deals (review)`);
+   - else a deal the **person** is already associated with;
+   - else **no deal exists yet** → decide whether to create one (step b2).
+
+**b2. Create a deal for a new pipeline conversation** (when `createMissingDeals` is true)
+If no deal exists for the company **and** this is a genuine **new pipeline
+conversation**, create exactly one deal. **Email is the primary signal**; confirm
+it's real pipeline (not a one-off / vendor / newsletter) using corroborating cues:
+   - a back-and-forth thread with a real prospect/partner, **and/or**
+   - a **calendar invite the owner sent** to that counterparty (check Gmail/
+     Calendar for a sent invite to the domain), **and/or**
+   - **follow-up emails** in the thread.
+   Then:
+   1. **Ensure the company** exists (match by domain; create with name + domain if
+      missing — `createMissingCompanies`). Re-query by domain first so you never
+      create a second company for the same domain.
+   2. **Create one deal** on that company (`nameTemplate`, `ownerEmail`), and set
+      its **stage** from `newDealDefaults.stageRules` (first match wins) based on
+      the same signals — e.g. invite sent → "Meeting booked"; proposal/quote in
+      thread → "Proposal"; otherwise the `defaultStage` (e.g. "Lead").
+   3. **Link the people** in the conversation to the new deal.
+   If the signals are weak/ambiguous (could be a one-off), **don't** create — set
+   `Attio` to `no deal (review)` and leave it for a human.
+
+**b3. Link the person.** If the person is **not yet linked** to the resolved/created
+deal, **add the link**. If already linked, leave it.
+
+**c. Log the activity** on the resolved deal (preferred) and/or person:
    - **Add a note** summarizing the latest interaction + the open action.
-   - **Ensure a follow-up task** assigned to Shaffy, due in `followUpDueDays`.
+   - **Ensure a follow-up task** assigned to `assigneeEmail`, due in
+     `followUpDueDays`.
    - If `nextStepAttribute` / `lastContactedAttribute` are mapped, set them.
-3. **Idempotency:** tag every note/task body with `[ref:<item Ref>]` and check
-   for an existing one first — never create duplicate notes or tasks across runs.
-4. **Guardrails:** never advance/close a deal stage unless `allowStageChange` is
-   true **and** it's explicitly approved in this run. Never create new
-   people/companies and never delete anything.
-5. Record what was written in the tracker row's `Attio` column
-   (e.g. `Note + task on "AgroCares" deal`).
+
+**d. Idempotency.** Tag every note/task body with `[ref:<item Ref>]` and check for
+an existing one first — never create duplicate people, notes, tasks, or
+person↔deal links across runs. Before creating a person, re-query by email to
+avoid a race/duplicate.
+
+**e. Guardrails.**
+- **New deals** are created only for a genuine new pipeline conversation (step b2),
+  **one per company** (deduped by domain) — never a second deal for a company that
+  already has one.
+- **Changing an existing deal's stage** is different from setting the stage on a
+  brand-new deal: never advance/close/win an **existing** deal's stage unless
+  `allowStageChange` is true **and** it's explicitly approved in this run.
+- Companies/people are created only as needed to back a deal or resolve a
+  contact (deduped by domain/email first). Never delete anything.
+
+**f. Record** what was written in the tracker row's `Attio` column, e.g.
+`Created "Acme" deal (stage: Meeting booked) + linked 2 people + note/task`,
+`Linked to existing "AgroCares" deal + note`, or `no deal (review)`.
+
+> **Attio data is incomplete today** (missing domains/deal names, people not linked
+> to deals — `ROADMAP.md`). This step repairs it as it goes: one deal per company
+> keyed by domain, the right people linked, new pipeline conversations opened as
+> deals at the right stage. When a deal/link/stage is genuinely ambiguous, prefer
+> flagging `(review)` over a wrong write.
 
 ### 7. Report
 Post a short summary to Shaffy: counts by Source and Status, and call out the
-top 3 `High` / `Needs Response` items. Keep it tight.
+top 3 `High` / `Needs Response` items. Include an **Attio line**: people created,
+people newly linked to a deal, notes/tasks written, and anything flagged for
+review (`no deal` / `multiple deals`). Keep it tight.
 
 ---
 

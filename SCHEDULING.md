@@ -2,8 +2,9 @@
 
 The sweep runs as a **recurring scheduled session** in the Claude Code web app,
 pointed at this repo. It runs in your authenticated account, so the connected
-integrations (Gmail, Slack, Notion, Fireflies) are available without extra
-tokens; separate accounts/workspaces come from environment secrets.
+integrations (Gmail, Slack, Notion, Fireflies, Granola) are available without
+extra tokens; separate accounts/workspaces and the Attio token come from
+environment secrets.
 
 Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 

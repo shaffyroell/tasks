@@ -41,9 +41,9 @@
       "viaSharedChannel": true
     },
     "meetings": {
-      "_note": "Optional — enable if the client uses a meeting-notes tool you can read.",
+      "_note": "Optional — enable if the client uses meeting-notes tools you can read. 'providers' is a LIST: the sweep reads every one (e.g. Fireflies AND Granola). Legacy single 'provider' is still accepted.",
       "enabled": false,
-      "provider": "fireflies"
+      "providers": ["fireflies", "granola"]
     }
   },
   "schedule": { "cron": "0 7 * * *", "timezone": "Europe/Amsterdam", "model": "sonnet" },

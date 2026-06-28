@@ -1,9 +1,11 @@
 # Daily Email + Slack Open-Items Workflow
 
-A daily automation that scans **Gmail, Slack, and meeting notes (Fireflies)** and
-keeps a single Notion tracker of everything Shaffy still needs to respond to or
-act on — pipeline emails, Slack threads to weigh in on, and next-steps committed
-to in calls.
+A daily automation that scans **Gmail, Slack, and meeting notes (Fireflies +
+Granola)** and keeps two things current: **Attio** as the primary CRM log (each
+pipeline contact exists, is linked to the right deal, and has a note + follow-up
+task) and a **Notion tracker** as the human-facing view of everything Shaffy still
+needs to respond to or act on — pipeline emails, Slack threads to weigh in on, and
+next-steps committed to in calls.
 
 ## Where things live
 
@@ -40,13 +42,19 @@ workflow in a separate Claude account**. To add a genuinely separate mailbox you
 `email-accounts.json` (reply-detection needs its Sent mail) — see
 [`EMAIL_SETUP.md`](./EMAIL_SETUP.md).
 
-## Attio CRM write-back
+## Attio CRM log (primary)
 
-For pipeline items, the sweep keeps Attio (TechTower) current: on the matched
-person/company/deal it **adds a note** and **ensures a follow-up task**, recording
-what it did in the tracker's `Attio` column. It's strictly additive — stage
-changes need approval, and nothing is ever created-new or deleted. Add an API
-token to `attio.json` (gitignored) to enable it — see
+For pipeline items, the sweep keeps Attio (TechTower) current as the **system of
+record**: it **ensures the person exists** (creating them if missing) and **links
+them to the right deal** — and when it spots a **new pipeline conversation in
+email** with no deal yet, it **opens one deal for that company** (one per company,
+deduped by domain) at the **right stage**, inferred from the email plus any
+calendar invite you sent and follow-ups. It then **adds a note** and **ensures a
+follow-up task**, recording what it did in the tracker's `Attio` column.
+Guardrails stay conservative: never a second deal per company, never advance an
+existing deal's stage without approval, never delete; weak/ambiguous signals are
+flagged `(review)` rather than guessed. Add an API token to `attio.json`
+(gitignored, or the `ATTIO_JSON` secret for scheduled runs) to enable it — see
 [`ATTIO_SETUP.md`](./ATTIO_SETUP.md).
 
 ## How it runs
@@ -55,14 +63,17 @@ The workflow is designed to run **once every morning around 07:00
 (Europe/Amsterdam)**. Each run:
 
 0. **Preflight** — checks every dependency (Notion, each email account, each
-   Slack workspace, Fireflies, Attio) and reports readiness. Missing/expired
-   credentials are flagged loudly in the summary; that source is skipped for the
-   run rather than failing the whole sweep.
+   Slack workspace, Fireflies, Granola, Attio) and reports readiness.
+   Missing/expired credentials are flagged loudly in the summary; that source is
+   skipped for the run rather than failing the whole sweep.
 1. Reads the current tracker (everything not `Done`).
-2. Pulls recent Gmail threads, Slack mentions/DMs, and Fireflies action items.
+2. Pulls recent Gmail threads, Slack mentions/DMs, and meeting action items from
+   Fireflies **and** Granola.
 3. Adds new open items, updates statuses, and marks handled items `Done` —
    deduping on a stable `Ref` key so nothing is duplicated.
-4. Posts a short summary.
+4. Syncs pipeline into Attio (ensure person → find/create the company's one deal
+   at the right stage → link people → note + task).
+5. Posts a short summary.
 
 ### Scheduling it
 
@@ -86,6 +97,8 @@ Full logic, schema, and dedup rules are in [`daily-open-items.md`](./daily-open-
 
 ## Security
 
-Credentials never belong in this repo. `accounts.json`, `.env`, and key files are
-gitignored. The workflow only uses connected MCP connectors (Gmail, Slack,
-Notion, Fireflies) — it does not read or store API keys.
+Credentials never belong in this repo. `accounts.json`, `.env`, `attio.json`, and
+key files are gitignored. The workflow runs on connected MCP connectors (Gmail,
+Slack, Notion, Fireflies, Granola); the only API token it reads is the Attio key
+(from `attio.json` locally, or the `ATTIO_JSON` secret for scheduled runs), used
+solely to write the CRM log.

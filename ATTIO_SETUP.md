@@ -1,9 +1,10 @@
-# Attio write-back setup
+# Attio setup — primary CRM log
 
-The daily sweep can **write follow-up activity back to Attio** (TechTower
-workspace): when it surfaces an open item tied to someone in your pipeline, it
-logs a note and makes sure a follow-up task exists on the matching record. Notion
-stays your to-do list; Attio gets the CRM trail.
+Attio is the **primary CRM destination** for the daily sweep (TechTower
+workspace). When the sweep surfaces an open item tied to someone in your pipeline,
+it ensures that **person exists** in Attio, that they're **linked to the right
+deal**, and that the **activity trail** (note + follow-up task) is on the record.
+Notion stays your human-facing to-do view; Attio is the system of record.
 
 > **Direction:** Tracker → Attio (write). The sweep does not pull deals *out* of
 > Attio into the tracker — that's a separate mode you can enable later.
@@ -12,11 +13,15 @@ stays your to-do list; Attio gets the CRM trail.
 
 | Action | Default | Notes |
 |---|---|---|
-| Add a **note** to the matched record | ✅ on | Summarizes the latest interaction + the open action. Tagged with the item `Ref` so it's never duplicated. |
+| **Create a person** if no email match exists | ✅ on (`ensurePersonExists`) | Name + email (+ company domain if known). Re-queries by email first so it never duplicates. Set false for legacy additive-only mode. |
+| **Link a person to the right deal** if not already linked | ✅ on (`linkPeopleToDeals`) | Resolves the deal via the person's existing deal, else the matching company's open deal. Ambiguous/none → flags for review, never guesses. |
+| Add a **note** to the deal/person | ✅ on | Summarizes the latest interaction + the open action. Tagged with the item `Ref` so it's never duplicated. |
 | Ensure a **follow-up task** (assigned to you, due in N days) | ✅ on | Idempotent on `Ref`. |
 | Set a custom **Next step / Last contacted** attribute | ⬜ only if you map it | Leave blank in `attio.json` to skip. |
-| **Advance / change deal stage** | ⛔ off | Requires explicit approval during the run. Never auto-closes or auto-wins a deal. |
-| Delete anything | ⛔ never | The sweep is strictly additive. |
+| **Create a deal** for a new pipeline conversation | ✅ on (`createMissingDeals`) | Only when email (primary) + invites sent / follow-ups show real pipeline. **One deal per company, deduped by domain** — never a second. New deal gets a stage from `stageRules`. Weak signal → `no deal (review)`. |
+| **Create a company** (to back a new deal) | ✅ on (`createMissingCompanies`) | Matched/deduped by domain first; created with name + domain only when needed for a new deal. |
+| **Advance / change an _existing_ deal's stage** | ⛔ off | Requires explicit approval during the run. Setting the stage on a brand-new deal is allowed; advancing/closing/winning an existing one is not. Never auto-wins. |
+| Delete anything | ⛔ never | The sweep never deletes. |
 
 ## Get an Attio API token (~2 min)
 
@@ -36,13 +41,33 @@ Slugs differ per workspace, so confirm them before the first write:
   any **Next step** / **Last contacted** / **Stage** attributes you want set, and
   put them in the `writeBack` block. Leave blank to skip.
 
-## How matching works
+## How matching & linking works
 
-For each open item, the sweep resolves **who** it's about (email address →
-`people.email_addresses`; company domain → `companies.domains`) and finds the
-record via `POST /v2/objects/{object}/records/query`. If no record matches, it
-does nothing in Attio and notes `not in Attio` on the tracker row. It never
-creates new companies/people from this sweep.
+For each open item, the sweep resolves **who** it's about and reconciles them
+against Attio via `POST /v2/objects/{object}/records/query`:
+
+1. **Person** — match on email (`people.email_addresses`). No match +
+   `ensurePersonExists` → create the person (re-querying first to avoid a
+   duplicate). With `ensurePersonExists:false` it stays additive and writes
+   `not in Attio` on the tracker row instead.
+2. **Deal — one per company, keyed by domain.** The deal belongs to the company
+   (matched on email domain → `companies.domains`), and there's at most one per
+   company. Resolve in order: the deal already on that company → else a deal the
+   person is already on → else none yet.
+   - **Found** → if the person isn't linked, **add the person↔deal link**.
+   - **None, but a new pipeline conversation** (email primary; corroborated by a
+     calendar invite you *sent* and/or follow-up emails) → **create one deal** on
+     the company (ensuring the company by domain first), set its **stage** from
+     `stageRules`, and link the people.
+   - **None, weak/ambiguous signal**, or **several plausible deals** → write
+     nothing and flag `no deal (review)` / `multiple deals (review)` — never guess.
+3. **Activity** — note + follow-up task land on the resolved/created deal
+   (preferred) / person, idempotent on the item `Ref`.
+
+This repairs the "people not linked to deals" gap noted in `ROADMAP.md` and opens
+new inbound as deals at the right stage. It still **never** creates a second deal
+for a company, never advances an existing deal's stage without approval, and never
+deletes.
 
 ## Wire it up
 

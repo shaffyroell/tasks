@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to attio.json (gitignored). Holds the Attio API token + field mapping used to WRITE follow-up activity back to the CRM. Writes are conservative by design: log a note + ensure a follow-up task; stage changes require approval; nothing is ever deleted. See ATTIO_SETUP.md.",
+  "_comment": "Copy to attio.json (gitignored). Holds the Attio API token + field mapping. Attio is the PRIMARY CRM log: ensure each pipeline person exists, link them to the right deal, and log a note + follow-up task. Conservative by design: people may be created, but deals/companies and stage changes are never auto-created/changed; nothing is ever deleted. See ATTIO_SETUP.md.",
   "default": "techtower",
   "workspaces": {
     "techtower": {
@@ -20,6 +20,28 @@
         "createFollowUpTask": true,
         "followUpDueDays": 2,
         "assigneeEmail": "shaffy@techtower.ai",
+
+        "_people_note": "Primary-CRM behaviour. ensurePersonExists: create the person in Attio if no email match (re-query first to avoid duplicates). linkPeopleToDeals: associate the person with the resolved deal when not already linked.",
+        "ensurePersonExists": true,
+        "linkPeopleToDeals": true,
+
+        "_deal_creation_note": "When a NEW pipeline conversation is detected (EMAIL is the primary signal; corroborate with calendar invites you SENT and follow-up emails) and the company has NO deal yet, create one. STRICTLY ONE DEAL PER COMPANY, deduped on email domain -> companies.domains: if any deal already exists for that company, link to it instead of creating a second. Creating a deal also ensures the company (by domain) and links the people. Confirm stage slugs via GET /v2/objects/deals/attributes and map them in newDealDefaults below.",
+        "createMissingDeals": true,
+        "oneDealPerCompanyByDomain": true,
+        "createMissingCompanies": true,
+        "newDealDefaults": {
+          "ownerEmail": "shaffy@techtower.ai",
+          "nameTemplate": "{company}",
+          "stageAttribute": "stage",
+          "defaultStage": "Lead",
+          "_stageRules_note": "First match wins, top→bottom; else defaultStage. Decide from email + invites sent + follow-ups. Map the RIGHT-hand values to YOUR pipeline's real stage names.",
+          "stageRules": {
+            "proposalOrQuoteSent": "Proposal",
+            "meetingHeldOrFollowUpAfterCall": "Meeting done",
+            "meetingScheduledInviteSent": "Meeting booked",
+            "newInboundOrFirstReply": "Lead"
+          }
+        },
 
         "_optional_attrs": "If these custom attributes exist on the object, the sweep will set them. Leave blank to skip. Use the attribute slug from GET /v2/objects/{object}/attributes.",
         "nextStepAttribute": "",

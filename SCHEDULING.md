@@ -1,0 +1,72 @@
+# Scheduling the daily run (Claude Code on the web)
+
+The sweep runs as a **recurring scheduled session** in the Claude Code web app,
+pointed at this repo. It runs in your authenticated account, so the connected
+integrations (Gmail, Slack, Notion, Fireflies) are available without extra
+tokens; separate accounts/workspaces come from environment secrets.
+
+Docs: https://code.claude.com/docs/en/claude-code-on-the-web
+
+## 1. Create the scheduled session
+
+In the Claude Code web app:
+1. Open this repo's environment (`shaffyroell/tasks`, branch
+   `claude/daily-email-slack-workflow-egmpho` or wherever this is merged).
+2. Create a new **scheduled / recurring task** (look for Schedule / Automations).
+3. **Cadence:** daily, **07:00 Europe/Amsterdam**. If the scheduler is UTC-only,
+   use **05:00 UTC** (= 07:00 CEST summer; it's 06:00 CET in winter — adjust if
+   you care about the winter hour).
+4. **Prompt:**
+
+   > Run the daily open-items sweep defined in `daily-open-items.md` in this repo.
+   > Begin with the Step 0 preflight and open your reply with the readiness line,
+   > then gather (email, Slack, Fireflies), reconcile the Notion tracker, run the
+   > Attio write-back if configured, and finish with the summary.
+
+### Model / cost
+
+Set the scheduled session to run on **Sonnet**, not Opus. This workflow is mostly
+retrieval + structured writes (snippets/metadata, not full bodies; Fireflies
+action-items, not full transcripts; scoped 21d/7d lookbacks), so it doesn't need
+Opus-level reasoning. Sonnet runs it at roughly 1/5 the cost for the same quality
+here — ballpark low-cents to ~$0.50 per daily run vs. ~$1–3 on Opus. Note that
+model/runtime cost is the same regardless of *where* it's scheduled — hosting it
+elsewhere doesn't reduce token usage, only changes where scheduling lives.
+
+## 2. Add environment secrets
+
+In the environment's **secrets / env vars**, add only the ones you use (paste the
+full JSON contents as the value):
+
+| Secret | Needed for |
+|---|---|
+| `EMAIL_ACCOUNTS_JSON` | Extra mailboxes beyond the connected inbox (e.g. myswimscore) |
+| `SLACK_WORKSPACES_JSON` | Extra Slack workspaces beyond the connected one |
+| `ATTIO_JSON` | Attio CRM write-back |
+
+The gitignored `*.json` files are **not** in the scheduled clone — secrets are the
+only credential path for scheduled runs.
+
+## 3. Network policy
+
+The run makes outbound calls to the connector/API endpoints. Pick an environment
+network policy that allows that outbound access (see the docs link above).
+
+## 4. Verify after the first run
+
+- Check the run's summary opens with a **Preflight** line and that each source
+  you expect shows ✅ (not ⚠️).
+- Confirm new rows appeared / updated in the Notion tracker
+  (https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144).
+- If a connector shows ⚠️ "not available" in a scheduled (headless) run, that
+  source needs token-based access instead — add its token as a secret (Gmail via
+  `EMAIL_ACCOUNTS_JSON`, Slack via `SLACK_WORKSPACES_JSON`; Notion/Fireflies would
+  need their own tokens). The preflight tells you exactly which, so you only fix
+  what actually breaks.
+
+## Fallback
+
+If you ever want a non-Claude-hosted schedule (GitHub Actions cron or a
+self-hosted cron + `gtm-multi-mcp`), the workflow is already token-portable for
+email/Slack/Attio; you'd additionally provide Notion + Fireflies tokens. Ask and
+this runbook can be extended with that path.

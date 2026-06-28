@@ -57,14 +57,13 @@ The workflow is designed to run **once every morning around 07:00
 
 ### Scheduling it
 
-Recommended: a **Claude Code scheduled session/trigger** (Claude Code on the web)
-set to a daily 07:00 cron, pointed at this repo, with the instruction:
+Run it as a **Claude Code web scheduled session** — daily 07:00 Europe/Amsterdam,
+pointed at this repo, prompt *"Run the workflow in `daily-open-items.md`."* Full
+click-through + the env secrets to set are in [`SCHEDULING.md`](./SCHEDULING.md).
 
-> Run the workflow in `daily-open-items.md`.
-
-This survives across days and doesn't depend on any single chat session staying
-open. (An in-session cron can also be used for testing, but it expires and only
-fires while that session is alive.)
+This survives across days and doesn't depend on any chat session staying open.
+(An in-session cron only fires while that session is alive — it won't persist, so
+it's for testing only.)
 
 ## Criteria (summary)
 

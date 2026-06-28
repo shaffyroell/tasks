@@ -45,6 +45,10 @@ token to `attio.json` (gitignored) to enable it — see
 The workflow is designed to run **once every morning around 07:00
 (Europe/Amsterdam)**. Each run:
 
+0. **Preflight** — checks every dependency (Notion, each email account, each
+   Slack workspace, Fireflies, Attio) and reports readiness. Missing/expired
+   credentials are flagged loudly in the summary; that source is skipped for the
+   run rather than failing the whole sweep.
 1. Reads the current tracker (everything not `Done`).
 2. Pulls recent Gmail threads, Slack mentions/DMs, and Fireflies action items.
 3. Adds new open items, updates statuses, and marks handled items `Done` —

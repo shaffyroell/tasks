@@ -41,6 +41,31 @@ and anything already handled (Shaffy replied and nothing is outstanding).
 
 ## Procedure
 
+### 0. Preflight — verify everything's in place
+Before gathering, check each dependency and build a readiness list. **Degrade
+gracefully**: if a source isn't ready, skip just that source and flag it in the
+summary — never abort the whole run.
+
+Check and record ✅ / ⚠️ for each:
+1. **Notion tracker** reachable (data source `45a1139d-c188-4a05-936d-adbea5d6715e`
+   responds). If not → stop and report (there's nowhere to write).
+2. **Gmail** — connected inbox responds. For each extra account in the email
+   config (`EMAIL_ACCOUNTS_JSON` env secret, else `email-accounts.json`):
+   confirm it has a non-placeholder `refreshToken` and that a 1-message test
+   fetch succeeds. List which accounts loaded and which failed/expired.
+3. **Slack** — connected workspace responds. For each workspace in
+   `SLACK_WORKSPACES_JSON` / `slack-workspaces.json`: confirm a non-placeholder
+   token and a test `search` call succeeds.
+4. **Fireflies** — recent-transcripts call responds.
+5. **Attio** (write-back) — only if `ATTIO_JSON` / `attio.json` exists with a
+   non-placeholder key; confirm a `GET /v2/objects` call succeeds. If absent,
+   note "Attio write-back: off" (not an error).
+
+Open the morning summary with one readiness line, e.g.:
+`Preflight: Notion ✅ · Gmail techtower ✅ / myswimscore ⚠️ token missing · Slack TechTower ✅ · Fireflies ✅ · Attio off`.
+A source marked ⚠️ is simply not swept this run — say so explicitly so a missing
+or expired credential surfaces loudly instead of silently dropping coverage.
+
 ### 1. Load current tracker state
 Query the data source (`45a1139d-c188-4a05-936d-adbea5d6715e`) for all rows that
 are **not** `Done`. Build a lookup by `Ref` so you can update instead of

@@ -15,21 +15,38 @@ Docs: https://code.claude.com/docs/en/claude-code-on-the-web
 >    (W1's output) **plus** fresh Gmail/Slack/Granola/Fireflies — **07:15**.
 > Same setup steps below apply to each — change only the cadence time and prompt.
 
-## 1. Create the scheduled session
+## Routines = slash commands (committed)
+
+The workflows are committed as slash commands in `.claude/commands/`, so a routine
+prompt is a single line:
+
+| Command | Runs |
+|---|---|
+| `/daily-crm` | **W1 then W2 in order** (recommended — one routine, guaranteed ordering) |
+| `/attio-ingest` | W1 only — ingest comms → Attio |
+| `/notion-todos` | W2 only — per-client To-Dos → Notion |
+
+**Recommended:** one daily routine with the prompt **`/daily-crm`** — it runs the
+ingest to completion, then the to-dos, so W2 always reads W1's fresh output (no
+timing race). Use the split commands only if you want them on separate cadences.
+
+## 1. Create the scheduled session (the "routine")
 
 In the Claude Code web app:
 1. Open this repo's environment (`shaffyroell/tasks`, branch
-   `claude/daily-email-slack-workflow-egmpho` or wherever this is merged).
-2. Create a new **scheduled / recurring task** (look for Schedule / Automations).
+   `claude/deals-stage-attio-mapping-37w20d` or wherever this is merged).
+2. Create a new **scheduled / recurring task** (look for **Schedule /
+   Automations / Routines**).
 3. **Cadence:** daily, **07:00 Europe/Amsterdam**. If the scheduler is UTC-only,
    use **05:00 UTC** (= 07:00 CEST summer; it's 06:00 CET in winter — adjust if
    you care about the winter hour).
-4. **Prompt:**
+4. **Prompt:** `/daily-crm`
+   (or, if the scheduler doesn't expand slash commands, paste the body of
+   `.claude/commands/daily-crm.md`).
+5. Enable the workflow in `attio.json` → `attioIngest.enabled: true`.
 
-   > Run the daily open-items sweep defined in `daily-open-items.md` in this repo.
-   > Begin with the Step 0 preflight and open your reply with the readiness line,
-   > then gather (email, Slack, Fireflies), reconcile the Notion tracker, run the
-   > Attio write-back if configured, and finish with the summary.
+If you'd rather run W1 and W2 as **two** staggered routines instead of one:
+W1 `/attio-ingest` at 07:00, W2 `/notion-todos` at 07:15.
 
 ### Model / cost
 

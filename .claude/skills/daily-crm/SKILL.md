@@ -14,34 +14,34 @@ Lemlist, Shopify, Notion); work the steps in order.
    after the clinic + linked contact + company + domain. Existing deal with new
    content → update (step 5). Negative replies are not deals.
 
-2. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
+2. **Shopify — check for B2B inbound FIRST** (before the email threads), both
+   surfaces: `"New customer message"` contact-form emails to `info@myswimscore.com`
+   in Gmail, AND recent Shopify customers/orders (`get-shop-info`, `list-customers`,
+   `list-orders`) for clinic/wholesale/partner signal. Keep only B2B → match to a
+   deal or hand to W0; ignore individual B2C patient orders.
+
+3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
    truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →
    attach to the deal.
 
-2b. **Shopify — check for B2B inbound** (both surfaces): `"New customer message"`
-   contact-form emails to `info@myswimscore.com` in Gmail, AND recent Shopify
-   customers/orders (`get-shop-info`, `list-customers`, `list-orders`) for
-   clinic/wholesale/partner signal. Keep only B2B → match to a deal or hand to W0;
-   ignore individual B2C patient orders.
-
-3. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
+4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
    wellness-portal-dev, legal, daily-status, + others). Read threads.
 
-4. **Calls — read recent Granola notes** for decisions, pain points, next steps.
+5. **Calls — read recent Granola notes** for decisions, pain points, next steps.
 
-5. **Update HubSpot per client — only on a development.** Check existing notes
+6. **Update HubSpot per client — only on a development.** Check existing notes
    first (no duplicates); add/refresh a `[hubspot-ingest]` note (Background →
    timestamped Timeline → Latest → Next step) and advance the stage on clear
    evidence. Honor autoApply; never auto-close Won/Lost; never silently demote.
 
-6. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`): for
+7. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`): for
    each open deal, last-contact >14d (high >21d) and a nudge is warranted → add a
    To-Do on the SwimScore Notion board under **New sales** (Owner Shaffy, Link the
    deal, dedup `Ref hubspot:stale:<dealId>`) with a short, specific follow-up
    message **drafted from the deal's HubSpot notes** (only if a real message fits).
 
-7. **Update the SwimScore Notion board from all channels** (W2,
+8. **Update the SwimScore Notion board from all channels** (W2,
    `daily-open-items.md`): reconcile internal to-dos across the six pillars from
    business-strategy, product/portal, legal, finance, support — check what each is
    for, mark Done / advance, dedup on `Ref`, add new in house style (`STYLE.md`).

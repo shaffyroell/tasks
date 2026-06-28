@@ -13,30 +13,31 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    contact + company + domain). Existing deal with new content → update it (step 5).
    Negative replies are not deals.
 
-2. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
+2. **Shopify — check for B2B inbound FIRST** (before the email threads), on both
+   surfaces: the `"New customer message"` contact-form emails to
+   `info@myswimscore.com` in Gmail, AND recent Shopify customers/orders
+   (`get-shop-info`, `list-customers`, `list-orders`) for clinic/wholesale/partner
+   signal. Keep only B2B intent → match to a deal or hand to W0. Ignore individual
+   B2C patient orders.
+
+3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
    of truth after Lemlist). For every serious conversation (calls held, proposals,
    pricing, scheduling, commitments), find its deal and capture what moved.
 
-2b. **Shopify — check for B2B inbound** from the website (both surfaces): the
-   `"New customer message"` contact-form emails to `info@myswimscore.com` in Gmail,
-   AND recent Shopify customers/orders (`get-shop-info`, `list-customers`,
-   `list-orders`) for clinic/wholesale/partner signal. Keep only B2B intent → match
-   to a deal or hand to W0. Ignore individual B2C patient orders.
-
-3. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
+4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
    wellness-portal-dev, legal, daily-status, + any other account channel. Read
    threads. Pull anything that changes a deal or is an internal action item.
 
-4. **Calls — read all recent Granola notes** for decisions, pain points, next steps.
+5. **Calls — read all recent Granola notes** for decisions, pain points, next steps.
 
-5. **Update HubSpot per client — only on a development.** Check the deal's existing
+6. **Update HubSpot per client — only on a development.** Check the deal's existing
    notes first (no duplicates); if something moved, add/refresh a `[hubspot-ingest]`
    note (Background → timestamped Timeline → Latest → Next step) and advance the stage
    on clear evidence. Honor autoApply; never auto-close Won/Lost (list for approval);
    never silently demote an active deal.
 
-6. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`). For
+7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`). For
    each open deal, compute last contact date across email/Lemlist/Slack/calls. If
    >14d (high priority >21d) and a nudge is warranted (alive, not awaiting a booked
    call): add a To-Do to the SwimScore Notion board under **New sales**
@@ -44,7 +45,7 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    `Ref hubspot:stale:<dealId>`, and **draft a short, specific follow-up message from
    the deal's HubSpot context** into the to-do (only if a real message fits).
 
-7. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
+8. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
    reconcile internal to-dos across the six pillars (Onboarding, New sales, Research,
    Clinic & patient portal, Support, Finance) from business-strategy, product/portal,
    legal, finance, and support signal — check what each item is for, mark Done /

@@ -28,16 +28,11 @@ source is down — note the gap.
     ("no thanks", "unsubscribe", wrong-email) are **not** deals.
   - **Existing deal** → if there's new content, update it (steps 4–5).
 
-## 2. Email — read all of Shaffy's threads for serious conversations
-**`shaffy@myswimscore.com` is the source of truth after Lemlist** — he follows up
-every lead by email. Read every Gmail thread with a new inbound/outbound message in
-the last `ingest.lookbackDays` (widen after a gap). For each, find the deal it
-belongs to and capture what actually moved: calls held, proposals sent, pricing,
-scheduling, commitments.
-
-## 2b. Shopify — B2B inbound from the website (always check)
+## 2. Shopify — B2B inbound from the website (check first)
 SwimScore's Shopify store (www.myswimscore.com) is a real inbound channel for **B2B
-clinic/partner** opportunities. Each run, check **both surfaces**:
+clinic/partner** opportunities — screen it **before** the email threads so a fresh
+website lead is in the pipeline before you read the follow-ups. Each run, check
+**both surfaces**:
 - **Gmail:** website contact-form submissions arrive as **"New customer message …"**
   emails to `info@myswimscore.com` — search for them in the window.
 - **Shopify (MCP):** `get-shop-info` to confirm reachable, then scan recent
@@ -50,18 +45,25 @@ hand a genuinely new one to **W0** (deal named after the clinic + contact + comp
 *(Worked example already in HubSpot: Epoch Health came in as a Jun 21 Shopify
 "New customer message" and is now a Pilot-Discussion deal.)*
 
-## 3. Slack — sweep the deal/account channels
+## 3. Email — read all of Shaffy's threads for serious conversations
+**`shaffy@myswimscore.com` is the source of truth after Lemlist** — he follows up
+every lead by email. Read every Gmail thread with a new inbound/outbound message in
+the last `ingest.lookbackDays` (widen after a gap). For each, find the deal it
+belongs to and capture what actually moved: calls held, proposals sent, pricing,
+scheduling, commitments.
+
+## 4. Slack — sweep the deal/account channels
 Read threads (not just top messages) in the channels in `hubspot.json.slackChannels`:
 **outbound / Lemlist-replies**, **pipeline-clients**, **business-strategy**,
 **clinic-portal-dev**, **wellness-portal-dev**, **legal**, **daily-status** — plus
 any other channel where an account is discussed. Pull anything that changes a deal
 (a clinic decision, a call recap, a pricing/legal blocker).
 
-## 4. Calls — Granola
+## 5. Calls — Granola
 Read every Granola meeting note in the window. Calls carry the real decisions, pain
 points, and next steps — attach each to its deal.
 
-## 5. Update HubSpot per client — only when there's a development
+## 6. Update HubSpot per client — only when there's a development
 For each deal with new substantive activity:
 1. **Check the deal's existing notes first** (search `notes` associated to the
    deal). If this conversation/call is already captured, **skip** (no duplicates —
@@ -77,7 +79,7 @@ For each deal with new substantive activity:
    (`allowStageClose:false`) — list those for approval. Never silently demote an
    active deal.
 
-## 6. Stale-deal check → flag + suggested follow-up (per `staleFollowUp`)
+## 7. Stale-deal check → flag + suggested follow-up (per `staleFollowUp`)
 For every **open** deal (skip `excludeStages` = Closed Won/Lost and any dead/
 cold-rejected lead), compute **last contact date** = the most recent inbound or
 outbound across email, Lemlist, Slack, and calls.
@@ -94,12 +96,12 @@ outbound across email, Lemlist, Slack, and calls.
   relevant. Put the draft in the To-Do body so Shaffy can review/send. Don't draft a
   generic nudge where none fits — flag without a message instead.
 
-## 7. Idempotency & safety
+## 8. Idempotency & safety
 Dedup notes at the content level; dedup a call by meeting id, a Lemlist reply by
 contact id; dedup stale To-Dos on `Ref`. Only write on genuinely new content. Never
 delete; never create duplicate deals (that's W0).
 
-## 8. Output — deal-sync digest
+## 9. Output — deal-sync digest
 **Preflight** ✅/⚠️ · **Deals reviewed** · **Notes added** (deal — gist — channel) ·
 **Stage moves** (`deal: old → new — why`) + **proposed Closed Won/Lost (approval)** ·
 **Stale deals flagged** (deal — days quiet — follow-up drafted? y/n) · **New

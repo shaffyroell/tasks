@@ -26,9 +26,9 @@ there — never hard-code a stage; read it from the config.
 ## 0. Preflight
 Open with a one-line readiness check for each source:
 **HubSpot** (write — `get_user_details`), **Gmail** (native), **Slack**,
-**Granola**, **Lemlist** (`get_team_info` / `get_campaigns`). Mark each ✅/⚠️. If a
-**source is down, say so loudly** and never move a stage on a partial view — note
-what you could see and flag the gap.
+**Granola**, **Lemlist** (`get_team_info` / `get_campaigns`), **Shopify**
+(`get-shop-info`). Mark each ✅/⚠️. If a **source is down, say so loudly** and never
+move a stage on a partial view — note what you could see and flag the gap.
 
 ## 1. Load every open deal from HubSpot
 - `search_crm_objects(objectType="deals")` filtered to **open** deals — exclude
@@ -57,9 +57,17 @@ Match on the deal's contact emails / company domain in each source:
   signal it carries: `aiLeadInterest` = **positive** (level ≥4) / neutral /
   **negative** (≤1). A positive reply is a buying signal; a negative reply is a
   churn/lost signal. Match the Lemlist lead email to the deal's contact.
+- **Shopify (B2B inbound only)** — inbound **messages/inquiries via the website**
+  (contact form, wholesale/clinic interest at www.myswimscore.com) are often
+  **B2B clinic leads**. They typically arrive as emails to `info@myswimscore.com`
+  (caught under Email above) and/or surface in Shopify. Keep only B2B clinic/
+  partner intent: match it to an existing deal, or hand a genuinely new one to W0.
+  **Ignore individual B2C patient orders** — B2C is out of scope; never open a deal
+  for a B2C patient.
 
 > If a meaningful communication belongs to a **prospect with no deal yet**, don't
-> force-fit it — hand it to W0 (`new-deal-discovery.md`).
+> force-fit it — hand it to W0 (`new-deal-discovery.md`). B2C Shopify patients are
+> **not** deals and are out of scope here — we focus on B2B.
 
 ## 3. Write one consolidated note to the deal — **if it isn't already there**
 1. **Check first.** Read the deal's recent notes/engagements
@@ -128,8 +136,9 @@ Enable via `ingest.enabled` in `hubspot.json`. Or run the whole chain with
 `/daily-crm` (W0 → W1 → W2 in order).
 
 **Prompt:**
-> Run W1, the daily HubSpot deal sync in `hubspot-sync.md`. Preflight all four
-> sources; load every open deal; for each, read the full recent conversation
-> across Granola, Slack, Lemlist, and email; add a consolidated `[hubspot-ingest]`
-> note where one is missing; and move the deal stage when the evidence warrants
-> (honoring autoApply + close guardrails). Finish with the deal-sync digest.
+> Run W1, the daily HubSpot deal sync in `hubspot-sync.md`. Preflight all sources;
+> load every open deal; for each, read the full recent conversation across
+> Granola, Slack, Lemlist, email, and B2B Shopify website inquiries; add a
+> consolidated `[hubspot-ingest]` note where one is missing; and move the deal
+> stage when the evidence warrants (honoring autoApply + close guardrails). B2C
+> patients are out of scope (B2B only). Finish with the deal-sync digest.

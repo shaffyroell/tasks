@@ -18,6 +18,9 @@ order. Config: committed `hubspot.json` (+ `clients.json` if agency routing is o
   decisions.
 - **All Lemlist replies** — `get_inbox_conversations` → `get_inbox_conversation`;
   note the `aiLeadInterest` signal (positive/neutral/negative).
+- **B2B Shopify website inbound** — clinic/wholesale inquiries via
+  www.myswimscore.com (often arrive as email to info@myswimscore.com). **B2B
+  only** — individual B2C patient orders are out of scope.
 
 ## 2. Classify each meaningful item — ACCOUNT or INTERNAL
 For every item that matters, decide:

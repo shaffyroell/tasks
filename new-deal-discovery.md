@@ -20,15 +20,27 @@ owned by `defaultOwnerId` (all defined there).
 
 ## 0. Preflight
 HubSpot (required, write — `get_user_details`), Gmail (native), Lemlist
-(`get_campaigns`). Slack optional (warm intros that land in chat). Open with the
-readiness line; skip a down source loudly rather than failing.
+(`get_campaigns`), Shopify (`get-shop-info`). Slack optional (warm intros that land
+in chat). Open with the readiness line; skip a down source loudly rather than
+failing.
 
 ## 1. Pull yesterday's new inbound
 - **Gmail:** `in:inbox newer_than:<lookbackDays>d` (default **2 days**; widen on
-  the first run after a gap), paginate fully. Native Gmail only.
-- **Lemlist:** `get_inbox_conversations(listId="unRead")` and recent replies —
-  positive replies (`aiLeadInterest=positive`) to a cold sequence are textbook new
-  opportunities.
+  the first run after a gap), paginate fully. Native Gmail only. This also catches
+  **Shopify website contact-form / wholesale inquiries** sent to
+  `info@myswimscore.com` — those are often **B2B clinic leads**, keep them.
+- **Lemlist (full inbox):** `get_inbox_conversations(listId="teamConversations")`,
+  **paginated** (page/limit, max 50) so no reply is missed — campaigns send from
+  multiple personas, so `teamConversations` (whole team) beats the user-scoped
+  `myConversations`. Keep conversations with a recent `lastRepliedAt` in the
+  window and/or `isYourTurn:true`. For each candidate, call
+  `get_inbox_conversation(contactId)` to read the thread and the AI signal:
+  `aiLeadInterest=positive` (a real reply showing interest) is a textbook new
+  opportunity; `aiLeadInterest=negative` (e.g. "No thanks.") is **not** a new deal
+  — skip it (and if it matches an existing deal, W1 proposes Closed Lost). Match
+  the lead email / company domain against HubSpot before creating (dedup).
+- **Shopify (B2B only):** website inquiries indicating clinic/wholesale interest.
+  **Do not** create deals for individual B2C patient orders — B2C is out of scope.
 - Optionally **Slack:** shared/Connect channels for "intro" / "connecting you"
   messages.
 

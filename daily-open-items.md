@@ -16,8 +16,9 @@ SwimScore Notion tracker in `hubspot.json` → `internalTracker`.
    **stage** and the newest `[hubspot-ingest …]` notes. This is the authoritative
    "what's happening with whom" for the pipeline.
 2. **Fresh sources** — also read **Gmail**, **Slack** (client / Connect + internal
-   channels), **Granola** call notes, and **Lemlist** replies directly, to catch
-   internal action items and owner follow-ups not captured in HubSpot.
+   channels), **Granola** call notes, **Lemlist** replies, and **B2B Shopify
+   website inquiries** directly, to catch internal action items and owner
+   follow-ups not captured in HubSpot. (B2C patient orders are out of scope.)
 3. **Existing Notion to-dos** — read the current SwimScore tracker and
    **reconcile**: **check what each item is for**, mark items **Done** when
    evidence shows they were handled, **advance** ones that moved forward, then add

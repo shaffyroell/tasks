@@ -63,7 +63,8 @@
       "email":   { "enabled": true,  "provider": "gmail" },
       "slack":   { "enabled": true },
       "granola": { "enabled": true },
-      "lemlist": { "enabled": true, "_note": "Lemlist MCP connected. Read reply threads via get_inbox_conversations + get_inbox_conversation (carries AI interest scoring: aiLeadInterest positive/neutral/negative). Map a positive reply to a stage advance; a negative reply to Closed Lost (with approval). Match the Lemlist lead email to the HubSpot deal's contact." }
+      "lemlist": { "enabled": true, "_note": "Lemlist MCP connected. Read reply threads via get_inbox_conversations + get_inbox_conversation (carries AI interest scoring: aiLeadInterest positive/neutral/negative). Map a positive reply to a stage advance; a negative reply to Closed Lost (with approval). Match the Lemlist lead email to the HubSpot deal's contact." },
+      "shopify": { "enabled": true, "_note": "B2B-ONLY. Inbound messages/inquiries via the Shopify website (www.myswimscore.com contact form, wholesale/clinic inquiries) are often B2B clinic leads — treat them like new-deal discovery: match to an existing HubSpot deal or hand to W0 to create one. Do NOT ingest individual B2C patient orders/customers as deals — B2C is out of scope here. Inbound website messages arrive as emails to info@myswimscore.com (covered by Gmail) and/or surface via Shopify; read both and keep only B2B clinic/partner intent." }
     },
     "_stageMove_note": "Auto-advance when evidence is clear (call booked, proposal sent, pilot started). Never auto-close-won or auto-close-lost without explicit approval.",
     "allowStageAdvance": true,

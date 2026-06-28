@@ -53,7 +53,7 @@ One routine runs the whole thing in order: the **`/daily-crm`** slash command.
 - **Supported tools & connections:** [`CONNECTIONS.md`](./CONNECTIONS.md)
 - **Scheduling:** [`SCHEDULING.md`](./SCHEDULING.md)
 
-## The four sources
+## The sources
 
 All read through the connected account in this environment:
 
@@ -64,6 +64,10 @@ All read through the connected account in this environment:
 - **Lemlist** — cold-sequence replies via `get_inbox_conversations` →
   `get_inbox_conversation`, with AI interest scoring (`aiLeadInterest`
   positive/neutral/negative) used as a buying/lost signal.
+- **Shopify (B2B inbound only)** — inbound inquiries via the www.myswimscore.com
+  website (clinic/wholesale interest) are often **B2B clinic leads** and are
+  treated as deal signals. Individual **B2C patient orders are out of scope** —
+  this pipeline is B2B-only.
 
 ## HubSpot as the single source of truth
 

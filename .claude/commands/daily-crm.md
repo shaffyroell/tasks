@@ -5,9 +5,11 @@ Think like the CEO of this business. HubSpot is the single source of truth for t
 pipeline; SwimScore Notion holds internal execution. Work these steps in order.
 
 1. **Read everything (last few days):** all Gmail threads (native MCP), all
-   relevant Slack channels (client + internal), all Granola call notes, and all
-   fresh Lemlist replies (`get_inbox_conversations` → `get_inbox_conversation`,
-   note `aiLeadInterest`).
+   relevant Slack channels (client + internal), all Granola call notes, all fresh
+   Lemlist replies (`get_inbox_conversations` → `get_inbox_conversation`, note
+   `aiLeadInterest`), and **B2B inbound via the Shopify website** (clinic/wholesale
+   inquiries — often arrive as email to info@myswimscore.com). B2C patient orders
+   are out of scope — **B2B only**.
 
 2. **Classify each meaningful item — ACCOUNT or INTERNAL.** ACCOUNT = an external
    prospect/client/partner (winning, running, or growing a deal). INTERNAL =

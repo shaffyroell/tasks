@@ -52,8 +52,10 @@ duplicate. `Ref` formats:
 ### 2. Gather email — all configured mailboxes (last ~21 days)
 The sweep covers **every** mailbox it can reach:
 - The **connected Gmail inbox** (user default).
-- **Any account listed in `email-accounts.json`** (gitignored) — separate Gmail
-  or Outlook mailboxes, each read with its own credentials. See `EMAIL_SETUP.md`.
+- **Any account in the email config** — separate Gmail or Outlook mailboxes, each
+  read with its own credentials. Config source: the `EMAIL_ACCOUNTS_JSON` env
+  secret if set, else the gitignored `email-accounts.json` file. (Scheduled runs
+  clone fresh, so they rely on the env secret.) See `EMAIL_SETUP.md`.
 
 > **Reply-detection needs Sent mail.** The connected inbox *receives* alias mail
 > (`myswimscore`, `techtowerops`) but does **not** contain replies sent from

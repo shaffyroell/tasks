@@ -52,6 +52,23 @@ reply and will keep flagging answered threads as open.
 3. The daily run sweeps every listed account, tags each item with the mailbox
    name in `Who`, and dedupes on the email thread ID.
 
+## Where credentials live at run time
+
+The config is read from, in order:
+
+1. **`EMAIL_ACCOUNTS_JSON` environment secret** (preferred) — the entire contents
+   of `email-accounts.json` as one value.
+2. **`email-accounts.json`** file on disk (local/manual runs).
+
+> ⚠️ **For the scheduled web run this matters:** each scheduled session clones the
+> repo **fresh**, and `email-accounts.json` is gitignored — so it won't be present.
+> Put the JSON into the environment's secret store as **`EMAIL_ACCOUNTS_JSON`**
+> (Claude Code on the web → environment settings → secrets / env vars). The file
+> on disk is only for local testing.
+
+The same pattern applies to the other sources: `SLACK_WORKSPACES_JSON` and
+`ATTIO_JSON`.
+
 ## Security
 
 - `email-accounts.json` is gitignored alongside `accounts.json` and

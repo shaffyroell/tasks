@@ -18,8 +18,10 @@ outcome — no fluff, no internal commercials on client boards.**
    first word + proper nouns only).
 3. **Name the owner / context in parentheses.** `(Hugo)`, `(Lucy's request)`,
    `(with Syb)`, `(Freddie)`.
-4. **Show the downstream impact** with `→` (chain) or an em-dash `—` (risk/why):
-   `… → unblock Google Maps → campaign launch`, `… — mis-send risk until live`.
+4. **NEVER use arrows.** No `→`, `=>`, `->`, or any arrow glyph anywhere in a
+   to-do. Show the reason/outcome with an **em-dash `—`** or a short
+   **parenthetical** instead: `… — unblocks Google Maps campaign`,
+   `… (mis-send risk until live)`.
 5. **Be concrete** — real dates/times with tz, tools, and names:
    `Fri Jul 3, 12:00–12:30 CET`, `in Lemlist`, `Claude skill file`.
 6. **Accepted shorthand:** LI (LinkedIn), V2, DB, MCP, CRM, ICP, tz codes (CET/ET),
@@ -36,8 +38,8 @@ outcome — no fluff, no internal commercials on client boards.**
 ## Worked examples (from live dashboards — match these)
 
 - `Get competitor blocklist signed off (Hugo) — TerraFirma mis-send risk until live`
-- `Sign off Rev Architect <8/>8 + V2 copy → unblock Google Maps → campaign launch`
-- `Stand up V2 retargeting flow (accepted LI → dedicated follow-up)`
+- `Sign off Rev Architect <8/>8 + V2 copy — unblocks Google Maps campaign launch`
+- `Stand up V2 retargeting flow (dedicated follow-up for accepted LI)`
 - `Send next-phase proposal (differentiate setup vs follow-on)`
 - `Confirm next sync — Fri Jul 3, 12:00–12:30 CET + send invite`
 - `Build & launch UK London fund-lawyers campaign in Lemlist`
@@ -52,7 +54,7 @@ outcome — no fluff, no internal commercials on client boards.**
 | `Follow up with Hugo about the blocklist` | `Get competitor blocklist signed off (Hugo)` |
 | `Need to send the proposal to Hassans` | `Send next-phase proposal (setup vs follow-on)` |
 | `There is a call to confirm.` | `Confirm Jul 3 sync — 12:00 CET + send invite` |
-| `Work on the retargeting stuff for V2` | `Stand up V2 retargeting flow (accepted LI → follow-up)` |
+| `Stand up V2 flow → follow-up` *(arrow)* | `Stand up V2 retargeting flow (dedicated follow-up)` |
 
 ## Field conventions (To-Dos DB row)
 

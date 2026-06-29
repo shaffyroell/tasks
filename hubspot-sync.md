@@ -53,6 +53,15 @@ the last `ingest.lookbackDays` (widen after a gap). For each, find the deal it
 belongs to and capture what actually moved: calls held, proposals sent, pricing,
 scheduling, commitments.
 
+**Also read threads where Shaffy is only CC'd by a teammate** — these very often
+carry pipeline updates. The team emails leads from several personas
+(`info@myswimscore.com`, `elara.k@maleswimscore.com`,
+`stewart.hill@checkswimscore.com`, `syb@myswimscore.com`, and other `*swimscore*`
+sending domains) and CC Shaffy. Search beyond the direct inbox, e.g.
+`cc:shaffy@myswimscore.com newer_than:<lookbackDays>d` and threads from those
+teammate senders, and fold any deal-relevant development into the right deal's note
+— don't skip a thread just because Shaffy wasn't the direct recipient.
+
 ## 4. Slack — sweep the deal/account channels
 Read threads (not just top messages) in the channels in `hubspot.json.slackChannels`:
 **outbound / Lemlist-replies**, **pipeline-clients**, **business-strategy**,

@@ -21,7 +21,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 
 3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
    of truth after Lemlist). For every serious conversation (calls held, proposals,
-   pricing, scheduling, commitments), find its deal and capture what moved.
+   pricing, scheduling, commitments), find its deal and capture what moved. **Also
+   read threads where Shaffy is only CC'd by a teammate** (`cc:shaffy@myswimscore.com`
+   + threads from team senders: info@myswimscore.com, elara.k@maleswimscore.com,
+   stewart.hill@checkswimscore.com, syb@myswimscore.com, other *swimscore* domains) —
+   these often carry pipeline updates.
 
 4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,

@@ -22,7 +22,10 @@ Lemlist, Shopify, Notion); work the steps in order.
 
 3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
    truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →
-   attach to the deal.
+   attach to the deal. **Also read threads where Shaffy is only CC'd by a teammate**
+   (`cc:shaffy@myswimscore.com` + threads from team senders: info@myswimscore.com,
+   elara.k@maleswimscore.com, stewart.hill@checkswimscore.com, syb@myswimscore.com,
+   other *swimscore* domains) — these often carry pipeline updates.
 
 4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,

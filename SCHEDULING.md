@@ -57,8 +57,8 @@ W1 `/hubspot-sync` at 07:00, W2 `/notion-todos` at 07:15.
 ### Model / cost
 
 Set the scheduled session to run on **Sonnet**, not Opus. This workflow is mostly
-retrieval + structured writes (snippets/metadata, not full bodies; Fireflies
-action-items, not full transcripts; scoped 21d/7d lookbacks), so it doesn't need
+retrieval + structured writes (snippets/metadata, not full bodies; call
+action-items, not full transcripts; scoped lookbacks), so it doesn't need
 Opus-level reasoning. Sonnet runs it at roughly 1/5 the cost for the same quality
 here — ballpark low-cents to ~$0.50 per daily run vs. ~$1–3 on Opus. Note that
 model/runtime cost is the same regardless of *where* it's scheduled — hosting it
@@ -66,23 +66,23 @@ elsewhere doesn't reduce token usage, only changes where scheduling lives.
 
 ## 2. Environment secrets — usually NONE needed
 
-The routine reads its config straight from git: **`attio.json`** (enable flags +
-IDs, empty apiKey) and **`clients.json`** (per-client Notion routing) are
-**committed** (they contain no credentials), so there is **nothing to paste** for
-the core pipeline. All sources (Attio, Gmail, Slack, Granola, Fireflies, Notion)
-run through your **connected account** in the scheduled session.
+The routine reads its config straight from git: **`hubspot.json`** (pipeline IDs +
+enable flags + Slack channel map + stale-follow-up settings) is **committed** (no
+credentials), so there is **nothing to paste** for the core pipeline. All sources
+(HubSpot, Gmail, Slack, Granola, Lemlist, Shopify, Notion) run through your
+**connected account** in the scheduled session.
 
 Add a secret **only if** the first run's preflight shows a source ⚠️ unavailable
 headless — then add just that one:
 
 | Secret | Only if… |
 |---|---|
-| `ATTIO_API_KEY` | Attio shows ⚠️ in a scheduled run (connector not available headless) |
+| `HUBSPOT_TOKEN` | HubSpot shows ⚠️ in a scheduled run (connector not available headless) |
 | `EMAIL_ACCOUNTS_JSON` | you add a mailbox beyond the connected inbox |
 | `SLACK_WORKSPACES_JSON` | you add a Slack workspace beyond the connected one |
 
-Real tokens go in env secrets (or the gitignored `attio.local.json`) — **never**
-in the committed `attio.json`.
+Real tokens go in env secrets (or the gitignored `hubspot.local.json`) — **never**
+in the committed `hubspot.json`.
 
 ## 3. Network policy
 
@@ -93,17 +93,17 @@ network policy that allows that outbound access (see the docs link above).
 
 - Check the run's summary opens with a **Preflight** line and that each source
   you expect shows ✅ (not ⚠️).
-- Confirm new rows appeared / updated in the Notion tracker
-  (https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144).
+- Confirm deals updated in HubSpot (notes + stage moves) and new/updated rows on
+  the SwimScore Notion board (https://app.notion.com/p/bf5ee5540bd04fd69f10a2336656fd70).
 - If a connector shows ⚠️ "not available" in a scheduled (headless) run, that
-  source needs token-based access instead — add its token as a secret (Gmail via
-  `EMAIL_ACCOUNTS_JSON`, Slack via `SLACK_WORKSPACES_JSON`; Notion/Fireflies would
-  need their own tokens). The preflight tells you exactly which, so you only fix
+  source needs token-based access instead — add its token as a secret (HubSpot via
+  `HUBSPOT_TOKEN`, Gmail via `EMAIL_ACCOUNTS_JSON`, Slack via
+  `SLACK_WORKSPACES_JSON`). The preflight tells you exactly which, so you only fix
   what actually breaks.
 
 ## Fallback
 
 If you ever want a non-Claude-hosted schedule (GitHub Actions cron or a
-self-hosted cron + `gtm-multi-mcp`), the workflow is already token-portable for
-email/Slack/Attio; you'd additionally provide Notion + Fireflies tokens. Ask and
+self-hosted cron), the workflow is already token-portable for HubSpot, Gmail,
+Slack, Lemlist, and Notion. Ask and
 this runbook can be extended with that path.

@@ -28,22 +28,23 @@ source is down — note the gap.
     ("no thanks", "unsubscribe", wrong-email) are **not** deals.
   - **Existing deal** → if there's new content, update it (steps 4–5).
 
-## 2. Shopify — B2B inbound from the website (check first)
-SwimScore's Shopify store (www.myswimscore.com) is a real inbound channel for **B2B
-clinic/partner** opportunities — screen it **before** the email threads so a fresh
-website lead is in the pipeline before you read the follow-ups. Each run, check
-**both surfaces**:
-- **Gmail:** website contact-form submissions arrive as **"New customer message …"**
-  emails to `info@myswimscore.com` — search for them in the window.
-- **Shopify (MCP):** `get-shop-info` to confirm reachable, then scan recent
-  customers/orders (`list-customers` with an `order_date`/`created_at` filter,
-  `list-orders`) for **clinic / wholesale / partner** signals (practice name, bulk
-  intent, a provider email) rather than an individual patient.
-Keep **only B2B clinic/partner intent**: match it to an existing HubSpot deal, or
+## 2. Shopify — B2B inbound contact-form messages only (check first)
+SwimScore's website (www.myswimscore.com) contact form is a real inbound channel for
+**B2B clinic/partner** opportunities — screen it **before** the email threads so a
+fresh website lead is in the pipeline before you read the follow-ups.
+- **Only read inbound contact-form messages.** These arrive as **"New customer
+  message …"** emails to `info@myswimscore.com` — search Gmail for them in the
+  window. (If a Shopify-native message surface is available, read messages there;
+  otherwise the email is the message.)
+- **Do NOT read Shopify orders or the customer list.** Orders/customers are B2C
+  patient purchases and are **out of scope** — never pull `list-orders` /
+  `list-customers` and never create a deal from a patient order.
+Keep **only B2B clinic/partner intent** from the contact-form message (a practice
+name, provider, wholesale/partnership ask): match it to an existing HubSpot deal, or
 hand a genuinely new one to **W0** (deal named after the clinic + contact + company
-+ domain). **Ignore individual B2C patient orders** — B2C is out of scope here.
-*(Worked example already in HubSpot: Epoch Health came in as a Jun 21 Shopify
-"New customer message" and is now a Pilot-Discussion deal.)*
++ domain). A purely individual B2C message → skip.
+*(Worked example already in HubSpot: Epoch Health came in as a Jun 21 website
+contact-form message and is now a Pilot-Discussion deal.)*
 
 ## 3. Email — read all of Shaffy's threads for serious conversations
 **`shaffy@myswimscore.com` is the source of truth after Lemlist** — he follows up

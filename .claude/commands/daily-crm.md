@@ -13,12 +13,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    contact + company + domain). Existing deal with new content → update it (step 5).
    Negative replies are not deals.
 
-2. **Shopify — check for B2B inbound FIRST** (before the email threads), on both
-   surfaces: the `"New customer message"` contact-form emails to
-   `info@myswimscore.com` in Gmail, AND recent Shopify customers/orders
-   (`get-shop-info`, `list-customers`, `list-orders`) for clinic/wholesale/partner
-   signal. Keep only B2B intent → match to a deal or hand to W0. Ignore individual
-   B2C patient orders.
+2. **Shopify — check inbound contact-form messages FIRST** (before the email
+   threads). Read **only** the website `"New customer message"` contact-form
+   submissions (they arrive as emails to `info@myswimscore.com`). Keep only B2B
+   clinic/partner intent → match to a deal or hand to W0. **Do NOT read Shopify
+   orders or the customer list** — those are B2C and out of scope.
 
 3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
    of truth after Lemlist). For every serious conversation (calls held, proposals,

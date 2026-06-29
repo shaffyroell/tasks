@@ -47,7 +47,7 @@ workspace. One company = one config = one Claude workspace = one tracker.
 - **Chat:** `stack.chat.provider` (slack | google_chat; Teams out of scope),
   identity `stack.chat.userId` (TechTower: `U07CJK9H78A`).
 - **Meetings:** `stack.meetings.provider` (fireflies | otter | gemini | granola).
-- **CRM:** `stack.crm` (attio, always on — the canonical client/prospect list).
+- **CRM:** HubSpot (always on — the canonical deal/contact list, single source of truth).
   Used both to **recognize** which emails/chats are client/pipeline and as the
   **write-back** target (step 6).
 - **Lookbacks:** `lookbackDays` (defaults 21d email / 7d chat / 7d meetings).
@@ -60,7 +60,7 @@ workspace. One company = one config = one Claude workspace = one tracker.
 - **Schema:** `Item` (title), `Source` (Email/Slack/Meeting), `Status`
   (Needs Response / Follow Up / To Do / Waiting / Done), `Priority`
   (High/Medium/Low), `Who`, `Action Needed`, `Link`, `Ref`, `First Seen`,
-  `Last Updated`, `Attio` (what was written back to the CRM, if anything),
+  `Last Updated`, `HubSpot` (the linked deal, if any),
   `Handled By` (AI / AI + Review / Human), `AI Can Do`, `Needs from You`.
 
 ---
@@ -224,7 +224,7 @@ If an agency registry is present (`clients.json` / `CLIENTS_JSON`), write each
 open to-do to the right Notion destination as well as the master tracker:
 
 1. **Classify** the item to a client by matching the counterparty's **email
-   domain** or a **name alias** in the registry (not Attio — it's under-tagged).
+   domain** or a **name alias** in the registry.
 2. **Route:**
    - Matches a `type:client` entry → write to that client's **dashboard page**
      (`dashboardPageId`).

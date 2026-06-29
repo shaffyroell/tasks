@@ -1,9 +1,9 @@
 # Writing style — client-facing to-dos & dashboard text
 
 **Every to-do written to a client dashboard (and the master tracker) must follow
-this.** It's inferred from TechTower's existing dashboards — keep it consistent.
-W2 (`daily-open-items.md`) loads this before writing any Notion row; W0/W1 notes
-in Attio should match the same voice.
+this.** Keep it consistent across the SwimScore Notion board. W2
+(`daily-open-items.md`) loads this before writing any Notion row; W0/W1 notes in
+HubSpot should match the same voice.
 
 ## Voice in one line
 **Imperative, verb-first, concise, specific — what to do, for whom, and the

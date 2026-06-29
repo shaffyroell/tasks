@@ -44,18 +44,35 @@ failing.
 - Optionally **Slack:** shared/Connect channels for "intro" / "connecting you"
   messages.
 
-## 2. Keep only genuine new opportunities
-**KEEP:** a real external party showing intent in the services you sell (the
-Clinic-Partnerships motion: clinics/health orgs, partnerships, pilots) — an
-inbound inquiry, a warm intro ("introducing…/connecting you with…"), a booked
-intro/discovery call, a positive Lemlist reply, or a proposal/pricing discussion.
+## 2. Keep only genuine new opportunities — SwimScore's ICP
 
-**EXCLUDE:** automated/SaaS notifications (HubSpot, Stripe, Google, LinkedIn,
-Calendly, billing/receipts), internal colleagues (your own sending domains),
-vendors pitching **to** you, recruiting/hiring applicants and dev shops, anything
-personal, and anyone **already a deal** — dedup the sender's email / company
-domain / name against existing HubSpot deals (and the contacts/companies they
-link to).
+**Who SwimScore sells to.** SwimScore (www.myswimscore.com) provides an **at-home
+male-fertility testing kit** — semen analysis, DNA fragmentation, and a hormone
+panel in one clinically-validated mail-in kit, with a **clinic dashboard** (real-time
+patient status + results) and patient SMS updates, on a **clinic-pay model** (clinic
+pays SwimScore, sets its own patient price). The target customer is a **clinic /
+provider that wants to use SwimScore inside their patient workflow** — order kits for
+patients, track status, review results, optionally mark up the price.
+
+**KEEP** — a real clinic/provider showing intent to **offer SwimScore to their
+patients**, e.g.:
+- Fertility / IVF / reproductive-endocrinology clinics, urology & men's-health
+  practices, OB/GYN, **fertility acupuncture / naturopathic** practices, cryobanks,
+  and fertility-benefits platforms.
+- Signals: wants at-home SA / DNA-frag / hormone testing for their male patients;
+  wants visibility / follow-up on the male partner; wants to mark up price to
+  patients; asks about onboarding, the clinic portal, pricing, or a pilot; a warm
+  intro ("connecting you with…"); a booked discovery call; a positive Lemlist reply;
+  a B2B website contact-form inquiry.
+
+**EXCLUDE:** individual **B2C patients** buying a kit for themselves (out of scope —
+B2B only); **research/academic labs** working on animal/preclinical samples (NIH,
+university labs, etc.); automated/SaaS notifications (HubSpot, Stripe, Google,
+LinkedIn, Calendly, billing/receipts); internal colleagues (your own sending
+domains); vendors pitching **to** SwimScore; recruiting/hiring applicants and dev
+shops; anything personal; and anyone **already a deal** — dedup the sender's email /
+company domain / name against existing HubSpot deals (and their contacts/companies).
+Clinics that do all testing in-house and explicitly decline are **not** new deals.
 
 **Confidence:** create automatically for clear opportunities (proposal/pricing,
 booked call, explicit inquiry, positive Lemlist reply). For thin/low-confidence

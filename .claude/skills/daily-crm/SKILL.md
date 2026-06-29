@@ -14,11 +14,11 @@ Lemlist, Shopify, Notion); work the steps in order.
    after the clinic + linked contact + company + domain. Existing deal with new
    content → update (step 5). Negative replies are not deals.
 
-2. **Shopify — check for B2B inbound FIRST** (before the email threads), both
-   surfaces: `"New customer message"` contact-form emails to `info@myswimscore.com`
-   in Gmail, AND recent Shopify customers/orders (`get-shop-info`, `list-customers`,
-   `list-orders`) for clinic/wholesale/partner signal. Keep only B2B → match to a
-   deal or hand to W0; ignore individual B2C patient orders.
+2. **Shopify — inbound contact-form messages FIRST** (before the email threads):
+   read **only** the website `"New customer message"` contact-form submissions
+   (arrive as emails to `info@myswimscore.com`). Keep only B2B clinic/partner intent
+   → match to a deal or hand to W0. **Do NOT read Shopify orders or customers** —
+   B2C, out of scope.
 
 3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
    truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →

@@ -67,7 +67,7 @@ The config is read from, in order:
 > on disk is only for local testing.
 
 The same pattern applies to the other sources: `SLACK_WORKSPACES_JSON` and
-`ATTIO_JSON`.
+`HUBSPOT_TOKEN`.
 
 ## Security
 

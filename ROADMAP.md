@@ -1,37 +1,34 @@
 # Roadmap & related workflows
 
 Things this sweep depends on or could grow into — tracked separately so the daily
-workflow stays focused.
+open-items workflow stays focused.
 
-## Done: HubSpot pipeline backfill + stage automation
-The one-off pipeline cleanup is **done**:
-- Backfilled the genuine B2B clinic leads from the full Lemlist team inbox into
-  HubSpot as deals (deal named after the clinic + linked contact + company + domain),
-  each with a conversation note.
-- Enriched every deal note from Shaffy's Gmail threads (source of truth after
-  Lemlist) + Slack + Granola: Background → timestamped Timeline → Latest → Next step.
-- Set stages from real evidence (call held → Discovery Completed, proposal sent →
-  Proposal Sent, onboarding booked → Pilot Discussion, etc.).
+## Done: Attio data hygiene & enrichment + stage automation
+The pipeline cleanup that this sweep depended on is **done** (one-off pass):
+- Backfilled deal stages from email/meeting evidence (23-status mess → clean set;
+  stale → `Nurture / recontact`, explicit declines → `Lost`).
+- Created genuine new inbound deals found in the last 4 months of mail.
+- Linked **people → deals** and **companies → deals**, backfilled company
+  `domains`, and set `value` + `type_of_client_8`.
 
-Keeping it current is now a **daily workflow** — see [`hubspot-sync.md`](./hubspot-sync.md):
-it checks Lemlist, Shopify contact-form inbound, Gmail, Slack, and Granola, moves
-deal stages on fresh evidence, and appends a dated note to each deal so **HubSpot is
-the source of truth**.
+Keeping it current is now a **daily workflow** — see
+[`attio-ingest.md`](./attio-ingest.md): it reads Gmail/Slack/Granola/
+Fireflies/calendar, moves deal stages on fresh evidence, and appends a dated
+comms note to each deal (active clients get a running log) so **Attio is the
+source of truth**. Matching still relies on links staying populated, so don't let
+new records go unlinked.
 
 ## Future
-- **Stale read-in:** the daily run already flags deals with no contact in 14+ days
-  and drafts a follow-up to the SwimScore Notion board (New sales pillar). Could
-  extend to a weekly digest of all open/stalled deals.
-- **Auto-create:** done — daily new-inbound deal creation (create + link company +
-  contact + note) is its own front workflow, `new-deal-discovery.md` (W0).
+- **Attio read-in:** pull open / stalled / overdue deals *out* of Attio into the
+  open-items tracker as their own items (not just write-back).
+- **Auto-create:** done — daily new-inbound deal creation (create + link company
+  + link person + note) is its own front workflow, `new-deal-discovery.md` (W0).
   Low-confidence intros are listed for review rather than created.
-- **Closed-lost hygiene:** auto-propose Closed Lost for cold-list hard rejections
-  (currently left out of the pipeline rather than created).
-- **Onboarding template:** Mirva, Epoch Health, and Epic Fertility are converging on
-  Jul 10 onboarding — a one-click onboarding checklist (sample kit + portal setup +
-  one-pager) per new clinic would help.
+- **Weekly deep re-sweep:** a wider-lookback variant of `attio-ingest.md` to
+  catch deals that went quiet (vs. the daily incremental run).
+- **Per-client onboarding template:** one-click Notion tracker duplication +
+  guided token collection (see ONBOARDING.md for the manual version today).
 
 ## Out of scope
-- **B2C Shopify orders/customers** — individual patient purchases are not deals; the
-  sweep only reads B2B website contact-form messages.
-- **Microsoft Teams** — see `CONNECTIONS.md`. Not pursued.
+- **Microsoft Teams** — see `CONNECTIONS.md`. Reading client Teams needs
+  per-tenant Graph apps + metered protected APIs; not pursued.

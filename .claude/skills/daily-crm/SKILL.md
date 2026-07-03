@@ -1,54 +1,49 @@
 ---
 name: daily-crm
-description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, updates HubSpot deal notes + stages on any development, flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
+description: Daily key-account sweep. Reads ALL recent email, Slack, and call notes (Granola/Fireflies), links each to the right Attio deal (adds a note only if it isn't already there), keeps stages honest, then reconciles per-client action items in Notion. Use as the scheduled daily run.
 ---
 
-Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
-the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
-`hubspot.json`. Open with a per-source preflight (HubSpot, Gmail, Slack, Granola,
-Lemlist, Shopify, Notion); work the steps in order.
+Act like the person who **manages these key accounts**. Don't transcribe — read
+everything, understand what's happening with each account, and make Attio + Notion
+reflect it. Work the four steps below, in order.
 
-1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
-   `get_inbox_conversation` for the thread + `aiLeadInterest`). New genuine B2B
-   interest with no deal → create it via W0 (`new-deal-discovery.md`): deal named
-   after the clinic + linked contact + company + domain. Existing deal with new
-   content → update (step 5). Negative replies are not deals.
+## 1. Read everything from the last few days
+- **All emails** — every Gmail thread with a new inbound/outbound message
+  (native Gmail MCP only). Read the substance, commitments, and asks.
+- **All Slack** — sweep every client / Slack-Connect channel **and** the internal
+  channels where account work is discussed (e.g. `#<client>-internal`), last few
+  days; read threads, not just top messages.
+- **All call notes** — every Granola note and Fireflies transcript/summary in the
+  window; these hold the real decisions, read them in full.
 
-2. **Shopify — inbound contact-form messages FIRST** (before the email threads):
-   read **only** the website `"New customer message"` contact-form submissions
-   (arrive as emails to `info@myswimscore.com`). Keep only B2B clinic/partner intent
-   → match to a deal or hand to W0. **Do NOT read Shopify orders or customers** —
-   B2C, out of scope.
+## 2. Link each conversation to the right Attio deal — note it if missing
+For every meaningful communication, find its account's **deal** (participant
+email → person → deal; company domain → company → deal; or name/alias). Then:
+- **Check the deal's existing notes first.** If this conversation/call is already
+  captured, **skip it** (no duplicates — match on the thread/meeting + content,
+  not just the date).
+- **If it's missing, add a note** (`create-note` on the deal) summarizing: what
+  happened, decisions & commitments (what we owe / they owe, by when), risks/
+  blockers, and the next step. If a meaningful comm has no note, that's a gap —
+  close it.
+- Run W0 (`new-deal-discovery.md`) first for genuinely NEW opportunities with no
+  deal yet (create deal + link company + person + note); don't force-fit new
+  inbound onto an existing deal.
+- **Keep the stage honest** — advance/hold per the evidence; never silently
+  demote an active client. Detail in `attio-ingest.md`.
 
-3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` = source of
-   truth after Lemlist): calls held, proposals, pricing, scheduling, commitments →
-   attach to the deal. **Also read threads where Shaffy is only CC'd by a teammate**
-   (`cc:shaffy@myswimscore.com` + threads from team senders: info@myswimscore.com,
-   elara.k@maleswimscore.com, stewart.hill@checkswimscore.com, syb@myswimscore.com,
-   other *swimscore* domains) — these often carry pipeline updates.
+## 3. Reconcile action items in Notion (per client)
+Run W2 (`daily-open-items.md`): read Attio (the notes/stages you just wrote) plus
+the same fresh sources, then for each client's Notion board **see if the action
+items already exist** — mark Done what was handled, advance what moved, dedup on
+`Ref` — and add genuinely new to-dos, **each written in the house style per
+`STYLE.md`** (verb-first, concise, client-safe, no arrows).
 
-4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
-   lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
-   wellness-portal-dev, legal, daily-status, + others). Read threads.
+## 4. Report
+End with a digest: accounts touched, notes added (with gaps closed), stage moves,
+new deals created, and the Notion to-dos added/updated/closed per client.
 
-5. **Calls — read recent Granola notes** for decisions, pain points, next steps.
-
-6. **Update HubSpot per client — only on a development.** Check existing notes
-   first (no duplicates); add/refresh a `[hubspot-ingest]` note (Background →
-   timestamped Timeline → Latest → Next step) and advance the stage on clear
-   evidence. Honor autoApply; never auto-close Won/Lost; never silently demote.
-
-7. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`): for
-   each open deal, last-contact >14d (high >21d) and a nudge is warranted → add a
-   To-Do on the SwimScore Notion board under **New sales** (Owner Shaffy, Link the
-   deal, dedup `Ref hubspot:stale:<dealId>`) with a short, specific follow-up
-   message **drafted from the deal's HubSpot notes** (only if a real message fits).
-
-8. **Update the SwimScore Notion board from all channels** (W2,
-   `daily-open-items.md`): reconcile internal to-dos across the six pillars from
-   business-strategy, product/portal, legal, finance, support — check what each is
-   for, mark Done / advance, dedup on `Ref`, add new in house style (`STYLE.md`).
-
-End with a CEO digest: deals updated (notes + stage moves, Closed awaiting
-approval), new deals, stale deals flagged (with/without drafted message), and
-Notion to-dos added/advanced/closed per pillar. Surface the top risks + decisions.
+Think critically per account the whole way through: progressing, stalling, or at
+risk? a commitment slipping? an upsell/renewal cue? That judgement is the job.
+Config = committed `attio.json` + `clients.json`. Open with a per-source preflight
+line; stop and report if a critical source is down.

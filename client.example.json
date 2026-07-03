@@ -1,11 +1,11 @@
 {
-  "_comment": "Per-client config — copy to client.json (gitignored), one per company. Capability-based: declare the PROVIDER per capability. STANDARD CLIENT PROFILE baked in below: Notion tracker (always) · email (always) · HubSpot CRM (always — the single source of truth) · shared Slack (some clients). One company = one config = one Claude workspace = one tracker.",
+  "_comment": "Per-client config — copy to client.json (gitignored), one per company. Capability-based: declare the PROVIDER per capability. STANDARD CLIENT PROFILE baked in below: Notion tracker (always) · email (always) · Attio CRM (always — the canonical client list) · shared Slack (some clients). One company = one config = one Claude workspace = one tracker.",
   "_supported_providers": {
     "tracker": ["notion"],
     "email": ["gmail", "outlook"],
     "chat": ["slack", "google_chat", "none"],
     "meetings": ["fireflies", "otter", "gemini", "granola", "none"],
-    "crm": ["hubspot", "attio", "pipedrive", "salesforce", "none"]
+    "crm": ["attio", "hubspot", "pipedrive", "salesforce", "none"]
   },
   "client": "acme",
   "owner": {
@@ -26,9 +26,10 @@
       "domains": ["acme.com"]
     },
     "crm": {
-      "_note": "Always on — the pipeline lives in HubSpot, the single source of truth (canonical deal/contact/company list, and where comms notes + stages are written). See HUBSPOT_SETUP.md.",
+      "_note": "Always on — every client is in Attio. Used BOTH as the canonical client/prospect list (to decide which emails/chats are pipeline) AND as the write-back target for follow-up notes/tasks. See ATTIO_SETUP.md.",
       "enabled": true,
-      "provider": "hubspot",
+      "provider": "attio",
+      "workspace": "acme",
       "useAsClientSource": true,
       "writeBack": true
     },

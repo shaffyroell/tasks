@@ -1,0 +1,75 @@
+{
+  "default": "techtower",
+  "workspaces": {
+    "techtower": {
+      "_apiKey_note": "Attio runs via the connected account in this environment, so no token is needed and this stays empty. ONLY if a scheduled run's preflight shows Attio unavailable headless: put a real token in attio.local.json (gitignored) or the ATTIO_API_KEY env secret \u2014 NEVER here in git.",
+      "apiKey": "",
+      "_objects_note": "Object slugs the sweep will try to match a contact/company against, in priority order. Confirm these exist via GET /v2/objects.",
+      "objects": [
+        "deals",
+        "people",
+        "companies"
+      ],
+      "_match_note": "Which attribute to match the email sender / company on, per object.",
+      "match": {
+        "people": "email_addresses",
+        "companies": "domains",
+        "deals": "associated_people"
+      },
+      "writeBack": {
+        "addNote": true,
+        "createFollowUpTask": true,
+        "followUpDueDays": 2,
+        "assigneeEmail": "shaffy@techtower.ai",
+        "_optional_attrs": "If these custom attributes exist on the object, the sweep will set them. Leave blank to skip. Use the attribute slug from GET /v2/objects/{object}/attributes.",
+        "nextStepAttribute": "",
+        "lastContactedAttribute": "",
+        "_stage_note": "Auto-advancing a deal stage is OFF by default and ALWAYS requires explicit approval in the run. Never set this to auto-close/auto-win.",
+        "allowStageChange": false,
+        "stageAttribute": "stage"
+      }
+    }
+  },
+  "_newDealDiscovery_note": "W0 (new-deal-discovery.md). Scans yesterday's inbound for genuine NEW opportunities not in Attio and creates deal + links company + person + adds a [new-deal] note. enabled=true turns it on. Committed config (no secrets).",
+  "newDealDiscovery": {
+    "enabled": true,
+    "lookbackDays": 2,
+    "ownerId": "9ecd9b0d-6feb-4582-829b-7dd2fced6d6d",
+    "minConfidence": "medium",
+    "createNewDeals": true,
+    "noteMarkerPrefix": "[new-deal]"
+  },
+  "_attioIngest_note": "W1 (attio-ingest.md). Daily ingest: writes ALL raw comms to Attio as notes + keeps stages current. createNewDeals stays false (creation is W0's job). enabled=true turns it on. Committed config (no secrets).",
+  "attioIngest": {
+    "enabled": true,
+    "autoApply": true,
+    "createNewDeals": false,
+    "recencyWeeks": 6,
+    "lookbackDays": 3,
+    "stageAttribute": "stage",
+    "noteMarkerPrefix": "[attio-ingest]",
+    "digestChannel": "",
+    "activeStages": [
+      "1.  Positive reply",
+      "2. Planning call",
+      "3. Demo planned",
+      "4. Scope agreed",
+      "5. Proposal sent",
+      "6. Active client",
+      "7. Active Project Client",
+      "8. Completed Client",
+      "8.a Finished, need to finalize invoicing"
+    ],
+    "statusTitles": {
+      "positiveReply": "1.  Positive reply",
+      "planningCall": "2. Planning call",
+      "demoPlanned": "3. Demo planned",
+      "scopeAgreed": "4. Scope agreed",
+      "proposalSent": "5. Proposal sent",
+      "activeClient": "6. Active client",
+      "completedClient": "8. Completed Client",
+      "nurture": "Nurture / recontact",
+      "lost": "Lost - not interested"
+    }
+  }
+}

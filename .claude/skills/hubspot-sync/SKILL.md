@@ -14,4 +14,8 @@ each deal that had fresh activity **only if it isn't already there** (what
 happened per channel, decisions/commitments, risks, next step), and move its
 `dealstage` when the evidence warrants — honoring `ingest.autoApply`,
 `allowStageAdvance`, and `allowStageClose` (never auto-close Won/Lost). Use only
-the native Gmail MCP. Config: `hubspot.json`. Finish with the deal-sync digest.
+the native Gmail MCP. Before flagging any deal stale or recommending a downgrade,
+follow the §3a/§7 verification rule in `hubspot-sync.md`: do an undated
+`from:`/`to:` search on that contact and confirm the actual last message's date —
+never characterize a thread as quiet without checking it. Config: `hubspot.json`.
+Finish with the deal-sync digest.

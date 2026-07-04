@@ -62,6 +62,26 @@ sending domains) and CC Shaffy. Search beyond the direct inbox, e.g.
 teammate senders, and fold any deal-relevant development into the right deal's note
 — don't skip a thread just because Shaffy wasn't the direct recipient.
 
+### 3a. Verifying recency — never characterize, always check the actual last message
+A date-windowed search (`newer_than:Nd`, `cc:` search, importance flags) can surface
+a thread without the reader actually noticing that thread's *most recent* message is
+new. **"No activity in the window" is a claim, not an observation — it must be
+backed by the literal date of the last message in that thread**, not an impression
+from skimming. For every deal touched this run, record the concrete fact:
+`last_message_date / sender / direction (inbound|outbound)` — not a qualitative
+summary like "quiet" or "no activity." If you can't point to that fact, you haven't
+actually checked.
+
+When a specific deal is a candidate for a **stale flag, a stage regression, or a
+Closed Lost recommendation** (i.e. any negative/downgrade claim — the costliest kind
+of mistake, since it tells Shaffy a live conversation is dead), do a **direct,
+undated verification pull** before writing anything: search by the contact's exact
+email/domain with no date restriction (`from:<email> OR to:<email>`, no
+`newer_than`), open the thread, and read the actual last message — sender and date.
+Do not rely on a broader dated sweep's characterization for this specific
+determination. Re-verify even if the deal was already flagged stale in a prior run —
+don't carry an old flag forward without checking it's still true today.
+
 ## 4. Slack — sweep the deal/account channels
 Read threads (not just top messages) in the channels in `hubspot.json.slackChannels`:
 **outbound / Lemlist-replies**, **pipeline-clients**, **business-strategy**,
@@ -93,6 +113,13 @@ For each deal with new substantive activity:
 For every **open** deal (skip `excludeStages` = Closed Won/Lost and any dead/
 cold-rejected lead), compute **last contact date** = the most recent inbound or
 outbound across email, Lemlist, Slack, and calls.
+
+**Before flagging any deal stale, do the 3a verification pull for that deal's
+contact — no exceptions.** A dated sweep missing one reply is exactly how a live,
+active negotiation gets wrongly reported as abandoned. Confirm the literal date of
+the last message (undated `from:`/`to:` search on the contact's email) before
+writing a stale flag, and re-confirm even for a deal already flagged stale in a
+previous run.
 - If last contact is **older than `thresholdDays` (14d)** — and a nudge is genuinely
   warranted (not already waiting on a booked future call, deal still alive) — **flag
   it**. Past `escalateDays` (21d), mark it high priority.

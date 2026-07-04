@@ -25,7 +25,9 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    read threads where Shaffy is only CC'd by a teammate** (`cc:shaffy@myswimscore.com`
    + threads from team senders: info@myswimscore.com, elara.k@maleswimscore.com,
    stewart.hill@checkswimscore.com, syb@myswimscore.com, other *swimscore* domains) —
-   these often carry pipeline updates.
+   these often carry pipeline updates. A dated `newer_than:Nd` sweep can miss a
+   thread's actual latest message — never report "no activity" from an impression;
+   state the literal last-message date/sender for every deal touched.
 
 4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
@@ -40,8 +42,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    on clear evidence. Honor autoApply; never auto-close Won/Lost (list for approval);
    never silently demote an active deal.
 
-7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`). For
-   each open deal, compute last contact date across email/Lemlist/Slack/calls. If
+7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
+   **Before flagging or re-affirming any deal as stale, verify directly**: an undated
+   `from:`/`to:` search on that contact's email, reading the actual last message's
+   date — never carry forward a prior run's stale flag unchecked. For each open deal
+   confirmed quiet, compute last contact date across email/Lemlist/Slack/calls. If
    >14d (high priority >21d) and a nudge is warranted (alive, not awaiting a booked
    call): add a To-Do to the SwimScore Notion board under **New sales**
    (`Follow up with <clinic> — quiet <N>d`), Owner Shaffy, Link the deal, dedup on

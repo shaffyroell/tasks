@@ -58,11 +58,24 @@ Post the recap as a Slack message to the **`#shaffy-recap`** channel (ID
 • Account: text text
 • Account: text text
 
+*Next 2-3 goals to push proactively (post-current-items):*
+• Account: goal; goal; goal — the roadmap-level pushes Shaffy should be
+  driving next per account, beyond today's open items (upsell/renewal cues,
+  scope expansion, next milestone). This is what makes the sweep proactive
+  instead of reactive — always fill this in, even on a quiet week.
+• Account: goal; goal; goal
+
 *Suggestions to Joep, Roman, Swayam:*
 • To Joep: text
 • To Roman: text
 • To Swayam: text (if nothing surfaced for someone that day, say so explicitly —
   never invent a suggestion just to fill the line)
+
+Notion boards:
+• Internal/pipeline: <internalBoard.todoDbUrl from clients.json>
+• <Client>: <link to that client's dashboardPageId from clients.json>
+  (one line per client entry in clients.json — always list every one, even if
+  quiet that day, so the message doubles as a navigation index)
 ```
 
 **Note on the Slack identity:** the connected Slack integration authenticates as

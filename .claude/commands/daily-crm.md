@@ -62,3 +62,21 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 End with a digest: deals updated (notes + stage moves, any Closed awaiting approval),
 new deals created, **stale deals flagged (with/without drafted message)**, and Notion
 to-dos added/advanced/closed per pillar. Call out the top risks and decisions for the CEO.
+
+9. **Post the short recap to `#daily-recap` in Slack** — *Short-term goals* (by
+   category: Pipeline, Website conversion, Ads, Product/Onboarding, Support, ...)
+   and *To dos (specific)*, plus a link to the Notion board. **Filter the to-dos by
+   business judgment, not by mechanically listing every open/High-priority Notion
+   item** — the full board is one click away via the link, so this list should only
+   carry what actually moves the needle this week: revenue/pipeline decisions,
+   live customer-facing issues, and anything genuinely blocked or needing Shaffy's
+   input. Two defaults that follow from this:
+   - **Don't list every stale deal individually** — name the highest-value one(s),
+     batch the rest as a cleanup pass.
+   - **Suppress routine dev-team-execution items** (most of Clinic & patient
+     portal / Support) — Dmytro and Harsh close these out themselves in their own
+     channels without needing Shaffy's attention. Only surface a dev item if it's
+     (a) blocked or stalled past a normal turnaround, (b) needs a decision only
+     Shaffy can make, or (c) is a live patient/customer-facing issue right now
+     (e.g. a data bug affecting current users) — not just "high priority" in
+     Notion. Everything else stays tracked in Notion, just not in the Slack recap.

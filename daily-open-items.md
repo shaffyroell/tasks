@@ -198,6 +198,16 @@ sensible. For Fireflies, `Link = https://app.fireflies.ai/view/<transcriptId>`.
   set `Status = Done`, `Last Updated` today. Do not delete.
 - Keep `First Seen` unchanged on updates.
 
+**Dev/product items resolve conversationally — go looking, don't wait to notice.**
+Dev completions (`clinic-portal-dev`, `wellness-portal-dev`, `daily-status-report`)
+get reported as a reply buried in a thread or a line in a daily "Work Done" post,
+not as an explicit "closing to-do X." For every currently-open **Clinic & patient
+portal** / **Support** item, actively search the relevant dev channel(s) for a
+resolution signal referencing that specific task before carrying it forward as
+still open — the same discipline as the email-recency check in `hubspot-sync.md`
+§3a: don't conclude an item is still open just because you didn't happen to notice
+it get closed.
+
 ### 5b. Triage each item — what AI can do vs what needs the human
 For every open (non-`Done`) item, set:
 - **`Handled By`** — `AI` (AI can complete it end-to-end, low-risk), `AI + Review`

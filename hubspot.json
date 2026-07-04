@@ -78,7 +78,11 @@
     "clinicPortalDev": "C0B7C1FA08N",
     "wellnessPortalDev": "C09FQ19TFF1",
     "legal": "C09PU9QHBPH",
-    "dailyStatus": "C0ABE28MPAA"
+    "dailyStatus": "C0ABE28MPAA",
+    "newOrders": "C0APQF35J1F",
+    "_newOrders_note": "#0-new-order-received — automated Shopify order feed (B2C). Used only for the daily-recap 'Updates from yesterday' order count, never for deal/CRM work — B2C orders stay out of scope for HubSpot.",
+    "hubspotInboxLive": "C0AP5EDP25R",
+    "_hubspotInboxLive_note": "#hubspot-inbox-live-responses — live feed of the HubSpot conversations inbox (chat/email support). Used for the daily-recap support-question count/pointer, not for deal matching."
   },
   "staleFollowUp": {
     "_note": "When a deal's LAST CONTACT (most recent inbound/outbound across email, Lemlist, Slack, call) is older than thresholdDays, flag it: add a To-Do to the SwimScore Notion board (New sales pillar) with a SUGGESTED follow-up message drafted from the deal's HubSpot notes/context. Only when a nudge is actually warranted (active/open deal, not Closed; not already waiting on a booked future call). Skip dead/cold-rejected leads.",

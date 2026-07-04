@@ -61,12 +61,21 @@ End with a CEO digest: deals updated (notes + stage moves, Closed awaiting
 approval), new deals, stale deals flagged (with/without drafted message), and
 Notion to-dos added/advanced/closed per pillar. Surface the top risks + decisions.
 
-9. **Post the recap to `#daily-recap`** — *Short-term goals* by category +
-   *To dos (specific)*, plus the Notion link. Filter to-dos by business judgment,
-   not by mechanically dumping every open/High-priority Notion item — only what
-   moves the needle this week (pipeline decisions, live customer-facing issues,
-   genuinely blocked items). Batch the rest of the stale deals instead of listing
-   each one, and **suppress routine dev-team-execution items** (most of Clinic &
-   patient portal / Support) — Dmytro/Harsh close those out themselves in their own
+9. **Post the recap to `#daily-recap`**, in order:
+   a. **"Updates from yesterday"** — one factual line per source, scoped to the
+   last calendar day: **Orders** (count from `#0-new-order-received`, per
+   `hubspot.json.slackChannels.newOrders`); **Support questions** (count from
+   `#hubspot-inbox-live-responses`, `hubspotInboxLive`); **Lemlist-replies**
+   (count + how many are worth following up); **Pipeline** (the single most
+   consequential deal development, verified directly — don't guess); **Finance**
+   (anything time-sensitive, read the actual thread before summarizing). Skip a
+   bullet if there's nothing real — don't pad it.
+   b. **"Short-term goals"** by category + **"To dos (specific)"**, plus the
+   Notion To-Dos and Key Goals links. Filter to-dos by business judgment, not by
+   mechanically dumping every open/High-priority Notion item — only what moves the
+   needle this week (pipeline decisions, live customer-facing issues, genuinely
+   blocked items). Batch the rest of the stale deals instead of listing each one,
+   and **suppress routine dev-team-execution items** (most of Clinic & patient
+   portal / Support) — Dmytro/Harsh close those out themselves in their own
    channels; only surface one if it's blocked, needs Shaffy's decision, or is a
    live patient-facing issue right now.

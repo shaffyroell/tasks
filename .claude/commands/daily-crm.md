@@ -66,14 +66,36 @@ End with a digest: deals updated (notes + stage moves, any Closed awaiting appro
 new deals created, **stale deals flagged (with/without drafted message)**, and Notion
 to-dos added/advanced/closed per pillar. Call out the top risks and decisions for the CEO.
 
-9. **Post the short recap to `#daily-recap` in Slack** — *Short-term goals* (by
-   category: Pipeline, Website conversion, Ads, Product/Onboarding, Support, ...)
-   and *To dos (specific)*, plus a link to the Notion board. **Filter the to-dos by
-   business judgment, not by mechanically listing every open/High-priority Notion
-   item** — the full board is one click away via the link, so this list should only
-   carry what actually moves the needle this week: revenue/pipeline decisions,
-   live customer-facing issues, and anything genuinely blocked or needing Shaffy's
-   input. Two defaults that follow from this:
+9. **Post the recap to `#daily-recap` in Slack**, in this order:
+
+   **a. "Updates from yesterday"** — one line per source, factual, scoped to the
+   last calendar day (not a re-hash of the multi-day CRM sweep):
+   - **Orders** — count from `hubspot.json.slackChannels.newOrders`
+     (`#0-new-order-received`, automated Shopify feed). Just the count + pointer to
+     the channel; never pull Shopify orders/customers into HubSpot (B2C stays out
+     of scope for deals).
+   - **Support questions** — count from `hubspot.json.slackChannels.hubspotInboxLive`
+     (`#hubspot-inbox-live-responses`). Count + pointer; flag only if something
+     looks urgent (refund demand, angry customer, security issue).
+   - **Lemlist-replies** — count from the `#lemlist-replies`/outbound channel for
+     the day, and call out how many are genuinely worth a follow-up (positive
+     `aiLeadInterest`) vs declines/automated.
+   - **Pipeline** — the single most consequential deal development from
+     yesterday, if one exists, framed as what Shaffy needs to do about it (e.g. a
+     reply that raises a pricing/decision point) — verify it directly (§3a in
+     `hubspot-sync.md`), don't guess.
+   - **Finance** — anything time-sensitive that landed (e.g. a compliance/KYC
+     request) — read the actual email/thread before summarizing; don't paraphrase
+     from memory or assume specifics (who/what) without checking.
+   Skip a bullet entirely if there's nothing real to report — don't pad it.
+
+   **b. "Short-term goals"** (by category: Pipeline, Marketing, Product/Onboarding,
+   Support, ...) **and "To dos (specific)"**, plus links to the Notion To-Dos board
+   and Key Goals database. **Filter the to-dos by business judgment, not by
+   mechanically listing every open/High-priority Notion item** — the full board is
+   one click away, so this list should only carry what actually moves the needle
+   this week: revenue/pipeline decisions, live customer-facing issues, and anything
+   genuinely blocked or needing Shaffy's input. Two defaults that follow from this:
    - **Don't list every stale deal individually** — name the highest-value one(s),
      batch the rest as a cleanup pass.
    - **Suppress routine dev-team-execution items** (most of Clinic & patient

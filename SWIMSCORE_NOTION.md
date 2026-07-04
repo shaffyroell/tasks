@@ -13,21 +13,34 @@ clinic-pay model + B2C patients). The **CEO sweep** (`/daily-crm`) routes every
 - **Board by Pillar** (the Kanban — one column per pillar).
 - **Board by Status** (To Do / In Progress / Blocked / Done).
 
-## The six pillars
+## The seven pillars
 | Pillar | What lives here |
 |---|---|
 | **Onboarding** | Bringing signed clinics live — slide deck + sample kits, onboarding calls, MSA/BAA, portal setup walkthroughs |
-| **New sales** | Pipeline + outbound — clinic deck sends, Lemlist campaigns & list hygiene, retargeting, closing clinics like Onto Health |
-| **Research** | Product/market questions — pricing ($325), HSA/FSA + Superbill, Tasso, repeat tests, white-label vs co-branded |
+| **New sales** | B2B pipeline + outbound — clinic deck sends, Lemlist campaigns & list hygiene, closing clinics like Onto Health |
+| **Marketing** | B2C growth + brand — ad spend/PDP/conversion, SEO blog cadence, Trustpilot/reviews, social content |
+| **Research** | Product/market questions — pricing ($325), HSA/FSA + Superbill, Tasso, repeat tests, white-label vs co-branded, LTV upsell flows (medication/supplement), advisors, lab plan |
 | **Clinic & patient portal** | Product/dev — clinic portal HIPAA compliance, status pull, deploys, patient-portal v2, patient-consent flow |
-| **Support** | Patient/clinic support & comms — OTP/login, transactional emails, staging test logins |
+| **Support** | Patient/clinic support & comms — OTP/login, transactional emails, staging test logins, CSAT |
 | **Finance** | Billing & costs — clinic-pay model, MDI per-case rate, Stripe Patient Pay |
 
+## Key Goals table
+A separate **Key Goals (Q3 2026)** database lives under the
+[Goals for SwimScore](https://app.notion.com/p/38de4b44810180329d8eeebefad8a4a7)
+page: https://app.notion.com/p/19ed2528d874454eb39a783ae94d42b1 — one row per Q3
+goal (`Category`: Product / Customer experience / Growth model / Lifetime value /
+Industry positioning / Lab outlook; `Status`: Not started / On track / At risk /
+Blocked / Done). It has a two-way relation with the To-Dos board (`Goal` on a
+to-do, `Sub-tasks` on a goal) so every to-do can trace to the goal it moves.
+When sweeping, check goal coverage — a goal with no linked to-do, or only bug-fix/
+execution items and no way to measure progress, needs a new to-do pointed at it.
+
 ## Schema
-`Task` (title) · `Pillar` (the 6 above) · `Status` (To Do / In Progress / Blocked /
+`Task` (title) · `Pillar` (the 7 above) · `Status` (To Do / In Progress / Blocked /
 Done) · `Priority` (High / Medium / Low) · `Owner` (Shaffy / Syb / Flo / Dmytro /
 Harsh / Thijs / Team) · `Source` (Slack / Granola / Lemlist / Email / HubSpot) ·
-`Link` (permalink) · `Ref` (stable dedup key) · `Created`.
+`Link` (permalink) · `Ref` (stable dedup key) · `Created` · `Goal` (relation to
+Key Goals).
 
 ## How W2 keeps it current
 Each run (`daily-open-items.md`) reads HubSpot + fresh Gmail/Slack/Granola/Lemlist,

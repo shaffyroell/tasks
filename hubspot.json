@@ -3,13 +3,13 @@
   "accountId": 243173089,
   "defaultOwnerId": 163314964,
   "internalTracker": {
-    "_note": "Where INTERNAL (non-account / SwimScore-ops) items go. The CEO sweep routes account items to HubSpot deals and internal items to this SwimScore Notion board ('SwimScore To-Dos'), a Kanban across six pillars. W2 reconciles items here (dedup on Ref). See SWIMSCORE_NOTION.md.",
+    "_note": "Where INTERNAL (non-account / SwimScore-ops) items go. The CEO sweep routes account items to HubSpot deals and internal items to this SwimScore Notion board ('SwimScore To-Dos'), a Kanban across seven pillars (incl. Marketing). W2 reconciles items here (dedup on Ref) and checks coverage against the Key Goals database. See SWIMSCORE_NOTION.md.",
     "provider": "notion",
     "databaseId": "bf5ee5540bd04fd69f10a2336656fd70",
     "dataSourceId": "3b132f28-f83c-4966-ae75-3894cf9b76d2",
     "trackerUrl": "https://app.notion.com/p/bf5ee5540bd04fd69f10a2336656fd70",
     "titleField": "Task",
-    "pillars": ["Onboarding", "New sales", "Research", "Clinic & patient portal", "Support", "Finance"],
+    "pillars": ["Onboarding", "New sales", "Research", "Clinic & patient portal", "Support", "Finance", "Marketing"],
     "statuses": ["To Do", "In Progress", "Blocked", "Done"]
   },
   "pipelines": {

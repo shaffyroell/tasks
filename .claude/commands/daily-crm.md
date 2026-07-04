@@ -54,10 +54,13 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    the deal's HubSpot context** into the to-do (only if a real message fits).
 
 8. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
-   reconcile internal to-dos across the six pillars (Onboarding, New sales, Research,
-   Clinic & patient portal, Support, Finance) from business-strategy, product/portal,
-   legal, finance, and support signal — check what each item is for, mark Done /
-   advance, dedup on `Ref`, add new ones in house style per `STYLE.md`.
+   reconcile internal to-dos across the seven pillars (Onboarding, New sales,
+   Marketing, Research, Clinic & patient portal, Support, Finance) from
+   business-strategy, product/portal, legal, finance, and support signal — check
+   what each item is for, mark Done / advance, dedup on `Ref`, add new ones in
+   house style per `STYLE.md`. Also check goal coverage against the **Key Goals**
+   database (linked from `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or
+   only execution items and nothing that measures progress, needs a new to-do.
 
 End with a digest: deals updated (notes + stage moves, any Closed awaiting approval),
 new deals created, **stale deals flagged (with/without drafted message)**, and Notion

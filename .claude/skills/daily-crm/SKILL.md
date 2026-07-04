@@ -50,9 +50,12 @@ Lemlist, Shopify, Notion); work the steps in order.
    message **drafted from the deal's HubSpot notes** (only if a real message fits).
 
 8. **Update the SwimScore Notion board from all channels** (W2,
-   `daily-open-items.md`): reconcile internal to-dos across the six pillars from
-   business-strategy, product/portal, legal, finance, support — check what each is
-   for, mark Done / advance, dedup on `Ref`, add new in house style (`STYLE.md`).
+   `daily-open-items.md`): reconcile internal to-dos across the seven pillars
+   (incl. Marketing) from business-strategy, product/portal, legal, finance,
+   support — check what each is for, mark Done / advance, dedup on `Ref`, add new
+   in house style (`STYLE.md`). Also check goal coverage against the **Key Goals**
+   database (see `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or only
+   execution items and nothing measuring progress, needs a new to-do.
 
 End with a CEO digest: deals updated (notes + stage moves, Closed awaiting
 approval), new deals, stale deals flagged (with/without drafted message), and

@@ -2,17 +2,18 @@
   "_comment": "Committed routing registry for W2 (daily-open-items.md) \u2014 IDs + flags only, NO credentials. To-dos route by matching the counterparty email domain / name alias to a client, then write into that client's To-Dos data source (titleField); everything else goes to internalBoard (master tracker).",
   "internalBoard": {
     "name": "TechTower \u2014 internal & pipeline (master tracker)",
-    "dashboardPageId": "92836c3b-058e-49fd-a9cb-f9d5b956a144",
-    "todoDataSourceId": "45a1139d-c188-4a05-936d-adbea5d6715e",
-    "todoDbUrl": "https://app.notion.com/p/92836c3b058e49fda9cbf9d5b956a144",
-    "titleField": "Item"
+    "dashboardPageId": "39d5b087-b9f3-8191-8738-e8f55dc904a1",
+    "todoDataSourceId": "0e2d5a1d-8d15-40ea-8ca5-5662a535de8e",
+    "todoDbUrl": "https://app.notion.com/p/77cd083c12794c02b4b21bd502dc8579",
+    "titleField": "Name",
+    "_migration_note_2026_07_18": "Repointed from the old '\ud83d\udce5 Open Items \u2014 Daily Tracker' (92836c3b.../45a1139d...) to the current 'To-Do TechTower (current sprint)' board. Schema changed: no more Ref/Source/For/Link/Who fields \u2014 now Name/Pillar/Sprint/Priority/Completion Status/Assigned To/Due/Description/Done. Dedup can no longer rely on Ref; match on Name text instead until a stable key is added."
   },
   "clients": [
     {
       "name": "Crewline",
       "type": "client",
-      "dashboardPageId": "38d5b087-b9f3-810b-a1b3-ea69810c2e43",
-      "todoDataSourceId": "b5b0d23a-efc0-4368-b0a0-c85bab97fca5",
+      "dashboardPageId": "3075b087-b9f3-808d-82ba-ec643b4350c9",
+      "todoDataSourceId": "3075b087-b9f3-8127-8d23-000b5db43d3a",
       "domains": [
         "crewline.ai"
       ],
@@ -22,13 +23,14 @@
         "Frederik",
         "Hugo"
       ],
-      "titleField": "Task"
+      "titleField": "Name",
+      "_migration_note_2026_07_18": "Old dashboardPageId (38d5b087-b9f3-810b...) was a 'Test New' duplicate page, not the live dashboard. Repointed to Client Dashboard - Crewline. Schema changed: Name/Pillar/Sprint/Priority/Completion Status/Assigned To/Due/Description/Done — no Ref/Source/For/Link."
     },
     {
       "name": "Hassans",
       "type": "client",
-      "dashboardPageId": "38d5b087-b9f3-81fc-a50f-ec640d4277f6",
-      "todoDataSourceId": "b7df3cc7-d6a3-465f-9e34-e44383e75be4",
+      "dashboardPageId": "3005b087-b9f3-8011-8b59-fc6242a9ae87",
+      "todoDataSourceId": "38d5b087-b9f3-8104-9e3b-000b58d628a5",
       "domains": [
         "hassans.gi"
       ],
@@ -36,7 +38,24 @@
         "Hassans",
         "Aaron"
       ],
-      "titleField": "Task"
+      "titleField": "Name",
+      "_migration_note_2026_07_18": "Old dashboardPageId (38d5b087-b9f3-81fc...) was the pre-migration dashboard. Repointed to Client Dashboard - Hassans. Schema changed: Name/Pillar/Sprint/Priority/Completion Status/Assigned To/Due/Description/Done — no Ref/Source/For/Link."
+    },
+    {
+      "name": "Algebra",
+      "type": "client",
+      "dashboardPageId": "38e5b087-b9f3-8100-a1c8-faef2e1e6b42",
+      "todoDataSourceId": "a57bf7e0-f30c-47d3-b4f5-8e8216ad9fcd",
+      "domains": [
+        "getalgebra.ai"
+      ],
+      "aliases": [
+        "Algebra",
+        "Abboud",
+        "Anis"
+      ],
+      "titleField": "Name",
+      "_added_2026_07_18": "Was missing from routing entirely despite having a live Client Dashboard - Algebra board."
     },
     {
       "name": "Norvell Jefferson",

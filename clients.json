@@ -29,8 +29,8 @@
     {
       "name": "Hassans",
       "type": "client",
-      "dashboardPageId": "3005b087-b9f3-8011-8b59-fc6242a9ae87",
-      "todoDataSourceId": "38d5b087-b9f3-8104-9e3b-000b58d628a5",
+      "dashboardPageId": "38d5b087-b9f3-81fc-a50f-ec640d4277f6",
+      "todoDataSourceId": "b7df3cc7-d6a3-465f-9e34-e44383e75be4",
       "domains": [
         "hassans.gi"
       ],
@@ -38,8 +38,8 @@
         "Hassans",
         "Aaron"
       ],
-      "titleField": "Name",
-      "_migration_note_2026_07_18": "Old dashboardPageId (38d5b087-b9f3-81fc...) was the pre-migration dashboard. Repointed to Client Dashboard - Hassans. Schema changed: Name/Pillar/Sprint/Priority/Completion Status/Assigned To/Due/Description/Done — no Ref/Source/For/Link."
+      "titleField": "Task",
+      "_migration_note_2026_07_18": "CORRECTED back to original: this IS the live board (confirmed by Shaffy, still actively updated). 'Client Dashboard - Hassans' (3005b087.../38d5b087-b9f3-8104...) exists in parallel but is NOT the one in use — don't repeat this mistake. Unlike Crewline, Hassans never migrated off the classic Task/For/Link/Ref/Source/Status schema."
     },
     {
       "name": "Algebra",

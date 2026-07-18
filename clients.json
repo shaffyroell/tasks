@@ -75,6 +75,23 @@
       "titleField": "Task"
     },
     {
+      "name": "Spyre",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-81bc-bfc0-eb629bf5d54a",
+      "todoDataSourceId": "bc038c39-5f19-4c34-a3cc-6bd5e2aeb422",
+      "domains": [
+        "thespyre.com"
+      ],
+      "aliases": [
+        "Spyre",
+        "Rebecca",
+        "Rebecca Zhang",
+        "Gary Roshak"
+      ],
+      "titleField": "Task",
+      "_added_2026_07_18": "Confirmed by Shaffy — was previously untracked, its to-dos were landing on the internal/pipeline master tracker instead of its own board."
+    },
+    {
       "name": "Lancor",
       "type": "client",
       "dashboardPageId": "38d5b087-b9f3-8188-8083-e8521d960182",

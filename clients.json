@@ -104,7 +104,41 @@
         "Thijs Gitmans"
       ],
       "titleField": "Task"
+    },
+    {
+      "name": "Algebra",
+      "type": "client",
+      "dashboardPageId": "38e5b087-b9f3-8100-a1c8-faef2e1e6b42",
+      "todoDataSourceId": "a57bf7e0-f30c-47d3-b4f5-8e8216ad9fcd",
+      "domains": [
+        "getalgebra.ai"
+      ],
+      "aliases": [
+        "Algebra",
+        "GetAlgebra",
+        "Anis",
+        "Abboud"
+      ],
+      "_titleField_note": "Non-standard template: title col is 'Name', not 'Task'. Also uses 'Owner' (select: TechTower/Algebra) + 'Completion Status' (Not started/In progress/Done) instead of For/Status, and has no 'Ref' column — embed the dedup ref in 'Description' instead.",
+      "titleField": "Name"
+    },
+    {
+      "name": "Spyre",
+      "type": "client",
+      "dashboardPageId": "38d5b087-b9f3-81bc-bfc0-eb629bf5d54a",
+      "todoDataSourceId": "bc038c39-5f19-4c34-a3cc-6bd5e2aeb422",
+      "domains": [
+        "thespyre.com"
+      ],
+      "aliases": [
+        "Spyre",
+        "SPYRE",
+        "Rebecca",
+        "Rebecca Zhang",
+        "Jessica"
+      ],
+      "titleField": "Task"
     }
   ],
-  "_clientDashboardTemplateId": "38d5b087-b9f3-81bc-bfc0-eb629bf5d54a"
+  "_clientDashboardTemplateId": "3a15b087-b9f3-8032-877d-f75566a9d93b"
 }

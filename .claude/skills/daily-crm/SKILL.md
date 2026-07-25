@@ -1,6 +1,6 @@
 ---
 name: daily-crm
-description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, updates HubSpot deal notes + stages on any development, flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
+description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches later stages), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
 ---
 
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
@@ -8,11 +8,14 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Open with a per-source preflight (HubSpot, Gmail, Slack, Granola,
 Lemlist, Shopify, Notion); work the steps in order.
 
+> **2026-07-25 — scope narrowed at Shaffy's request:** no new HubSpot deals get
+> created, and stage moves are limited to one rule — see step 6.
+
 1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
    `get_inbox_conversation` for the thread + `aiLeadInterest`). New genuine B2B
-   interest with no deal → create it via W0 (`new-deal-discovery.md`): deal named
-   after the clinic + linked contact + company + domain. Existing deal with new
-   content → update (step 5). Negative replies are not deals.
+   interest with no deal → **don't create it** — list it in the digest for Shaffy
+   to add manually (contact + company + why it looks genuine). Existing deal with new
+   content → update (step 6). Negative replies are not deals.
 
 2. **Shopify — inbound contact-form messages FIRST** (before the email threads):
    read **only** the website `"New customer message"` contact-form submissions
@@ -37,8 +40,12 @@ Lemlist, Shopify, Notion); work the steps in order.
 
 6. **Update HubSpot per client — only on a development.** Check existing notes
    first (no duplicates); add/refresh a `[hubspot-ingest]` note (Background →
-   timestamped Timeline → Latest → Next step) and advance the stage on clear
-   evidence. Honor autoApply; never auto-close Won/Lost; never silently demote.
+   timestamped Timeline → Latest → Next step). **Stage moves are narrow** — only
+   ever move a deal off **In conversation (Lemlist)** to **Asked for information**
+   or **Demo scheduled**, and only on a Lemlist reply showing real interest
+   (`hubspot.json → ingest.stageAdvanceRule`). Every deal already past that first
+   stage keeps its current stage regardless of what happened — note it, don't move
+   it. Honor autoApply; never touch a close state.
 
 7. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`):
    **before flagging (or re-affirming) any deal as stale, verify directly** — an
@@ -57,9 +64,10 @@ Lemlist, Shopify, Notion); work the steps in order.
    database (see `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or only
    execution items and nothing measuring progress, needs a new to-do.
 
-End with a CEO digest: deals updated (notes + stage moves, Closed awaiting
-approval), new deals, stale deals flagged (with/without drafted message), and
-Notion to-dos added/advanced/closed per pillar. Surface the top risks + decisions.
+End with a CEO digest: deals updated (notes + the narrow stage moves only), new
+opportunities found but NOT created (for manual add), stale deals flagged
+(with/without drafted message), and Notion to-dos added/advanced/closed per
+pillar. Surface the top risks + decisions.
 
 9. **Post the recap to `#daily-recap`**, in order:
    a. **"Updates from yesterday"** — one factual line per source, scoped to the

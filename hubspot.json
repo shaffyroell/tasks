@@ -12,31 +12,34 @@
     "pillars": ["Onboarding", "New sales", "Research", "Clinic & patient portal", "Support", "Finance", "Marketing"],
     "statuses": ["To Do", "In Progress", "Blocked", "Done"]
   },
+  "_stages_note": "Verified live against HubSpot get_properties(deals, dealstage) on 2026-07-25 — these are the ACTUAL current stage ids/labels. Re-verify this way before trusting stage names if they're ever suspect again; the board is renamed from time to time without this file being updated.",
   "pipelines": {
     "clinicPartnerships": {
       "id": "2314112732",
       "label": "Clinic Partnerships",
       "primary": true,
       "stages": {
-        "targetIdentified":    { "id": "3744632513", "label": "Target Identified" },
-        "outreachSent":        { "id": "3744632514", "label": "Outreach Sent" },
-        "discoveryScheduled":  { "id": "3744632516", "label": "Discovery Scheduled" },
-        "discoveryCompleted":  { "id": "3744632517", "label": "Discovery Completed" },
-        "proposalSent":        { "id": "3744104176", "label": "Proposal Sent" },
-        "pilotDiscussion":     { "id": "3744632518", "label": "Pilot Discussion" },
-        "pilotActive":         { "id": "3744632519", "label": "Pilot Active" },
-        "closedWon":           { "id": "3744104177", "label": "Closed Won" },
+        "inboundRequest":      { "id": "3744632513", "label": "Inbound request" },
+        "inConversation":      { "id": "3744632514", "label": "In conversation (Lemlist)" },
+        "askedForInformation": { "id": "3744632516", "label": "Asked for information" },
+        "demoScheduled":       { "id": "3744632517", "label": "Demo scheduled" },
+        "contracting":         { "id": "3744104176", "label": "Contracting" },
+        "portalOnboarding":    { "id": "3744104177", "label": "Portal onboarding" },
+        "firstOrderPlaced":    { "id": "3744632518", "label": "First order placed" },
+        "activelyOrdering":    { "id": "3744632519", "label": "Actively ordering (active L3M)" },
+        "noOrdersL3M":         { "id": "4047247046", "label": "No orders (L3M)" },
         "closedLost":          { "id": "3744104178", "label": "Closed Lost" }
       },
       "stageOrder": [
-        "targetIdentified",
-        "outreachSent",
-        "discoveryScheduled",
-        "discoveryCompleted",
-        "proposalSent",
-        "pilotDiscussion",
-        "pilotActive",
-        "closedWon"
+        "inboundRequest",
+        "inConversation",
+        "askedForInformation",
+        "demoScheduled",
+        "contracting",
+        "portalOnboarding",
+        "firstOrderPlaced",
+        "activelyOrdering",
+        "noOrdersL3M"
       ]
     },
     "salesPipeline": {
@@ -66,9 +69,16 @@
       "lemlist": { "enabled": true, "_note": "Lemlist MCP connected. Read reply threads via get_inbox_conversations + get_inbox_conversation (carries AI interest scoring: aiLeadInterest positive/neutral/negative). Map a positive reply to a stage advance; a negative reply to Closed Lost (with approval). Match the Lemlist lead email to the HubSpot deal's contact." },
       "shopify": { "enabled": true, "_note": "B2B-ONLY. Inbound messages/inquiries via the Shopify website (www.myswimscore.com contact form, wholesale/clinic inquiries) are often B2B clinic leads — treat them like new-deal discovery: match to an existing HubSpot deal or hand to W0 to create one. Do NOT ingest individual B2C patient orders/customers as deals — B2C is out of scope here. Inbound website messages arrive as emails to info@myswimscore.com (covered by Gmail) and/or surface via Shopify; read both and keep only B2B clinic/partner intent." }
     },
-    "_stageMove_note": "Auto-advance when evidence is clear (call booked, proposal sent, pilot started). Never auto-close-won or auto-close-lost without explicit approval.",
+    "_stageMove_note": "2026-07-25: narrowed at Shaffy's request. The sweep now ONLY moves a deal's stage in one situation — see stageAdvanceRule below. Every other stage change (Contracting onward, any close, any manual re-classification) is human-only; the sweep must leave those alone and just log a note.",
     "allowStageAdvance": true,
-    "allowStageClose": false
+    "allowStageClose": false,
+    "stageAdvanceRule": {
+      "_note": "The ONLY automated dealstage change this workflow is allowed to make. All replies land deals in 'In conversation (Lemlist)' by default; when a Lemlist reply on one of those deals shows real interest, move it forward exactly one step — never skip past 'Demo scheduled', never touch a deal already at 'Contracting' or later (those are updated manually).",
+      "onlyFromStageId": "3744632514",
+      "onlyFromStageLabel": "In conversation (Lemlist)",
+      "toStageOnInfoRequest": { "id": "3744632516", "label": "Asked for information", "when": "reply asks a question / requests more info / pricing, but hasn't asked for or agreed to a call yet" },
+      "toStageOnDemoInterest": { "id": "3744632517", "label": "Demo scheduled", "when": "reply agrees to, requests, or confirms a call/demo/onboarding time" }
+    }
   },
   "slackChannels": {
     "_note": "Channels the daily sweep reads for deal/account + internal signal. Read threads, not just top messages.",
@@ -89,12 +99,14 @@
     "enabled": true,
     "thresholdDays": 14,
     "escalateDays": 21,
-    "excludeStages": ["3744104177", "3744104178"],
+    "_excludeStages_note": "Closed Lost, plus everything from 'First order placed' onward — those are converted clients, not open sales pipeline, so a 'New sales' nudge doesn't apply to them.",
+    "excludeStages": ["3744104178", "3744632518", "3744632519", "4047247046"],
     "draftSuggestedMessage": true,
     "notionPillar": "New sales"
   },
   "newDealDiscovery": {
-    "enabled": true,
+    "_disabled_note": "Disabled 2026-07-25 at Shaffy's request — the sweep no longer creates new HubSpot deals. Genuine new opportunities with no existing deal get named in the digest for manual creation instead.",
+    "enabled": false,
     "lookbackDays": 2,
     "defaultPipeline": "2314112732",
     "defaultStage": "3744632513",

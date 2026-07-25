@@ -1,7 +1,12 @@
 ---
 name: new-deals
-description: W0 — discover new opportunities in inbound mail and Lemlist replies that are not yet in HubSpot, and create the deal + link company + link contact + add a thread-summary note. Use to capture fresh pipeline before the deal-sync run.
+description: "DISABLED 2026-07-25 at Shaffy's request — the daily sweep no longer creates HubSpot deals. W0 used to discover new opportunities in inbound mail and Lemlist replies and create the deal; it's now off (hubspot.json → newDealDiscovery.enabled:false). Genuine new opportunities get listed in the W1 digest for manual creation instead. Do not invoke this to create deals."
 ---
+
+> **⚠️ Disabled.** Do not create a deal if this skill is invoked. Read
+> `new-deal-discovery.md`'s ICP criteria (§2) to identify genuine new
+> opportunities from the same inbound sources, and list them (contact, company,
+> why they look genuine) for Shaffy to add manually instead.
 
 Run W0, the new-deal discovery defined in `new-deal-discovery.md` in this repo.
 Preflight (HubSpot + Gmail + Lemlist); pull yesterday's inbound (Gmail `in:inbox`,

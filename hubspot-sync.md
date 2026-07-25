@@ -1,13 +1,23 @@
 # Daily HubSpot Deal Sync — keep every deal current from the full conversation
 
 **Run every morning (~07:00 Europe/Amsterdam).** HubSpot is the **single source of
-truth**. Act like the person who owns this pipeline: read every channel, update
-each deal that has a development, and flag deals that have gone quiet so they get a
-follow-up. Config: `hubspot.json`.
+truth**. Act like the person who owns this pipeline: read every channel, note what
+moved on each deal, and flag deals that have gone quiet so they get a follow-up.
+Config: `hubspot.json`.
 
-> **Pipeline:** W0 (`new-deal-discovery.md`, create new deals) → **W1 (this,
-> update every deal)** → W2 (`daily-open-items.md`, Notion to-dos). Run all three
-> with `/daily-crm`.
+> **2026-07-25 — scope narrowed at Shaffy's request.** This workflow no longer
+> creates HubSpot deals (W0/`new-deal-discovery.md` is disabled via
+> `newDealDiscovery.enabled:false`) and no longer advances stages freely. The
+> **only** automated stage change left is `hubspot.json → ingest.stageAdvanceRule`:
+> moving a deal from **In conversation (Lemlist)** to **Asked for information** or
+> **Demo scheduled** when a Lemlist reply shows real interest. Every other stage
+> (Contracting, Portal onboarding, First order placed, Actively ordering, No
+> orders (L3M), Closed Lost) is manual-only — log a note describing what happened
+> and let Shaffy move the card himself.
+>
+> **Pipeline:** ~~W0 (`new-deal-discovery.md`, create new deals)~~ *(disabled)* →
+> **W1 (this, notes + the narrow Lemlist stage move)** → W2
+> (`daily-open-items.md`, Notion to-dos). Run with `/daily-crm`.
 
 ---
 
@@ -23,10 +33,13 @@ source is down — note the gap.
   `isYourTurn:true`, read the thread via `get_inbox_conversation(contactId)` (carries
   `aiLeadInterest` positive/neutral/negative).
 - **Match** the lead email / company domain to a HubSpot deal.
-  - **No deal + genuine B2B interest** → hand to **W0** to create (deal named after
-    the clinic/company, link contact + company + domain). Negative replies
-    ("no thanks", "unsubscribe", wrong-email) are **not** deals.
-  - **Existing deal** → if there's new content, update it (steps 4–5).
+  - **No deal + genuine B2B interest** → **do not create a deal.** List it in the
+    digest under "New opportunities (not created — create manually)" with contact,
+    company, and why it looks genuine, so Shaffy can add it himself. Negative
+    replies ("no thanks", "unsubscribe", wrong-email) don't even need listing.
+  - **Existing deal** → if there's new content, update it (steps 4–5), and if the
+    deal is currently at **In conversation (Lemlist)** apply the stage-advance rule
+    below (step 6.3).
 
 ## 2. Shopify — B2B inbound contact-form messages only (check first)
 SwimScore's website (www.myswimscore.com) contact form is a real inbound channel for
@@ -102,12 +115,22 @@ For each deal with new substantive activity:
    in this structure: **Background → Timeline (timestamped; Gmail = source of truth)
    → Latest status → Next step**. Synthesize across all channels; name the channel
    and date per point.
-3. **Keep the stage honest** — advance on clear evidence (call booked → Discovery
-   Scheduled; call held → Discovery Completed; proposal sent → Proposal Sent; pilot
-   terms → Pilot Discussion; onboarding/live → Pilot Active). Record `old → new — why`
-   in the note. Honor `ingest.autoApply`; **never** auto-set Closed Won/Lost
-   (`allowStageClose:false`) — list those for approval. Never silently demote an
-   active deal.
+3. **Stage moves — narrow, one rule only.** Per `hubspot.json → ingest.stageAdvanceRule`:
+   - **Only touch a deal's stage if it is currently "In conversation (Lemlist)"**
+     (`3744632514`) **and** the development is a Lemlist reply showing real
+     interest. Every deal already at Asked for information, Demo scheduled,
+     Contracting, Portal onboarding, First order placed, Actively ordering, No
+     orders (L3M), or Closed Lost — **leave the stage exactly as-is**, no matter
+     what happened (call held, proposal sent, pilot started, order placed). Log it
+     all in the note; Shaffy moves the card himself.
+   - **Reply asks a question / wants pricing or info, no call agreed yet** → move to
+     **Asked for information** (`3744632516`).
+   - **Reply agrees to, requests, or confirms a call/demo/onboarding time** → move
+     to **Demo scheduled** (`3744632517`).
+   - Record `old → new — why` in the note either way (including "left unchanged,
+     already past In conversation" when that's the case — makes the digest legible).
+   - Honor `ingest.autoApply`. Never set Closed Lost or any close state — that's
+     always manual.
 
 ## 7. Stale-deal check → flag + suggested follow-up (per `staleFollowUp`)
 For every **open** deal (skip `excludeStages` = Closed Won/Lost and any dead/
@@ -136,22 +159,26 @@ previous run.
 ## 8. Idempotency & safety
 Dedup notes at the content level; dedup a call by meeting id, a Lemlist reply by
 contact id; dedup stale To-Dos on `Ref`. Only write on genuinely new content. Never
-delete; never create duplicate deals (that's W0).
+delete; **never create a deal** (W0 is disabled — see the banner at the top).
 
 ## 9. Output — deal-sync digest
 **Preflight** ✅/⚠️ · **Deals reviewed** · **Notes added** (deal — gist — channel) ·
-**Stage moves** (`deal: old → new — why`) + **proposed Closed Won/Lost (approval)** ·
+**Stage moves** (`deal: In conversation → Asked for information/Demo scheduled —
+why` — this is the only kind of stage move that should ever appear here) ·
 **Stale deals flagged** (deal — days quiet — follow-up drafted? y/n) · **New
-opportunities handed to W0** · **Skipped/degraded**.
+opportunities found but NOT created** (contact/company — why it looks genuine — for
+Shaffy to add manually) · **Skipped/degraded**.
 
 ## Scheduling
-Daily ~07:00 Europe/Amsterdam, **Sonnet**, via `/daily-crm` (W0 → W1 → W2). Enable
-via `ingest.enabled`.
+Daily ~07:00 Europe/Amsterdam, **Sonnet**, via `/daily-crm` (W1 → W2; W0 disabled).
+Enable via `ingest.enabled`.
 
 **Prompt:**
 > Run W1, the daily HubSpot deal sync in `hubspot-sync.md`. Preflight; check Lemlist
-> (new → W0, existing → update), read all of Shaffy's email threads, sweep the Slack
-> deal channels, and read Granola call notes; update each deal's HubSpot note + stage
-> only where there's a development; then flag every open deal whose last contact is
-> >14d with a Notion follow-up To-Do + a suggested message drafted from HubSpot
-> context. Finish with the deal-sync digest.
+> (new opportunity with no deal → list for manual creation, don't create it;
+> existing deal → update), read all of Shaffy's email threads, sweep the Slack
+> deal channels, and read Granola call notes; log each deal's HubSpot note where
+> there's a development, applying the one narrow stage-advance rule
+> (`ingest.stageAdvanceRule`) and leaving every other deal's stage untouched; then
+> flag every open deal whose last contact is >14d with a Notion follow-up To-Do + a
+> suggested message drafted from HubSpot context. Finish with the deal-sync digest.

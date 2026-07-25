@@ -1,5 +1,14 @@
 # W0 — Daily New-Deal Discovery (create + link + note in HubSpot)
 
+> ## ⚠️ DISABLED (2026-07-25)
+> Shaffy asked the daily sweep to stop creating HubSpot deals entirely. This
+> workflow is turned off via `hubspot.json → newDealDiscovery.enabled:false` and
+> `/daily-crm` no longer calls it. Genuine new opportunities found during the
+> Lemlist/email/Shopify sweep are now listed in the W1 digest ("New opportunities
+> found but NOT created") for Shaffy to add manually. The rest of this doc is kept
+> for reference in case new-deal creation is re-enabled later — don't run it
+> until `newDealDiscovery.enabled` is flipped back to `true`.
+
 **Run this first each morning (~06:50 Europe/Amsterdam), before W1.** It reads the
 last day of inbound mail **and fresh Lemlist replies**, finds **genuine new
 opportunities that aren't in HubSpot yet**, and for each one **creates the deal,

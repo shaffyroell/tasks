@@ -1,17 +1,21 @@
 ---
-description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → update HubSpot deals, flag stale deals with a drafted follow-up, and update the SwimScore Notion board
+description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → log HubSpot deal notes (+ narrow Lemlist stage move), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
 ---
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
 the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Work the steps in order; open with a per-source preflight line
 (HubSpot, Gmail, Slack, Granola, Lemlist, Shopify, Notion).
 
+> **2026-07-25 — scope narrowed at Shaffy's request:** this sweep no longer
+> creates HubSpot deals, and no longer advances stages freely. See step 6 for the
+> one stage move still allowed.
+
 1. **Lemlist — new & updated conversations.** Pull the full team inbox
    (`get_inbox_conversations listId=teamConversations`, paginated; read threads via
    `get_inbox_conversation`, note `aiLeadInterest`). New genuine B2B interest with no
-   deal → create it (W0 `new-deal-discovery.md`: deal named after the clinic + linked
-   contact + company + domain). Existing deal with new content → update it (step 5).
-   Negative replies are not deals.
+   deal → **do not create a deal** — list it in the digest (contact, company, why it
+   looks genuine) for Shaffy to add manually. Existing deal with new content →
+   update it (step 6). Negative replies are not deals.
 
 2. **Shopify — check inbound contact-form messages FIRST** (before the email
    threads). Read **only** the website `"New customer message"` contact-form
@@ -38,9 +42,13 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 
 6. **Update HubSpot per client — only on a development.** Check the deal's existing
    notes first (no duplicates); if something moved, add/refresh a `[hubspot-ingest]`
-   note (Background → timestamped Timeline → Latest → Next step) and advance the stage
-   on clear evidence. Honor autoApply; never auto-close Won/Lost (list for approval);
-   never silently demote an active deal.
+   note (Background → timestamped Timeline → Latest → Next step). **Stage moves are
+   narrow** (`hubspot.json → ingest.stageAdvanceRule`): only ever move a deal off
+   **In conversation (Lemlist)** to **Asked for information** or **Demo scheduled**,
+   and only when a Lemlist reply shows real interest. Every deal already at
+   Contracting, Portal onboarding, First order placed, Actively ordering, No orders
+   (L3M), or Closed Lost keeps its current stage no matter what happened — just log
+   the note. Honor autoApply; never touch a close state.
 
 7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
    **Before flagging or re-affirming any deal as stale, verify directly**: an undated
@@ -62,9 +70,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    database (linked from `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or
    only execution items and nothing that measures progress, needs a new to-do.
 
-End with a digest: deals updated (notes + stage moves, any Closed awaiting approval),
-new deals created, **stale deals flagged (with/without drafted message)**, and Notion
-to-dos added/advanced/closed per pillar. Call out the top risks and decisions for the CEO.
+End with a digest: deals updated with notes (+ the narrow In conversation → Asked
+for information/Demo scheduled stage moves only), new opportunities found but NOT
+created (for manual add), **stale deals flagged (with/without drafted message)**,
+and Notion to-dos added/advanced/closed per pillar. Call out the top risks and
+decisions for the CEO.
 
 9. **Post the recap to `#daily-recap` in Slack**, in this order:
 

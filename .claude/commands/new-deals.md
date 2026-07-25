@@ -1,6 +1,13 @@
 ---
-description: W0 — discover new opportunities in mail + Lemlist replies and create deals in HubSpot (create + link + note)
+description: "DISABLED 2026-07-25 (Shaffy: no more auto-created deals). W0 — discover new opportunities in mail + Lemlist replies. Config: hubspot.json → newDealDiscovery.enabled:false. Do not run this until it's re-enabled."
 ---
+> **⚠️ Disabled.** Shaffy asked the daily sweep to stop creating HubSpot deals. If
+> invoked, do not create anything — instead read `new-deal-discovery.md`'s ICP
+> criteria (§2) to identify genuine new opportunities from the same inbound
+> sources, and just list them (contact, company, why they look genuine) for Shaffy
+> to add manually. Re-enable by flipping `hubspot.json → newDealDiscovery.enabled`
+> back to `true` and reverting this file.
+
 Run W0, the new-deal discovery defined in `new-deal-discovery.md` in this repo.
 Preflight (HubSpot + Gmail + Lemlist); pull yesterday's inbound (Gmail `in:inbox`,
 native MCP only, default 2-day lookback) and fresh Lemlist replies

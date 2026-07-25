@@ -277,7 +277,8 @@ SwimScore Notion** tracker.
 ### 6b. Stale-deal follow-ups → SwimScore Notion (New sales pillar)
 W1 computes each open deal's **last contact date** and hands W2 the deals that have
 gone quiet (per `hubspot.json.staleFollowUp`: >14d flag, >21d high priority; skip
-Closed Won/Lost and dead leads). **Don't take a "stale" hand-off on faith — before
+Closed Lost, converted-client stages (First order placed onward), and dead leads).
+**Don't take a "stale" hand-off on faith — before
 upserting or re-affirming a stale To-Do, do the undated `from:`/`to:` contact search
 described in `hubspot-sync.md` §3a/§7 yourself.** A deal flagged stale on a prior run
 can have gone active since; carrying an old flag forward without re-checking is how

@@ -92,6 +92,12 @@ and anything already handled (the owner replied and nothing is outstanding).
 > internal to-dos live. Account notes + stages are W1's job in HubSpot; W2 only
 > reconciles the internal Notion board. Load the relevant HubSpot deals early so
 > email/chat counterparties can be matched — best-effort, never a hard gate.
+>
+> **2026-07-25:** account-level "we owe someone a reply" items now also get a
+> native HubSpot Task on the deal (high bar — see `hubspot-sync.md` §6.5), not
+> just a mention here. Don't create a duplicate Notion To-Do for something that
+> already has (or should get) a HubSpot Task — a deal-linked account item belongs
+> on the deal in HubSpot, not on the internal board.
 
 ---
 

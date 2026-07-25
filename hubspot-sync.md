@@ -131,6 +131,52 @@ For each deal with new substantive activity:
      already past In conversation" when that's the case — makes the digest legible).
    - Honor `ingest.autoApply`. Never set Closed Lost or any close state — that's
      always manual.
+4. **Refresh Description + Next step — early-funnel deals only** (per
+   `hubspot.json → ingest.fieldRefresh` and `pipelines.clinicPartnerships.earlyFunnelStages`
+   = Inbound request, In conversation (Lemlist), Asked for information, Demo
+   scheduled). If the deal you just wrote a note on is in one of those four
+   stages, also update its native `description` and `hs_next_step` fields to
+   match the fresh state — **max 2 sentences each**, since these show directly on
+   the HubSpot board cards and get unreadable if long. `description` = who the
+   contact/company is + where things stand; `hs_next_step` = the one concrete
+   thing that happens next and who owns it. Skip this for any deal at Contracting
+   or later — Shaffy keeps those fields current by hand.
+5. **Create a HubSpot Task when something is owed on our side — high bar, deal-related only**
+   (per `hubspot.json → tasks`, pipeline-wide — not limited to early-funnel deals).
+   This is **not** a catch-all for every loose end — a cluttered task list gets
+   ignored, which defeats the point. Only create one when it's **clearly
+   deal-related** and one of:
+   - a person **explicitly asked a question or made a request and we clearly
+     haven't answered it yet** (pricing, scope, scheduling, a document — a real,
+     specific ask, not just "they might want to hear back eventually");
+   - an email (or other channel) surfaces something **clearly important that
+     needs flagging** on a deal — a decision point, a real risk, a hard
+     deadline — not routine chatter.
+
+   Do **not** create one for: minor/ambiguous items, general nudges ("might be
+   worth checking in"), anything already covered by the stale-follow-up flow
+   (§7 handles "gone quiet"), or anything you're not confident actually needs
+   action. When in doubt, leave it out — mention it in the digest instead of
+   creating a task.
+
+   **Before creating any task, verify it isn't already done.** Re-check the
+   deal's existing notes and the latest activity on that specific item (email
+   thread, Slack, Lemlist) — if the reply already went out or the thing already
+   happened, don't create a task for it.
+
+   For each that clears the bar, create a `tasks` object (`manage_crm_objects`,
+   associated to the deal): `hs_task_subject` short and specific ("Reply to
+   Aliyah — cryo/STD/drug test scope question", not "Follow up"), `hs_task_body`
+   = 1-2 sentences of context ending with a dedup line
+   `Ref: hubspot:task:<dealId>:<slug>` on its own line, `hs_task_type: TODO` (or
+   `EMAIL`/`CALL` if that's specifically the action), `hs_task_priority: HIGH` if
+   overdue >7d or blocking a live deal else `MEDIUM`, `hs_timestamp` = today,
+   `hubspot_owner_id: 162479602` (Shaffy). **Dedup before creating**: search open
+   tasks (`hs_task_status != COMPLETED`) associated with the deal for an
+   existing `Ref:` match — skip if found. **If a prior open task's item is now
+   resolved** (a fresh note shows the reply went out / the item got done), set
+   that task's `hs_task_status` to `COMPLETED` instead of leaving it stale.
+   Never auto-complete a task you can't actually verify was resolved.
 
 ## 7. Stale-deal check → flag + suggested follow-up (per `staleFollowUp`)
 For every **open** deal (skip `excludeStages` = Closed Won/Lost and any dead/
@@ -158,11 +204,15 @@ previous run.
 
 ## 8. Idempotency & safety
 Dedup notes at the content level; dedup a call by meeting id, a Lemlist reply by
-contact id; dedup stale To-Dos on `Ref`. Only write on genuinely new content. Never
-delete; **never create a deal** (W0 is disabled — see the banner at the top).
+contact id; dedup stale To-Dos on `Ref`; dedup HubSpot Tasks on the `Ref:` line in
+`hs_task_body` (§6.5). Only write on genuinely new content. Never delete; **never
+create a deal** (W0 is disabled — see the banner at the top).
 
 ## 9. Output — deal-sync digest
 **Preflight** ✅/⚠️ · **Deals reviewed** · **Notes added** (deal — gist — channel) ·
+**Description/Next step refreshed** (early-funnel deals only, per §6.4) ·
+**Tasks created** (deal — subject — owed by whom) + **Tasks completed** (deal —
+subject — resolved by what) ·
 **Stage moves** (`deal: In conversation → Asked for information/Demo scheduled —
 why` — this is the only kind of stage move that should ever appear here) ·
 **Stale deals flagged** (deal — days quiet — follow-up drafted? y/n) · **New
@@ -179,6 +229,11 @@ Enable via `ingest.enabled`.
 > existing deal → update), read all of Shaffy's email threads, sweep the Slack
 > deal channels, and read Granola call notes; log each deal's HubSpot note where
 > there's a development, applying the one narrow stage-advance rule
-> (`ingest.stageAdvanceRule`) and leaving every other deal's stage untouched; then
-> flag every open deal whose last contact is >14d with a Notion follow-up To-Do + a
-> suggested message drafted from HubSpot context. Finish with the deal-sync digest.
+> (`ingest.stageAdvanceRule`) and leaving every other deal's stage untouched;
+> refresh Description + Next step on early-funnel deals only (max 2 sentences
+> each — they show on the board cards); create a HubSpot Task on any deal where
+> something is owed on our side (unanswered question, promised follow-up,
+> internal blocker), deduped on its `Ref:` line, and complete any such task a
+> fresh note shows was resolved; then flag every open deal whose last contact is
+> >14d with a Notion follow-up To-Do + a suggested message drafted from HubSpot
+> context. Finish with the deal-sync digest.

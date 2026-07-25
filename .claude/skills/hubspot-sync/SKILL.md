@@ -1,6 +1,6 @@
 ---
 name: hubspot-sync
-description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). HubSpot is the single source of truth. Use to keep the pipeline current each morning.
+description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
 ---
 
 Run W1, the daily HubSpot deal sync defined in `hubspot-sync.md` in this repo.
@@ -18,10 +18,33 @@ yet) or "Demo scheduled" (call/demo agreed) — on a Lemlist reply showing real
 interest, and only if the deal is currently in that first stage. Every deal
 already at Contracting, Portal onboarding, First order placed, Actively ordering,
 No orders (L3M), or Closed Lost keeps its stage untouched — log the development in
-the note and let Shaffy move it himself. Never create a deal (W0/
-`new-deal-discovery.md` is disabled — list genuine new opportunities in the digest
-for manual creation instead). Use only the native Gmail MCP. Before flagging any
-deal stale or recommending a downgrade, follow the §3a/§7 verification rule in
-`hubspot-sync.md`: do an undated `from:`/`to:` search on that contact and confirm
-the actual last message's date — never characterize a thread as quiet without
-checking it. Config: `hubspot.json`. Finish with the deal-sync digest.
+the note and let Shaffy move it himself.
+
+**Description/Next step refresh, early-funnel deals only** (per `hubspot.json →
+ingest.fieldRefresh` + `pipelines.clinicPartnerships.earlyFunnelStages`): whenever
+you write a note on a deal in Inbound request / In conversation / Asked for info /
+Demo scheduled, also update its native `description` and `hs_next_step` — max 2
+sentences each, since these show directly on the HubSpot board cards. Skip this
+for Contracting-onward deals, which Shaffy manages by hand.
+
+**HubSpot Tasks for anything owed on our side — high bar** (per `hubspot.json →
+tasks`, pipeline-wide, not limited to early-funnel): only when it's clearly
+deal-related and either a question/request that's clearly still unanswered, or
+something clearly important surfaced in email that needs flagging. Not a
+catch-all — skip anything minor, ambiguous, or already covered by the stale-flow
+follow-up (§7); a cluttered task list gets ignored. **Verify against the deal's
+existing notes/activity first that it isn't already done.** For each that
+clears the bar, create a `tasks` object linked to the deal — specific subject,
+1-2 sentence body ending with a `Ref: hubspot:task:<dealId>:<slug>` dedup line,
+`hs_task_type` TODO/EMAIL/CALL as fits, priority HIGH if >7d overdue or blocking
+else MEDIUM, due today, owner Shaffy (162479602). Dedup on the `Ref:` line before
+creating; mark an existing open task COMPLETED if a fresh note shows its item
+got resolved.
+
+Never create a deal (W0/`new-deal-discovery.md` is disabled — list genuine new
+opportunities in the digest for manual creation instead). Use only the native
+Gmail MCP. Before flagging any deal stale or recommending a downgrade, follow the
+§3a/§7 verification rule in `hubspot-sync.md`: do an undated `from:`/`to:` search
+on that contact and confirm the actual last message's date — never characterize a
+thread as quiet without checking it. Config: `hubspot.json`. Finish with the
+deal-sync digest.

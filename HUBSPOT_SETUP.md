@@ -4,7 +4,10 @@ The pipeline sync keeps **every HubSpot deal current** from the full
 conversation. Each morning it reads **Granola, Slack, Lemlist, and email**, writes
 a dated note to the right deal, and — as of **2026-07-25, at Shaffy's request** —
 moves the deal stage in exactly **one** narrow situation (see "How a stage
-moves" below). HubSpot holds everything — it's the canonical record.
+moves" below), refreshes the board-card fields on early-funnel deals (see
+"Description + Next step"), and creates a HubSpot Task on a deal whenever
+something is clearly owed on our side (see "HubSpot Tasks"). HubSpot holds
+everything — it's the canonical record.
 
 ## What's connected
 
@@ -70,6 +73,49 @@ Other guardrails in `hubspot.json`:
   onboarding → First order placed → Actively ordering.)
 - Deals are **never silently demoted** — that's always manual too.
 
+## Description + Next step (board-card fields)
+
+**Added 2026-07-25, per Shaffy.** Whenever W1 writes a `[hubspot-ingest]` note on
+a deal that's in one of the four **early-funnel stages**
+(`pipelines.clinicPartnerships.earlyFunnelStages` — Inbound request, In
+conversation (Lemlist), Asked for information, Demo scheduled), it also refreshes
+that deal's native `description` and `hs_next_step` (labeled "Next step" in the
+UI) fields. **Max 2 sentences each** — these render directly on the board cards,
+so they need to stay short and scannable, not turn into another note. Deals at
+Contracting or later are *not* touched this way; Shaffy keeps those two fields
+current by hand.
+
+A one-time backfill populated these fields for all 41 open/lost deals on
+2026-07-25; going forward it's incremental, refreshed only on deals that get a
+fresh note.
+
+## HubSpot Tasks — what SwimScore owes
+
+**Added 2026-07-25, per Shaffy.** When the sweep finds something clearly
+outstanding on our side, it creates a native HubSpot `Task` linked to the deal
+(`hubspot.json → tasks`) — pipeline-wide, not limited to early-funnel deals —
+so it shows up in HubSpot's own task queue instead of only the daily digest.
+
+**High bar, deliberately.** This is not a catch-all for every loose thread — only:
+- a person **explicitly asked a question or made a request** that's **clearly
+  still unanswered**, or
+- something **clearly important** surfaces in email that needs flagging (a
+  decision point, a real risk, a hard deadline).
+
+Skip anything minor, ambiguous, routine, or already covered by the stale-deal
+follow-up flow (`staleFollowUp` — that's for "gone quiet", not "owed a reply"). A
+task list cluttered with tiny items gets ignored, which defeats the point.
+
+**Before creating one, the sweep re-checks the deal's existing notes and latest
+activity** for that specific item — if the reply already went out or the thing
+already happened, no task gets created. Tasks are deduped on a `Ref:
+hubspot:task:<dealId>:<slug>` line in the task body (search open, non-completed
+tasks on the deal for a match before creating); an existing open task gets marked
+`COMPLETED` if a fresh note shows its item was resolved — never marked complete
+without that evidence. Default owner is `162479602` ("Support SwimScore" —
+shaffy@myswimscore.com's HubSpot user record), due today, priority HIGH if >7
+days overdue or blocking a live deal, else MEDIUM.
+
 ## Lemlist → HubSpot mapping
 
 Lemlist replies are read via `get_inbox_conversations` → `get_inbox_conversation`,
@@ -104,8 +150,10 @@ source ⚠️ unavailable — then add just that one (e.g. a HubSpot private-app
 ## Safety
 
 - Writes are conservative: **add a note always; move the stage only in the one
-  narrow Lemlist-reply case above.** Never delete; never auto-close; never create
-  a deal.
+  narrow Lemlist-reply case above; refresh Description/Next step only on
+  early-funnel deals; create a Task only for a high-bar, clearly-deal-related,
+  clearly-still-owed item, verified against existing notes first.** Never delete;
+  never auto-close; never create a deal.
 - New-deal creation (W0) is **disabled** (`newDealDiscovery.enabled: false`). W1
   only updates existing deals — a genuine new opportunity gets named in the digest
   for Shaffy to add by hand, not created automatically.

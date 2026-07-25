@@ -40,7 +40,9 @@
         "firstOrderPlaced",
         "activelyOrdering",
         "noOrdersL3M"
-      ]
+      ],
+      "_earlyFunnelStages_note": "2026-07-25, per Shaffy: the pre-Contracting stages, where a deal is still pure top-of-funnel outreach/qualification. Used to scope the automated Description/Next step refresh (ingest.fieldRefresh) — Contracting-onward deals are managed by hand and the sweep leaves their Description/Next step alone.",
+      "earlyFunnelStages": ["3744632513", "3744632514", "3744632516", "3744632517"]
     },
     "salesPipeline": {
       "id": "default",
@@ -78,7 +80,28 @@
       "onlyFromStageLabel": "In conversation (Lemlist)",
       "toStageOnInfoRequest": { "id": "3744632516", "label": "Asked for information", "when": "reply asks a question / requests more info / pricing, but hasn't asked for or agreed to a call yet" },
       "toStageOnDemoInterest": { "id": "3744632517", "label": "Demo scheduled", "when": "reply agrees to, requests, or confirms a call/demo/onboarding time" }
+    },
+    "fieldRefresh": {
+      "_note": "2026-07-25, per Shaffy: keep the native HubSpot 'Description' and 'Next step' fields current on early-funnel deals (pipelines.clinicPartnerships.earlyFunnelStages) — these show on the board cards, so both must stay SHORT. Refresh them whenever the sweep writes a [hubspot-ingest] note on one of these deals (not a separate daily pass over untouched deals). Contracting-onward deals are NOT touched — Shaffy manages those fields by hand.",
+      "enabled": true,
+      "descriptionProperty": "description",
+      "nextStepProperty": "hs_next_step",
+      "maxSentencesEach": 2
     }
+  },
+  "tasks": {
+    "_note": "2026-07-25, per Shaffy: whenever the sweep finds something outstanding on SwimScore's side, create a native HubSpot Task linked to the deal so it shows up in HubSpot's own task queue, not just the note/digest. Applies pipeline-wide (not limited to earlyFunnelStages) — a Contracting-stage deal waiting on us to send a signed agreement deserves a Task just as much as a cold lead waiting on a reply.",
+    "_bar_note": "HIGH BAR, per Shaffy 2026-07-25: only create a task for something CLEARLY deal-related where we clearly still owe a reply, or a clearly important flag surfaced in email. Do not create one for anything ambiguous, minor, or low-stakes — a task list cluttered with tiny items is worse than useless (erodes trust, gets ignored). When genuinely unsure whether it clears the bar, don't create it; mention it in the digest instead.",
+    "_verifyNotDone_note": "MANDATORY before every create: re-check the deal's existing notes and the latest activity (email/Slack/Lemlist) for that item specifically — confirm the reply/action hasn't already happened. Creating a task for something already done is exactly the kind of noise that makes the task list untrustworthy.",
+    "enabled": true,
+    "defaultOwnerId": 162479602,
+    "_defaultOwnerId_note": "162479602 = 'Support SwimScore', the HubSpot user record for shaffy@myswimscore.com (confirmed via get_user_details). This is deliberately different from pipelines/newDealDiscovery.defaultOwnerId (163314964, Syb) — action-owed tasks default to Shaffy.",
+    "defaultTaskType": "TODO",
+    "subjectFormat": "Reply to <name> — <topic>  (or, for non-reply items: <Verb> <what> — <who/what it's for>)",
+    "dedupRefLine": "Ref: hubspot:task:<dealId>:<slug>",
+    "_dedup_note": "Before creating a task, search open tasks (hs_task_status != COMPLETED) associated with the deal for one whose hs_task_body already contains the same Ref line — skip creating a duplicate if found. If a prior open task's underlying item is now resolved (evidenced by fresh note content), set that task's hs_task_status to COMPLETED instead of leaving it stale.",
+    "priorityRule": "HIGH if the owed item is >7 days overdue or blocks a live deal from progressing; MEDIUM otherwise.",
+    "dueDateRule": "Default due date = today (hs_timestamp). Never leave it blank."
   },
   "slackChannels": {
     "_note": "Channels the daily sweep reads for deal/account + internal signal. Read threads, not just top messages.",

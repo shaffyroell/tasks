@@ -1,5 +1,5 @@
 ---
-description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → log HubSpot deal notes (+ narrow Lemlist stage move), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
+description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → log HubSpot deal notes (+ narrow Lemlist stage move + Description/Next step refresh on early-funnel deals + HubSpot Tasks for anything clearly owed on our side), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
 ---
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
 the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
@@ -8,7 +8,8 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 
 > **2026-07-25 — scope narrowed at Shaffy's request:** this sweep no longer
 > creates HubSpot deals, and no longer advances stages freely. See step 6 for the
-> one stage move still allowed.
+> one stage move still allowed, the Description/Next step refresh on early-funnel
+> deals, and the (high-bar, deal-related-only) HubSpot Task creation.
 
 1. **Lemlist — new & updated conversations.** Pull the full team inbox
    (`get_inbox_conversations listId=teamConversations`, paginated; read threads via
@@ -50,6 +51,21 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    (L3M), or Closed Lost keeps its current stage no matter what happened — just log
    the note. Honor autoApply; never touch a close state.
 
+   **On early-funnel deals only** (Inbound request / In conversation / Asked for
+   info / Demo scheduled — `pipelines.clinicPartnerships.earlyFunnelStages`), also
+   refresh the native `description` and `hs_next_step` fields to match — **max 2
+   sentences each**, since they render on the HubSpot board cards. Skip this for
+   Contracting-onward deals; Shaffy manages those fields by hand.
+
+   **Create a HubSpot Task linked to the deal only for clearly deal-related items
+   where we clearly owe a reply, or something clearly important surfaced in
+   email — high bar** (`hubspot.json → tasks`, pipeline-wide). Not a catch-all:
+   skip minor or ambiguous items, and anything the stale-follow-up flow (step 7)
+   already covers — a cluttered task list gets ignored. **Verify against the
+   deal's existing notes/activity first that it isn't already done.** Dedupe on a
+   `Ref:` line in the task body; complete an existing task if a fresh note shows
+   its item got resolved.
+
 7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
    **Before flagging or re-affirming any deal as stale, verify directly**: an undated
    `from:`/`to:` search on that contact's email, reading the actual last message's
@@ -71,10 +87,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    only execution items and nothing that measures progress, needs a new to-do.
 
 End with a digest: deals updated with notes (+ the narrow In conversation → Asked
-for information/Demo scheduled stage moves only), new opportunities found but NOT
-created (for manual add), **stale deals flagged (with/without drafted message)**,
-and Notion to-dos added/advanced/closed per pillar. Call out the top risks and
-decisions for the CEO.
+for information/Demo scheduled stage moves only, + which early-funnel deals had
+their Description/Next step refreshed), new opportunities found but NOT created
+(for manual add), **HubSpot Tasks created/completed** (deal — subject — why),
+**stale deals flagged (with/without drafted message)**, and Notion to-dos
+added/advanced/closed per pillar. Call out the top risks and decisions for the CEO.
 
 9. **Post the recap to `#daily-recap` in Slack**, in this order:
 

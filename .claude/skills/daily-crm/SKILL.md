@@ -57,8 +57,50 @@ items already exist** — mark Done what was handled, advance what moved, dedup 
 `STYLE.md`** (verb-first, concise, client-safe, no arrows).
 
 ## 4. Report
-End with a digest: accounts touched, notes added (with gaps closed), stage moves,
-new deals created, and the Notion to-dos added/updated/closed per client.
+Post the recap as a Slack message to the **`#shaffy-recap`** channel (ID
+`C0BEYR36UQ3` in the `techtower-ai` workspace), using this exact structure:
+
+```
+*Daily Key-Account Sweep — <date>*
+
+*Key action items:*
+• Account: text text
+• Account: text text
+
+*Overall goals per account we're working towards:*
+• Account: text text
+• Account: text text
+
+*Possible blockers to solve:*
+• Account: text text
+• Account: text text
+
+*Next 2-3 goals to push proactively (post-current-items):*
+• Account: goal; goal; goal — the roadmap-level pushes Shaffy should be
+  driving next per account, beyond today's open items (upsell/renewal cues,
+  scope expansion, next milestone). This is what makes the sweep proactive
+  instead of reactive — always fill this in, even on a quiet week.
+• Account: goal; goal; goal
+
+*Suggestions to Joep, Roman, Swayam:*
+• To Joep: text
+• To Roman: text
+• To Swayam: text (if nothing surfaced for someone that day, say so explicitly —
+  never invent a suggestion just to fill the line)
+
+Notion boards:
+• Internal/pipeline: <internalBoard.todoDbUrl from clients.json>
+• <Client>: <link to that client's dashboardPageId from clients.json>
+  (one line per client entry in clients.json — always list every one, even if
+  quiet that day, so the message doubles as a navigation index)
+```
+
+**Note on the Slack identity:** the connected Slack integration authenticates as
+its own workspace member (`Shaffy`, `U07CJK9H78A`, shaffy.roell@gmail.com) — a
+**different** account from Shaffy's actual daily-use account (`Shaffy Roell`,
+`U0A2CAKTJA2`, shaffy@techtower.ai). Posting to `#shaffy-recap` (a channel the
+connector has joined) sidesteps this; do not send a "DM to self," as that lands
+in the connector's own inbox, which Shaffy doesn't check.
 
 Think critically per account the whole way through: progressing, stalling, or at
 risk? a commitment slipping? an upsell/renewal cue? That judgement is the job.

@@ -29,8 +29,19 @@ email → person → deal; company domain → company → deal; or name/alias). 
 - Run W0 (`new-deal-discovery.md`) first for genuinely NEW opportunities with no
   deal yet (create deal + link company + person + note); don't force-fit new
   inbound onto an existing deal.
+- **Refresh Description + Next step** on every deal in `attio.json →
+  fieldRefresh.scopeStages` you touch (native `deal_description`/`next_step`
+  fields, ≤2 sentences each) — keeps the deal card itself current, not just the
+  note history.
+- **Create an Attio Task** when something is clearly owed on our side (high bar
+  — an unanswered question, a clearly important flag), deduped on its `Ref:`
+  line and completed once a fresh note shows it's resolved. Detail in
+  `attio-ingest.md` §5.
 - **Keep the stage honest** — advance/hold per the evidence; never silently
-  demote an active client. Detail in `attio-ingest.md`.
+  demote an active client. The one exception: a deal in an active stage whose
+  reply is a plain opt-out (unsubscribe, "not interested") gets reclassified to
+  `Lost - not interested` on sight — that's hygiene, not demotion. Detail in
+  `attio-ingest.md`.
 
 ## 3. Reconcile action items in Notion (per client)
 Run W2 (`daily-open-items.md`): read Attio (the notes/stages you just wrote) plus

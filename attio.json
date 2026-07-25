@@ -40,6 +40,7 @@
     "noteMarkerPrefix": "[new-deal]"
   },
   "_attioIngest_note": "W1 (attio-ingest.md). Daily ingest: writes ALL raw comms to Attio as notes + keeps stages current. createNewDeals stays false (creation is W0's job). enabled=true turns it on. Committed config (no secrets).",
+  "_stages_note": "Verified live against Attio list-attribute-definitions(deals, stage) on 2026-07-25 — these are the ACTUAL current stage titles/ids. Previous config had drifted (e.g. '1.  Positive reply' vs the real '1.  Reply', and a '7. Active Project Client' stage that doesn't exist) — re-verify this way before trusting stage names if they're ever suspect again.",
   "attioIngest": {
     "enabled": true,
     "autoApply": true,
@@ -50,26 +51,54 @@
     "noteMarkerPrefix": "[attio-ingest]",
     "digestChannel": "",
     "activeStages": [
-      "1.  Positive reply",
+      "1.  Reply",
       "2. Planning call",
       "3. Demo planned",
       "4. Scope agreed",
       "5. Proposal sent",
       "6. Active client",
-      "7. Active Project Client",
       "8. Completed Client",
       "8.a Finished, need to finalize invoicing"
     ],
     "statusTitles": {
-      "positiveReply": "1.  Positive reply",
+      "reply": "1.  Reply",
       "planningCall": "2. Planning call",
       "demoPlanned": "3. Demo planned",
       "scopeAgreed": "4. Scope agreed",
       "proposalSent": "5. Proposal sent",
       "activeClient": "6. Active client",
       "completedClient": "8. Completed Client",
+      "finishedInvoicing": "8.a Finished, need to finalize invoicing",
       "nurture": "Nurture / recontact",
-      "lost": "Lost - not interested"
+      "lost": "Lost - not interested",
+      "lostPrice": "Lost - price"
     }
+  },
+  "_fieldRefresh_note": "2026-07-25, per Shaffy: keep the native Attio 'Deal description' (deal_description) and 'Next step' (next_step) fields current on every genuinely active deal — not just early-funnel, unlike the SwimScore/HubSpot version of this. Both fields already existed on the deals object, unused, before this. Refresh them whenever the sweep writes an [attio-ingest] note on one of these deals (not a separate daily pass over untouched deals). Backfilled once for all existing active deals on 2026-07-25 — going forward this just keeps them current.",
+  "fieldRefresh": {
+    "enabled": true,
+    "descriptionAttribute": "deal_description",
+    "nextStepAttribute": "next_step",
+    "maxSentencesEach": 2,
+    "scopeStages": [
+      "1.  Reply",
+      "2. Planning call",
+      "3. Demo planned",
+      "4. Scope agreed",
+      "5. Proposal sent",
+      "6. Active client"
+    ],
+    "_scopeStages_note": "Deals at 'Completed Client' / '8.a Finished...' get a one-off description+next-step when they change into that stage (e.g. 'finalize invoicing'), but aren't part of the daily refresh loop. Nurture/Lost/Lead/'0. Potential target'/'AI Suggested' are never touched by this — that's the dead-lead 'mess', not active pipeline."
+  },
+  "_tasks_note": "2026-07-25, per Shaffy: whenever the sweep finds something clearly owed on TechTower's side, create a native Attio Task linked to the deal so it shows up in Attio's own task list, not just the note/digest. High bar, same spirit as the SwimScore/HubSpot version: only for an explicit unanswered question/request, or a clearly important flag — not general nudges. Mirrors mcp__Attio__create-task / list-tasks / update-task. Attio tasks have no editable body after creation and no priority field — completion is the only state change (mcp__Attio__update-task, is_completed:true) once a fresh note shows the item was resolved.",
+  "tasks": {
+    "enabled": true,
+    "defaultAssigneeWorkspaceMemberId": "9ecd9b0d-6feb-4582-829b-7dd2fced6d6d",
+    "_defaultAssignee_note": "Shaffy Roell's Attio workspace_member_id (confirmed via mcp__Attio__whoami).",
+    "contentFormat": "<Verb> <what> — <who/what it's for>, then a blank line, then the dedup Ref line",
+    "dedupRefLine": "Ref: attio:task:<dealId>:<slug>",
+    "_dedup_note": "Before creating a task, call mcp__Attio__list-tasks with linked_record_object='deals', linked_record_id=<dealId>, is_completed=false and check each task's content for an existing Ref line match — skip creating a duplicate if found. If a prior open task's underlying item is now resolved (evidenced by fresh note content), call mcp__Attio__update-task with is_completed:true instead of leaving it stale.",
+    "_verifyNotDone_note": "MANDATORY before every create: re-check the deal's existing notes and latest activity for that item specifically — confirm the reply/action hasn't already happened.",
+    "dueDateRule": "Default deadline_at = today. Never leave it blank."
   }
 }

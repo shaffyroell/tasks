@@ -13,8 +13,13 @@ Act like the person who manages these key accounts. Work these steps in order:
 3. **W1 — link comms to deals** (`attio-ingest.md`): for every meaningful
    conversation, find its Attio deal, **check the deal's existing notes**, and add
    a `[attio-ingest]` note **only if it isn't already there** (what happened,
-   decisions/commitments, risks, next step). Keep the stage honest; never silently
-   demote an active client. Close any gap where a real comm has no note.
+   decisions/commitments, risks, next step). Refresh the deal's native
+   `deal_description` + `next_step` fields on every active deal touched (≤2
+   sentences each); create an Attio Task when something is clearly owed on our
+   side (high bar, deduped on its `Ref:` line, completed once resolved). Keep
+   the stage honest; never silently demote an active client — except a plain
+   opt-out sitting in an active stage, which gets reclassified to `Lost - not
+   interested` as hygiene. Close any gap where a real comm has no note.
 
 4. **W2 — reconcile Notion action items** (`daily-open-items.md`): per client, see
    if the to-dos already exist — mark Done/advance, dedup on `Ref` — and add new

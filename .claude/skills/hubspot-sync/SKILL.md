@@ -1,6 +1,6 @@
 ---
 name: hubspot-sync
-description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
+description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. Backfills a missing Company (by domain, matched or created) on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
 ---
 
 Run W1, the daily HubSpot deal sync defined in `hubspot-sync.md` in this repo.
@@ -41,10 +41,20 @@ else MEDIUM, due today, owner Shaffy (162479602). Dedup on the `Ref:` line befor
 creating; mark an existing open task COMPLETED if a fresh note shows its item
 got resolved.
 
-Never create a deal (W0/`new-deal-discovery.md` is disabled — list genuine new
-opportunities in the digest for manual creation instead). Use only the native
-Gmail MCP. Before flagging any deal stale or recommending a downgrade, follow the
-§3a/§7 verification rule in `hubspot-sync.md`: do an undated `from:`/`to:` search
-on that contact and confirm the actual last message's date — never characterize a
-thread as quiet without checking it. Config: `hubspot.json`. Finish with the
-deal-sync digest.
+**Organization backfill — "In conversation (Lemlist)" deals only** (per
+`hubspot.json → orgLinking`): a separate automation, outside this workflow, now
+auto-creates a HubSpot deal for every Lemlist reply — but doesn't reliably attach
+a Company. For any deal in that exact stage you touch, check for an associated
+Company; if missing, take the domain from the deal's contact email (skip personal
+domains — flag those instead), search for an existing company by that domain and
+associate it, or create one (`{name, domain}`) if none exists. This is the one
+narrow exception to never creating records — company-only, never a contact or a
+deal.
+
+Never create a deal or a contact (W0/`new-deal-discovery.md` is disabled — list
+genuine new opportunities in the digest for manual creation instead). Use only
+the native Gmail MCP. Before flagging any deal stale or recommending a downgrade,
+follow the §3a/§7 verification rule in `hubspot-sync.md`: do an undated
+`from:`/`to:` search on that contact and confirm the actual last message's date —
+never characterize a thread as quiet without checking it. Config: `hubspot.json`.
+Finish with the deal-sync digest.

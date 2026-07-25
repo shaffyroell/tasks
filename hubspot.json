@@ -136,5 +136,15 @@
     "defaultOwnerId": 163314964,
     "minConfidence": "medium",
     "noteMarkerPrefix": "[new-deal]"
+  },
+  "orgLinking": {
+    "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply, landing it straight in 'In conversation (Lemlist)'. This workflow does NOT create those deals — but whenever it touches one (a note, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow.",
+    "enabled": true,
+    "scopeStageId": "3744632514",
+    "scopeStageLabel": "In conversation (Lemlist)",
+    "_scope_note": "Checked every time W1 touches a deal in this stage specifically — this is literally the 'Lemlist replies' bucket. Not re-checked on every run for deals that have already moved past it (they were checked once, on the way through).",
+    "matchBy": "the deal's associated contact's email domain",
+    "personalDomains": ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "protonmail.com", "proton.me", "live.com", "msn.com"],
+    "_personalDomains_note": "If the only contact email is on one of these, don't create a company from it (same rule as new-deal-discovery.md) — flag in the digest for manual review instead."
   }
 }

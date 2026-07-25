@@ -15,8 +15,17 @@ Config: `hubspot.json`.
 > orders (L3M), Closed Lost) is manual-only — log a note describing what happened
 > and let Shaffy move the card himself.
 >
-> **Pipeline:** ~~W0 (`new-deal-discovery.md`, create new deals)~~ *(disabled)* →
-> **W1 (this, notes + the narrow Lemlist stage move)** → W2
+> **2026-07-25 (2) — a separate automation now creates deals for us.** Shaffy's
+> team has wired up their own flow that auto-creates a HubSpot deal for every
+> Lemlist reply, landing it in **In conversation (Lemlist)**. This workflow still
+> never creates deals itself — but per step 6.6, it now checks every deal it
+> touches in that stage for a linked **Company**, and creates+links one if the
+> external flow didn't (that's the one narrow exception to "never create
+> records": company-only, only to backfill that specific gap).
+>
+> **Pipeline:** ~~W0 (`new-deal-discovery.md`, create new deals)~~ *(disabled —
+> deal creation for Lemlist replies now happens outside this workflow)* →
+> **W1 (this, notes + the narrow Lemlist stage move + org-link backfill)** → W2
 > (`daily-open-items.md`, Notion to-dos). Run with `/daily-crm`.
 
 ---
@@ -33,13 +42,17 @@ source is down — note the gap.
   `isYourTurn:true`, read the thread via `get_inbox_conversation(contactId)` (carries
   `aiLeadInterest` positive/neutral/negative).
 - **Match** the lead email / company domain to a HubSpot deal.
-  - **No deal + genuine B2B interest** → **do not create a deal.** List it in the
-    digest under "New opportunities (not created — create manually)" with contact,
-    company, and why it looks genuine, so Shaffy can add it himself. Negative
-    replies ("no thanks", "unsubscribe", wrong-email) don't even need listing.
-  - **Existing deal** → if there's new content, update it (steps 4–5), and if the
-    deal is currently at **In conversation (Lemlist)** apply the stage-advance rule
-    below (step 6.3).
+  - **Existing deal** (the normal case now — a separate automation auto-creates a
+    deal for every Lemlist reply, see the banner above) → if there's new content,
+    update it (steps 4–5); if the deal is at **In conversation (Lemlist)**, also
+    check it has a linked Company (step 6.6) and apply the stage-advance rule
+    (step 6.3).
+  - **No deal found** (the external flow hasn't caught up yet, or this came
+    through email/Shopify instead of Lemlist) + genuine B2B interest → **still do
+    not create a deal.** List it in the digest under "New opportunities (not
+    created — create manually)" with contact, company, and why it looks genuine.
+    Negative replies ("no thanks", "unsubscribe", wrong-email) don't even need
+    listing.
 
 ## 2. Shopify — B2B inbound contact-form messages only (check first)
 SwimScore's website (www.myswimscore.com) contact form is a real inbound channel for
@@ -177,6 +190,31 @@ For each deal with new substantive activity:
    resolved** (a fresh note shows the reply went out / the item got done), set
    that task's `hs_task_status` to `COMPLETED` instead of leaving it stale.
    Never auto-complete a task you can't actually verify was resolved.
+6. **Verify the deal has an organization linked — Lemlist-replies bucket only**
+   (per `hubspot.json → orgLinking`). Shaffy's team runs a separate automation
+   that auto-creates a deal for every Lemlist reply, landing it in **In
+   conversation (Lemlist)** — that flow doesn't reliably attach a Company. So
+   whenever this sweep touches a deal currently in that exact stage (note added,
+   stage-advance check, field refresh), also:
+   1. **Check for an associated Company**:
+      `search_crm_objects(companies, associatedWith: deals EQUAL [dealId])`.
+      If one exists, done — nothing to do.
+   2. **If none**, find the deal's associated contact(s)
+      (`search_crm_objects(contacts, associatedWith: deals EQUAL [dealId])`) and
+      take the email domain. Skip personal domains (`orgLinking.personalDomains`)
+      — flag those in the digest instead of guessing a company.
+   3. **Search for an existing company by that domain**
+      (`search_crm_objects(companies, query: domain)` or a `domain` property
+      filter). If found, **associate it** to the deal (`manage_crm_objects`
+      updateRequest with an `associations` entry) — reuse, don't duplicate.
+   4. **If no company exists for that domain, create one** — `{name, domain}`,
+      name derived from the deal name (the part before the em dash, if there is
+      one) or the domain itself, then associate it to both the deal and the
+      contact.
+   - This is the **one narrow exception** to "this workflow never creates
+     records" — company-only, and only to backfill a gap the external
+     deal-creation flow left behind. Still never create a contact or a deal here.
+   - Log every backfill in the digest (deal — company created or matched — domain).
 
 ## 7. Stale-deal check → flag + suggested follow-up (per `staleFollowUp`)
 For every **open** deal (skip `excludeStages` = Closed Won/Lost and any dead/
@@ -205,14 +243,18 @@ previous run.
 ## 8. Idempotency & safety
 Dedup notes at the content level; dedup a call by meeting id, a Lemlist reply by
 contact id; dedup stale To-Dos on `Ref`; dedup HubSpot Tasks on the `Ref:` line in
-`hs_task_body` (§6.5). Only write on genuinely new content. Never delete; **never
-create a deal** (W0 is disabled — see the banner at the top).
+`hs_task_body` (§6.5); dedup companies by domain before ever creating one (§6.6 —
+always search first, reuse on match). Only write on genuinely new content. Never
+delete; **never create a deal or a contact** (W0 is disabled — see the banner at
+the top; the one exception is company-only org-linking backfill, §6.6).
 
 ## 9. Output — deal-sync digest
 **Preflight** ✅/⚠️ · **Deals reviewed** · **Notes added** (deal — gist — channel) ·
 **Description/Next step refreshed** (early-funnel deals only, per §6.4) ·
 **Tasks created** (deal — subject — owed by whom) + **Tasks completed** (deal —
 subject — resolved by what) ·
+**Organizations linked/created** (deal — company matched or created — domain,
+per §6.6) ·
 **Stage moves** (`deal: In conversation → Asked for information/Demo scheduled —
 why` — this is the only kind of stage move that should ever appear here) ·
 **Stale deals flagged** (deal — days quiet — follow-up drafted? y/n) · **New
@@ -225,15 +267,19 @@ Enable via `ingest.enabled`.
 
 **Prompt:**
 > Run W1, the daily HubSpot deal sync in `hubspot-sync.md`. Preflight; check Lemlist
-> (new opportunity with no deal → list for manual creation, don't create it;
-> existing deal → update), read all of Shaffy's email threads, sweep the Slack
-> deal channels, and read Granola call notes; log each deal's HubSpot note where
-> there's a development, applying the one narrow stage-advance rule
+> (an existing deal now covers almost every reply — a separate automation
+> auto-creates one; genuinely new opportunity with no deal → list for manual
+> creation, still don't create it), read all of Shaffy's email threads, sweep the
+> Slack deal channels, and read Granola call notes; log each deal's HubSpot note
+> where there's a development, applying the one narrow stage-advance rule
 > (`ingest.stageAdvanceRule`) and leaving every other deal's stage untouched;
 > refresh Description + Next step on early-funnel deals only (max 2 sentences
-> each — they show on the board cards); create a HubSpot Task on any deal where
-> something is owed on our side (unanswered question, promised follow-up,
-> internal blocker), deduped on its `Ref:` line, and complete any such task a
-> fresh note shows was resolved; then flag every open deal whose last contact is
-> >14d with a Notion follow-up To-Do + a suggested message drafted from HubSpot
-> context. Finish with the deal-sync digest.
+> each — they show on the board cards); for any deal in "In conversation
+> (Lemlist)" you touch, verify it has a linked Company and create+link one if the
+> external flow didn't (`orgLinking`) — the one narrow exception to never
+> creating records; create a HubSpot Task on any deal where something is clearly
+> owed on our side (high bar — unanswered question, clearly important email
+> flag), verified against existing notes first and deduped on its `Ref:` line,
+> completing any such task a fresh note shows was resolved; then flag every open
+> deal whose last contact is >14d with a Notion follow-up To-Do + a suggested
+> message drafted from HubSpot context. Finish with the deal-sync digest.

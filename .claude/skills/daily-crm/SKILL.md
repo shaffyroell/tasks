@@ -1,6 +1,6 @@
 ---
 name: daily-crm
-description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches later stages; refreshes Description/Next step on early-funnel deals; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
+description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches later stages; refreshes Description/Next step on early-funnel deals; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first; backfills a missing Company on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
 ---
 
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
@@ -57,8 +57,17 @@ Lemlist, Shopify, Notion); work the steps in order.
    email — high bar** (`hubspot.json → tasks`). Not a catch-all — skip minor or
    ambiguous items and anything the stale-follow-up flow (step 7) already covers;
    a cluttered task list gets ignored. **Verify against the deal's existing
-   notes/activity first that it isn't already done.** Dedupe on a `Ref:` line;
-   complete an existing task if a fresh note shows its item got resolved.
+   notes/activity first that it isn't already done.** **Before creating, always
+   search the deal's existing open tasks for a `Ref:` match and skip if found —
+   never create a duplicate task for the same item.** Complete an existing task
+   if a fresh note shows its item got resolved.
+
+   **For any deal at "In conversation (Lemlist)" you touch, verify it has a
+   linked Company** (`hubspot.json → orgLinking`) — a separate automation now
+   auto-creates these deals and doesn't reliably attach one. If missing, match or
+   create a company by the contact's email domain and associate it — the one
+   narrow exception to never creating records (company-only, never a deal or
+   contact).
 
 7. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`):
    **before flagging (or re-affirming) any deal as stale, verify directly** — an
@@ -80,8 +89,9 @@ Lemlist, Shopify, Notion); work the steps in order.
 End with a CEO digest: deals updated (notes + the narrow stage moves only + which
 early-funnel deals had Description/Next step refreshed), new opportunities found
 but NOT created (for manual add), HubSpot Tasks created/completed (deal —
-subject — why), stale deals flagged (with/without drafted message), and Notion
-to-dos added/advanced/closed per pillar. Surface the top risks + decisions.
+subject — why), organizations linked/created (deal — company — domain), stale
+deals flagged (with/without drafted message), and Notion to-dos
+added/advanced/closed per pillar. Surface the top risks + decisions.
 
 9. **Post the recap to `#daily-recap`**, in order:
    a. **"Updates from yesterday"** — one factual line per source, scoped to the

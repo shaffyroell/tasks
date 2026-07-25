@@ -5,9 +5,10 @@ conversation. Each morning it reads **Granola, Slack, Lemlist, and email**, writ
 a dated note to the right deal, and — as of **2026-07-25, at Shaffy's request** —
 moves the deal stage in exactly **one** narrow situation (see "How a stage
 moves" below), refreshes the board-card fields on early-funnel deals (see
-"Description + Next step"), and creates a HubSpot Task on a deal whenever
-something is clearly owed on our side (see "HubSpot Tasks"). HubSpot holds
-everything — it's the canonical record.
+"Description + Next step"), creates a HubSpot Task on a deal whenever something
+is clearly owed on our side (see "HubSpot Tasks"), and backfills a missing
+Company on deals a separate Lemlist automation creates (see "Organization
+backfill"). HubSpot holds everything — it's the canonical record.
 
 ## What's connected
 
@@ -115,6 +116,30 @@ tasks on the deal for a match before creating); an existing open task gets marke
 without that evidence. Default owner is `162479602` ("Support SwimScore" —
 shaffy@myswimscore.com's HubSpot user record), due today, priority HIGH if >7
 days overdue or blocking a live deal, else MEDIUM.
+
+## Organization backfill (Lemlist-replies bucket)
+
+**Added 2026-07-25 (2), per Shaffy.** Shaffy's team runs a **separate
+automation** (outside this workflow, outside our control) that now auto-creates
+a HubSpot deal for every Lemlist reply, landing it straight in **In conversation
+(Lemlist)**. This workflow still never creates deals — but that automation
+doesn't reliably attach a Company, so whenever W1 touches a deal sitting in that
+exact stage (a note, the stage-advance check, the field refresh), it also:
+
+1. Checks whether the deal has an associated Company.
+2. If not, takes the domain from the deal's associated contact's email (skipping
+   personal domains — gmail.com, yahoo.com, etc. — those get flagged instead of
+   guessed).
+3. Searches for an existing company by that domain and **associates** it if
+   found (reuse, never duplicate).
+4. If none exists, **creates** one (`{name, domain}`) and associates it to both
+   the deal and the contact.
+
+This is the **one narrow exception** to "this workflow never creates records" —
+company-only, and only to backfill a gap the external flow left behind. It never
+creates a contact or a deal. Verified 2026-07-25: all 19 deals then sitting in
+"In conversation (Lemlist)" already had a company linked (they predated the new
+automation) — so this is a forward-looking safety net, not a backlog to clear.
 
 ## Lemlist → HubSpot mapping
 

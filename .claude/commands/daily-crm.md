@@ -11,15 +11,22 @@ Act like the person who manages these key accounts. Work these steps in order:
    in Attio, create the deal + link company + person + add a `[new-deal]` note.
 
 3. **W1 — link comms to deals** (`attio-ingest.md`): for every meaningful
-   conversation, find its Attio deal, **check the deal's existing notes**, and add
-   a `[attio-ingest]` note **only if it isn't already there** (what happened,
-   decisions/commitments, risks, next step). Refresh the deal's native
-   `deal_description` + `next_step` fields on every active deal touched (≤2
-   sentences each); create an Attio Task when something is clearly owed on our
-   side (high bar, deduped on its `Ref:` line, completed once resolved). Keep
-   the stage honest; never silently demote an active client — except a plain
-   opt-out sitting in an active stage, which gets reclassified to `Lost - not
-   interested` as hygiene. Close any gap where a real comm has no note.
+   conversation — **including ones landing on a `Nurture / recontact` or
+   advanced/frozen deal, not just fresh prospects** — find its Attio deal,
+   **check the deal's existing notes**, and add a `[attio-ingest]` note **only
+   if it isn't already there** (what happened, decisions/commitments, risks,
+   next step). Refresh the deal's native `deal_description` + `next_step`
+   fields on every deal touched, any stage (≤2 sentences each — no exclusion);
+   find-or-create + link its Company/Person if missing (the one exception to
+   never creating records); create an Attio Task when something is clearly
+   owed on our side (high bar, deduped on its `Ref:` line, completed once
+   resolved). Keep the stage honest per the live/frozen split: `1.  Reply`
+   through `3. Demo planned` plus `Nurture / recontact` move per evidence
+   (including reactivating a Nurture deal on genuine new activity, and
+   reclassifying a plain opt-out to `Lost - not interested` as hygiene);
+   `4. Scope agreed` onward is frozen — never auto-moved, Shaffy handles those
+   by hand; never silently demote an active client. Close any gap where a real
+   comm has no note.
 
 4. **W2 — reconcile Notion action items** (`daily-open-items.md`): per client, see
    if the to-dos already exist — mark Done/advance, dedup on `Ref` — and add new

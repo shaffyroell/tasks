@@ -29,19 +29,25 @@ email → person → deal; company domain → company → deal; or name/alias). 
 - Run W0 (`new-deal-discovery.md`) first for genuinely NEW opportunities with no
   deal yet (create deal + link company + person + note); don't force-fit new
   inbound onto an existing deal.
-- **Refresh Description + Next step** on every deal in `attio.json →
-  fieldRefresh.scopeStages` you touch (native `deal_description`/`next_step`
-  fields, ≤2 sentences each) — keeps the deal card itself current, not just the
-  note history.
+- **Refresh Description + Next step** on **every deal you touch, any stage** —
+  early pipeline, Nurture, or an advanced client (native `deal_description`/
+  `next_step` fields, ≤2 sentences each) — keeps the deal card itself current,
+  not just the note history. No stage exclusion. Detail in `attio-ingest.md` §4.
+- **Link the deal's Company + Person, find-or-create if missing** — the one
+  exception to never creating records in Attio (deal creation stays W0-only).
+  Detail in `attio-ingest.md` §5.
 - **Create an Attio Task** when something is clearly owed on our side (high bar
   — an unanswered question, a clearly important flag), deduped on its `Ref:`
-  line and completed once a fresh note shows it's resolved. Detail in
-  `attio-ingest.md` §5.
-- **Keep the stage honest** — advance/hold per the evidence; never silently
-  demote an active client. The one exception: a deal in an active stage whose
-  reply is a plain opt-out (unsubscribe, "not interested") gets reclassified to
-  `Lost - not interested` on sight — that's hygiene, not demotion. Detail in
-  `attio-ingest.md`.
+  line and completed once a fresh note shows it's resolved. Applies regardless
+  of stage. Detail in `attio-ingest.md` §6.
+- **Keep the stage honest per the live/frozen split** (`attio.json →
+  stagePolicy`): `1.  Reply`, `2. Planning call`, `3. Demo planned`, and
+  `Nurture / recontact` move per the evidence — including moving a Nurture
+  deal back into active pipeline on genuine new activity, and reclassifying a
+  plain opt-out to `Lost - not interested` as hygiene. **`4. Scope agreed`
+  onward is frozen — never move that stage automatically**, Shaffy handles
+  those by hand; never silently demote an active client. Detail in
+  `attio-ingest.md` §7.
 
 ## 3. Reconcile action items in Notion (per client)
 Run W2 (`daily-open-items.md`): read Attio (the notes/stages you just wrote) plus

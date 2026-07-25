@@ -39,7 +39,7 @@
     "createNewDeals": true,
     "noteMarkerPrefix": "[new-deal]"
   },
-  "_attioIngest_note": "W1 (attio-ingest.md). Daily ingest: writes ALL raw comms to Attio as notes + keeps stages current. createNewDeals stays false (creation is W0's job). enabled=true turns it on. Committed config (no secrets).",
+  "_attioIngest_note": "W1 (attio-ingest.md). Daily ingest: writes ALL raw comms to Attio as notes + keeps stages current. createNewDeals stays false (creation is W0's job — org-linking below is the one narrow exception). enabled=true turns it on. Committed config (no secrets).",
   "_stages_note": "Verified live against Attio list-attribute-definitions(deals, stage) on 2026-07-25 — these are the ACTUAL current stage titles/ids. Previous config had drifted (e.g. '1.  Positive reply' vs the real '1.  Reply', and a '7. Active Project Client' stage that doesn't exist) — re-verify this way before trusting stage names if they're ever suspect again.",
   "attioIngest": {
     "enabled": true,
@@ -74,23 +74,57 @@
       "lostPrice": "Lost - price"
     }
   },
-  "_fieldRefresh_note": "2026-07-25, per Shaffy: keep the native Attio 'Deal description' (deal_description) and 'Next step' (next_step) fields current on every genuinely active deal — not just early-funnel, unlike the SwimScore/HubSpot version of this. Both fields already existed on the deals object, unused, before this. Refresh them whenever the sweep writes an [attio-ingest] note on one of these deals (not a separate daily pass over untouched deals). Backfilled once for all existing active deals on 2026-07-25 — going forward this just keeps them current.",
+  "_stagePolicy_note": "2026-07-25, per Shaffy (final version, after two rounds of correction). Every deal is either 'live' (W1 may move its stage per evidence, including reactivating a Nurture deal on real new activity) or 'frozen' (W1 never touches its stage — Shaffy manages progression from there by hand, e.g. moving Scope agreed → Proposal sent, or closing a deal). The ONE crossing allowed is a live deal graduating INTO 'Scope agreed' on clear evidence — after that it's frozen. This governs stage changes ONLY; deal_description/next_step refresh (see fieldRefresh) and Attio Tasks apply regardless of live/frozen.",
+  "stagePolicy": {
+    "liveStages": [
+      "1.  Reply",
+      "2. Planning call",
+      "3. Demo planned",
+      "Nurture / recontact"
+    ],
+    "frozenStages": [
+      "4. Scope agreed",
+      "5. Proposal sent",
+      "6. Active client",
+      "8. Completed Client",
+      "8.a Finished, need to finalize invoicing"
+    ],
+    "_frozen_note": "Once a deal is in a frozen stage, W1 never changes `stage` on it — not forward, not back, not even to Lost. Note what happened and let Shaffy move it.",
+    "advanceRules": {
+      "callBooked": { "to": "2. Planning call", "when": "a call/meeting gets booked on a deal at '1.  Reply'" },
+      "demoOrScopingCallHeld": { "to": "3. Demo planned", "when": "a demo/scoping call gets booked or held on a deal at '2. Planning call'" },
+      "scopeAgreedLive": { "to": "4. Scope agreed", "when": "live scoping/handshake on scope is reached — the one case a live-stage deal graduates into a frozen stage; it stays frozen from there" },
+      "explicitOptOut": { "to": "Lost - not interested", "when": "the reply is a plain opt-out/negative (unsubscribe, 'not interested', 'remove me') — hygiene, not demotion; only applies to deals currently in a live stage" },
+      "goneQuiet": { "to": "Nurture / recontact", "when": "no reply/meeting for more than recencyWeeks and the deal is still in a live stage" }
+    },
+    "nurtureReactivation": {
+      "enabled": true,
+      "when": "a 'Nurture / recontact' deal gets a genuinely new inbound thread or meeting (not just a re-read of old context)",
+      "to": "whichever live stage the fresh evidence fits — usually '1.  Reply' for a bare reply, '2. Planning call' if a call got booked directly",
+      "note": "Record the reactivation explicitly in the note (why it's back, what's new) so it doesn't read as a silent stage flip."
+    },
+    "_lostReactivation_note": "Lost deals are NOT auto-reactivated — an explicit 'not interested' is a stronger signal than mere silence. If a Lost deal shows a genuine positive reversal, flag it in the digest for Shaffy to move manually rather than reactivating it automatically."
+  },
+  "_fieldRefresh_note": "2026-07-25, per Shaffy (final version): deal_description and next_step get refreshed on EVERY deal W1 writes a note on this run, regardless of stage — early pipeline, Nurture, or frozen/advanced (Scope agreed, Active client, etc). There is no stage restriction on the field refresh; the stage-change restriction (stagePolicy.frozenStages) is separate and doesn't limit this. Both fields already existed on the deals object, unused, before 2026-07-25.",
   "fieldRefresh": {
     "enabled": true,
     "descriptionAttribute": "deal_description",
     "nextStepAttribute": "next_step",
     "maxSentencesEach": 2,
-    "scopeStages": [
-      "1.  Reply",
-      "2. Planning call",
-      "3. Demo planned",
-      "4. Scope agreed",
-      "5. Proposal sent",
-      "6. Active client"
-    ],
-    "_scopeStages_note": "Deals at 'Completed Client' / '8.a Finished...' get a one-off description+next-step when they change into that stage (e.g. 'finalize invoicing'), but aren't part of the daily refresh loop. Nurture/Lost/Lead/'0. Potential target'/'AI Suggested' are never touched by this — that's the dead-lead 'mess', not active pipeline."
+    "scope": "every deal a note is written on this run — no stage restriction"
   },
-  "_tasks_note": "2026-07-25, per Shaffy: whenever the sweep finds something clearly owed on TechTower's side, create a native Attio Task linked to the deal so it shows up in Attio's own task list, not just the note/digest. High bar, same spirit as the SwimScore/HubSpot version: only for an explicit unanswered question/request, or a clearly important flag — not general nudges. Mirrors mcp__Attio__create-task / list-tasks / update-task. Attio tasks have no editable body after creation and no priority field — completion is the only state change (mcp__Attio__update-task, is_completed:true) once a fresh note shows the item was resolved.",
+  "_orgLinking_note": "2026-07-25, per Shaffy: whenever W1 touches a deal (any stage, any note), make sure it has a linked Company and a linked Person for the actual counterpart in the conversation — find-or-create both, don't just flag the gap. This replaces the older 'never create people/companies' restriction; deal creation itself is still W0's job only (attioIngest.createNewDeals stays false).",
+  "orgLinking": {
+    "enabled": true,
+    "linkCompany": true,
+    "linkPerson": true,
+    "matchCompanyBy": "domain (companies.domains)",
+    "matchPersonBy": "email (people.email_addresses)",
+    "personalDomains": ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "protonmail.com", "proton.me", "live.com", "msn.com"],
+    "_personalDomains_note": "Don't create a company from a personal-domain contact email — link the person, skip the company, flag in the digest instead of guessing an employer.",
+    "_dedup_note": "Always search first (company by domain, person by email) and reuse an exact match — never create a duplicate. If a create hits a domain/email conflict, reuse the existing record's id from the error."
+  },
+  "_tasks_note": "2026-07-25, per Shaffy: whenever the sweep finds something clearly owed on TechTower's side, create a native Attio Task linked to the deal so it shows up in Attio's own task list, not just the note/digest. High bar, same spirit as the SwimScore/HubSpot version: only for an explicit unanswered question/request, or a clearly important flag — not general nudges. Applies regardless of stage/live-vs-frozen. Mirrors mcp__Attio__create-task / list-tasks / update-task. Attio tasks have no editable body after creation and no priority field — completion is the only state change (mcp__Attio__update-task, is_completed:true) once a fresh note shows the item was resolved.",
   "tasks": {
     "enabled": true,
     "defaultAssigneeWorkspaceMemberId": "9ecd9b0d-6feb-4582-829b-7dd2fced6d6d",

@@ -1,6 +1,6 @@
 ---
 name: daily-crm
-description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches later stages; refreshes Description/Next step on early-funnel deals; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first; backfills a missing Company on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
+description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, creates a HubSpot deal for genuine new opportunities (landing at In conversation (Lemlist) or Asked for information, never further on autopilot — re-enabled 2026-08-11), reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply; refreshes Description/Next step on early-funnel deals; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first; backfills a missing Company on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
 ---
 
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
@@ -8,14 +8,21 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Open with a per-source preflight (HubSpot, Gmail, Slack, Granola,
 Lemlist, Shopify, Notion); work the steps in order.
 
-> **2026-07-25 — scope narrowed at Shaffy's request:** no new HubSpot deals get
-> created, and stage moves are limited to one rule — see step 6.
+> **2026-08-11 — deal creation re-enabled:** Shaffy asked for new HubSpot deals
+> back (had been off 2026-07-25 – 2026-08-11), with one change from the old
+> behavior — a new deal never auto-lands past **In conversation (Lemlist)** or
+> **Asked for information** (`hubspot.json → newDealDiscovery.stageAssignRule`),
+> never further along the pipeline on autopilot. Stage moves on *existing* deals
+> are still limited to the one rule in step 6.
 
 1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
    `get_inbox_conversation` for the thread + `aiLeadInterest`). New genuine B2B
-   interest with no deal → **don't create it** — list it in the digest for Shaffy
-   to add manually (contact + company + why it looks genuine). Existing deal with new
-   content → update (step 6). Negative replies are not deals.
+   interest with no deal → **create the deal** (W0, `new-deal-discovery.md`):
+   find-or-create the company + contact, land it at **Asked for information** if
+   the reply asks a question/requests info or pricing, else **In conversation
+   (Lemlist)** (the default), and add a `[new-deal]` note summarizing the thread.
+   Thin/low-confidence intros still just get listed in the digest for review.
+   Existing deal with new content → update (step 6). Negative replies are not deals.
 
 2. **Shopify — inbound contact-form messages FIRST** (before the email threads):
    read **only** the website `"New customer message"` contact-form submissions
@@ -86,9 +93,10 @@ Lemlist, Shopify, Notion); work the steps in order.
    database (see `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or only
    execution items and nothing measuring progress, needs a new to-do.
 
-End with a CEO digest: deals updated (notes + the narrow stage moves only + which
-early-funnel deals had Description/Next step refreshed), new opportunities found
-but NOT created (for manual add), HubSpot Tasks created/completed (deal —
+End with a CEO digest: **new deals created** (deal — contact — company — stage —
+why), deals updated (notes + the narrow stage moves only + which early-funnel
+deals had Description/Next step refreshed), low-confidence opportunities found
+but NOT created (for manual review), HubSpot Tasks created/completed (deal —
 subject — why), organizations linked/created (deal — company — domain), stale
 deals flagged (with/without drafted message), and Notion to-dos
 added/advanced/closed per pillar. Surface the top risks + decisions.

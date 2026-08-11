@@ -1,6 +1,6 @@
 ---
 name: hubspot-sync
-description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. Backfills a missing Company (by domain, matched or created) on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
+description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. Backfills a missing Company (by domain, matched or created) on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one. Deal/contact creation itself is W0's job (new-deals, re-enabled 2026-08-11), not this workflow's. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
 ---
 
 Run W1, the daily HubSpot deal sync defined in `hubspot-sync.md` in this repo.
@@ -51,8 +51,8 @@ associate it, or create one (`{name, domain}`) if none exists. This is the one
 narrow exception to never creating records — company-only, never a contact or a
 deal.
 
-Never create a deal or a contact (W0/`new-deal-discovery.md` is disabled — list
-genuine new opportunities in the digest for manual creation instead). Use only
+Never create a deal or a contact here — that's W0's job
+(`new-deal-discovery.md`, re-enabled 2026-08-11), not W1's. Use only
 the native Gmail MCP. Before flagging any deal stale or recommending a downgrade,
 follow the §3a/§7 verification rule in `hubspot-sync.md`: do an undated
 `from:`/`to:` search on that contact and confirm the actual last message's date —

@@ -1,5 +1,5 @@
 ---
-description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → log HubSpot deal notes (+ narrow Lemlist stage move + Description/Next step refresh on early-funnel deals + HubSpot Tasks for anything clearly owed on our side + Company backfill on Lemlist-created deals), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
+description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → create deals for genuine new opportunities (landing at In conversation or Asked for information), log HubSpot deal notes (+ narrow Lemlist stage move + Description/Next step refresh on early-funnel deals + HubSpot Tasks for anything clearly owed on our side + Company backfill on Lemlist-created deals), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
 ---
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
 the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
@@ -15,15 +15,27 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 > every Lemlist reply. This sweep still never creates deals — but for any deal in
 > "In conversation (Lemlist)" it touches, it now verifies a Company is linked and
 > creates+links one (by domain) if the external flow didn't. See step 6.
+>
+> **2026-08-11 — deal creation re-enabled, superseding the 2026-07-25 note
+> above:** Shaffy asked for new HubSpot deals back, with one change from the old
+> (pre-2026-07-25) behavior — a new deal never auto-lands past **In conversation
+> (Lemlist)** or **Asked for information** (`hubspot.json →
+> newDealDiscovery.stageAssignRule`), never further along the pipeline on
+> autopilot. Step 1 now creates a deal (via W0, `new-deal-discovery.md`) for
+> genuine new opportunities instead of just listing them.
 
 1. **Lemlist — new & updated conversations.** Pull the full team inbox
    (`get_inbox_conversations listId=teamConversations`, paginated; read threads via
    `get_inbox_conversation`, note `aiLeadInterest`). Almost every reply now already
    has a deal (the external Lemlist-to-HubSpot flow creates one) — match to it and
    update (step 6). Genuine B2B interest with **no** deal (the external flow hasn't
-   caught up, or it came via email/Shopify) → **do not create a deal** — list it in
-   the digest (contact, company, why it looks genuine) for Shaffy to add manually.
-   Negative replies are not deals.
+   caught up, or it came via email/Shopify) → **create the deal** (W0,
+   `new-deal-discovery.md`): find-or-create the company + contact, land the deal at
+   **Asked for information** if the reply asks a question/requests info or
+   pricing, else **In conversation (Lemlist)** (the default — never assign further
+   automatically), and add a `[new-deal]` note summarizing the thread. Low-confidence
+   intros (thin, no real service text) still just get listed in the digest for
+   review rather than created. Negative replies are not deals.
 
 2. **Shopify — check inbound contact-form messages FIRST** (before the email
    threads). Read **only** the website `"New customer message"` contact-form
@@ -100,12 +112,14 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    database (linked from `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or
    only execution items and nothing that measures progress, needs a new to-do.
 
-End with a digest: deals updated with notes (+ the narrow In conversation → Asked
+End with a digest: **new deals created** (deal — contact — company — stage —
+why), deals updated with notes (+ the narrow In conversation → Asked
 for information/Demo scheduled stage moves only, + which early-funnel deals had
-their Description/Next step refreshed), new opportunities found but NOT created
-(for manual add), **HubSpot Tasks created/completed** (deal — subject — why),
-**stale deals flagged (with/without drafted message)**, and Notion to-dos
-added/advanced/closed per pillar. Call out the top risks and decisions for the CEO.
+their Description/Next step refreshed), low-confidence opportunities found but
+NOT created (for manual review), **HubSpot Tasks created/completed** (deal —
+subject — why), **stale deals flagged (with/without drafted message)**, and
+Notion to-dos added/advanced/closed per pillar. Call out the top risks and
+decisions for the CEO.
 
 9. **Post the recap to `#daily-recap` in Slack**, in this order:
 

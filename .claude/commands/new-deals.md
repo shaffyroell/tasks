@@ -1,12 +1,12 @@
 ---
-description: "DISABLED 2026-07-25 (Shaffy: no more auto-created deals). W0 — discover new opportunities in mail + Lemlist replies. Config: hubspot.json → newDealDiscovery.enabled:false. Do not run this until it's re-enabled."
+description: "W0 — discover new opportunities in mail + Lemlist replies and create the deal (re-enabled 2026-08-11). Config: hubspot.json → newDealDiscovery.enabled:true."
 ---
-> **⚠️ Disabled.** Shaffy asked the daily sweep to stop creating HubSpot deals. If
-> invoked, do not create anything — instead read `new-deal-discovery.md`'s ICP
-> criteria (§2) to identify genuine new opportunities from the same inbound
-> sources, and just list them (contact, company, why they look genuine) for Shaffy
-> to add manually. Re-enable by flipping `hubspot.json → newDealDiscovery.enabled`
-> back to `true` and reverting this file.
+
+> **Re-enabled 2026-08-11.** Disabled 2026-07-25 – 2026-08-11. Deals are created
+> directly again — no more "list for manual add." The one change from the old
+> (pre-2026-07-25) behavior: a new deal only ever lands in **In conversation
+> (Lemlist)** or **Asked for information**, per `stageAssignRule` below — never
+> further along the pipeline on autopilot.
 
 Run W0, the new-deal discovery defined in `new-deal-discovery.md` in this repo.
 Preflight (HubSpot + Gmail + Lemlist); pull yesterday's inbound (Gmail `in:inbox`,
@@ -16,7 +16,10 @@ external opportunities that are NOT already in HubSpot (dedup hard against exist
 deals/contacts/companies; exclude SaaS/automated, internal, vendors-pitching-us,
 recruiting applicants, personal). For each kept opportunity: find-or-create the
 company (by domain) and contact (by email) and associate both, create the deal in
-`newDealDiscovery.defaultPipeline` at the stage implied by intent, owned by
-`defaultOwnerId`, then add a `[new-deal …]` note summarizing the thread. List
-low-confidence intros for review instead of creating. Finish with the discovery
-digest. Config: `hubspot.json` (`newDealDiscovery`).
+`newDealDiscovery.defaultPipeline` at the stage from
+`newDealDiscovery.stageAssignRule` — **Asked for information** if the reply asks a
+question/requests info or pricing, else **In conversation (Lemlist)** (the
+default; never auto-assign further) — owned by `defaultOwnerId`, then add a
+`[new-deal …]` note summarizing the thread. List low-confidence intros for review
+instead of creating. Finish with the discovery digest. Config: `hubspot.json`
+(`newDealDiscovery`).

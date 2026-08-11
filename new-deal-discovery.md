@@ -1,13 +1,12 @@
 # W0 — Daily New-Deal Discovery (create + link + note in HubSpot)
 
-> ## ⚠️ DISABLED (2026-07-25)
-> Shaffy asked the daily sweep to stop creating HubSpot deals entirely. This
-> workflow is turned off via `hubspot.json → newDealDiscovery.enabled:false` and
-> `/daily-crm` no longer calls it. Genuine new opportunities found during the
-> Lemlist/email/Shopify sweep are now listed in the W1 digest ("New opportunities
-> found but NOT created") for Shaffy to add manually. The rest of this doc is kept
-> for reference in case new-deal creation is re-enabled later — don't run it
-> until `newDealDiscovery.enabled` is flipped back to `true`.
+> ## Re-enabled 2026-08-11
+> Disabled 2026-07-25 – 2026-08-11. Shaffy asked for deal creation back, with one
+> change from the old behavior: a new deal is created directly in HubSpot (no more
+> "list for manual add"), but it only ever lands in **In conversation (Lemlist)**
+> or **Asked for information** — never further along the pipeline on autopilot.
+> See §3 for the exact stage logic (`hubspot.json → newDealDiscovery.stageAssignRule`).
+> `/daily-crm` calls this again as part of the normal W0 → W1 → W2 chain.
 
 **Run this first each morning (~06:50 Europe/Amsterdam), before W1.** It reads the
 last day of inbound mail **and fresh Lemlist replies**, finds **genuine new
@@ -95,12 +94,16 @@ Use `manage_crm_objects`. Dedup before every create.
 2. **Contact** — `search_crm_objects(contacts)` by email; reuse on exact match,
    else create `{email, firstname, lastname}`. Associate to the company.
 3. **Deal** — create a `deals` object: `{dealname, pipeline:<defaultPipeline>,
-   dealstage:<from intent>, hubspot_owner_id:<defaultOwnerId>}`, **associated** to
-   the contact and company. Stage from intent (ids from `hubspot.json`):
-   - proposal/pricing → `Proposal Sent`
-   - booked intro/discovery call → `Discovery Scheduled`
-   - positive reply / explicit inquiry, no call yet → `Outreach Sent`
-   - thin warm intro only → `Target Identified` (or hold for review).
+   dealstage:<from stageAssignRule>, hubspot_owner_id:<defaultOwnerId>}`,
+   **associated** to the contact and company. Stage per
+   `hubspot.json → newDealDiscovery.stageAssignRule` (same classification the W1
+   stage-advance rule uses, just applied at creation time):
+   - reply asks a question / requests info or pricing → **Asked for information**
+   - any other genuine positive signal (interested, warm intro, thin inquiry) →
+     **In conversation (Lemlist)** (the default)
+   - never auto-assign past those two — a deal only reaches Demo scheduled or
+     later when Shaffy moves it there himself (e.g. a specific call time gets
+     confirmed).
 4. **Note** — create a `notes` object stamped `[new-deal YYYY-MM-DD]`, associated
    to the deal, summarizing the thread: who reached out / how (channel), the
    service in play, key points, pricing/proposal status, latest date, next step.

@@ -149,6 +149,11 @@
     "draftSuggestedMessage": true,
     "notionPillar": "New sales"
   },
+  "defaultACV": {
+    "_note": "2026-08-15, per Shaffy: every deal should carry a dollar amount so the board's weighted-pipeline total (bottom of the HubSpot board view = amount × hs_deal_stage_probability, summed) actually means something. Applied as a one-time backfill to all 95 deals that had no `amount` set (2026-08-15), and now applies going forward to every deal this workflow creates or enriches (W0 new-deal-discovery, ingest.enrichment). Never overwrite an `amount` that's already set to something real — only fill it in when blank.",
+    "property": "amount",
+    "value": 2500
+  },
   "newDealDiscovery": {
     "_note": "Re-enabled 2026-08-11 at Shaffy's request — the sweep creates HubSpot deals again for genuine new opportunities with no existing deal (was disabled 2026-07-25 - 2026-08-11). Company + contact are found-or-created and linked same as before. This block covers opportunities the sweep finds that have NO deal at all yet (e.g. came in via email/Shopify, not Lemlist). Deals the external Lemlist automation already auto-created are handled by ingest.enrichment instead, not this block.",
     "enabled": true,

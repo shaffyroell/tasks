@@ -21,7 +21,9 @@ Lemlist, Shopify, Notion); work the steps in order.
    interest with no deal → **create the deal** (W0, `new-deal-discovery.md`):
    find-or-create the company + contact, land it at **Asked for information** if
    the reply asks a question/requests info or pricing, else **In conversation
-   (Lemlist)** (the default), and add a `[new-deal]` note summarizing the thread.
+   (Lemlist)** (the default), set **`amount` to `2500`** (`hubspot.json →
+   defaultACV`) so it counts toward the weighted-pipeline total, and add a
+   `[new-deal]` note summarizing the thread.
    Thin/low-confidence intros still just get listed in the digest for review.
    Existing deal with new content → update (step 6). Negative replies are not deals.
 
@@ -33,7 +35,8 @@ Lemlist, Shopify, Notion); work the steps in order.
    what the clinic/practice actually is — IVF clinic, Acupuncture Fertility, TRT
    and men's health, Egg-freezing, Fertility guidance, Urologist, OB/GYN, Family
    Doctor; set **Orders_PM** (`orders_pm`) to the closest volume bucket if the
-   thread mentions one, else default to **`1-5`** — never leave it blank; then
+   thread mentions one, else default to **`1-5`** — never leave it blank; set
+   **`amount` to `2500`** (`hubspot.json → defaultACV`) if not already set; then
    classify into the right stage with the same three-way call as step 6's
    stage-advance rule (default → In conversation (Lemlist); asks a
    question/wants info or pricing → Asked for information; agrees to/confirms a

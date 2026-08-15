@@ -17,11 +17,21 @@ Config: `hubspot.json`.
 >
 > **2026-07-25 (2) — a separate automation now creates deals for us.** Shaffy's
 > team has wired up their own flow that auto-creates a HubSpot deal for every
-> Lemlist reply, landing it in **In conversation (Lemlist)**. This workflow still
-> never creates deals itself — but per step 6.6, it now checks every deal it
-> touches in that stage for a linked **Company**, and creates+links one if the
-> external flow didn't (that's the one narrow exception to "never create
-> records": company-only, only to backfill that specific gap).
+> Lemlist reply. This workflow still never creates deals itself — but per step
+> 6.6, it now checks every deal it touches in the intake stage(s) below for a
+> linked **Company**, and creates+links one if the external flow didn't (that's
+> the one narrow exception to "never create records": company-only, only to
+> backfill that specific gap).
+>
+> **2026-08-15 — new intake stage: "Reply (to-be-enriched)".** The external
+> automation now lands every fresh reply at **Reply (to-be-enriched)**
+> (`4154315512`) instead of straight into **In conversation (Lemlist)**. New
+> step 1b below enriches each one — context note, `b2b_type` category,
+> `orders_pm` volume (default `1-5` if unknown) — then classifies it into In
+> conversation / Asked for information / Demo scheduled using the same
+> three-way call as the stage-advance rule in §6.3. The Company-link check in
+> §6.6 now applies to both this stage and In conversation (Lemlist). `hs_next_step`
+> is also now a short dated log, not free prose — see §6.4.
 >
 > **Pipeline:** ~~W0 (`new-deal-discovery.md`, create new deals)~~ *(disabled —
 > deal creation for Lemlist replies now happens outside this workflow)* →
@@ -53,6 +63,26 @@ source is down — note the gap.
     created — create manually)" with contact, company, and why it looks genuine.
     Negative replies ("no thanks", "unsubscribe", wrong-email) don't even need
     listing.
+
+## 1b. Enrich "Reply (to-be-enriched)" deals
+Per `hubspot.json → ingest.enrichment`. Lemlist's auto-create automation now lands
+every fresh reply at this stage instead of directly at "In conversation
+(Lemlist)". Pull every deal at `dealstage = 4154315512` and for each:
+1. **Context note** — read the Lemlist thread (`get_inbox_conversation`), write a
+   `[new-deal]` note same as §1 (who/company/what they said, channel, date).
+2. **Category** — set `b2b_type` from what the practice actually is: IVF clinic,
+   Acupuncture Fertility, TRT and men's health, Egg-freezing, Fertility guidance,
+   Urologist, OB/GYN, or Family Doctor. Infer from the reply/company content, not
+   the campaign name.
+3. **Volume** — set `orders_pm` to the closest bucket (`1-5`, `6-10`, `11-25`,
+   `26-50`, `51-100`, `100-200`) if the thread mentions a patient count/volume,
+   else default to **`1-5`**. Never leave it blank.
+4. **Classify the stage** — same three-way call as §6.3's stage-advance rule:
+   default → In conversation (Lemlist); asks a question/wants info or pricing →
+   Asked for information; agrees to/confirms a call → Demo scheduled. A deal only
+   stays at Reply (to-be-enriched) if the thread genuinely can't be read yet.
+5. **Company** — verify/backfill per §6.6 (now in scope for this stage too).
+6. **Fields** — apply the description/next-step refresh per §6.4.
 
 ## 2. Shopify — B2B inbound contact-form messages only (check first)
 SwimScore's website (www.myswimscore.com) contact form is a real inbound channel for
@@ -146,14 +176,18 @@ For each deal with new substantive activity:
      always manual.
 4. **Refresh Description + Next step — early-funnel deals only** (per
    `hubspot.json → ingest.fieldRefresh` and `pipelines.clinicPartnerships.earlyFunnelStages`
-   = Inbound request, In conversation (Lemlist), Asked for information, Demo
-   scheduled). If the deal you just wrote a note on is in one of those four
-   stages, also update its native `description` and `hs_next_step` fields to
-   match the fresh state — **max 2 sentences each**, since these show directly on
-   the HubSpot board cards and get unreadable if long. `description` = who the
-   contact/company is + where things stand; `hs_next_step` = the one concrete
-   thing that happens next and who owns it. Skip this for any deal at Contracting
-   or later — Shaffy keeps those fields current by hand.
+   = Reply (to-be-enriched), Inbound request, In conversation (Lemlist), Asked
+   for information, Demo scheduled). If the deal you just wrote a note on is in
+   one of those five stages, also update its native `description` and
+   `hs_next_step` fields to match the fresh state. `description` = who the
+   contact/company is + where things stand, **max 2 sentences**. `hs_next_step`
+   (2026-08-15, per Shaffy) is now a **short dated log, not free prose**: prepend
+   a new line `M/D: <what happened>. Next step: <the action>` (newest first, no
+   year, no leading zeros — `8/14` not `08/14`), keep at most the 4 most recent
+   lines (drop the oldest), and replace that day's own line instead of stacking a
+   second one if touched twice in a day. Both fields show directly on the
+   HubSpot board cards and get unreadable if long. Skip this entirely for any
+   deal at Contracting or later — Shaffy keeps those fields current by hand.
 5. **Create a HubSpot Task when something is owed on our side — high bar, deal-related only**
    (per `hubspot.json → tasks`, pipeline-wide — not limited to early-funnel deals).
    This is **not** a catch-all for every loose end — a cluttered task list gets
@@ -190,12 +224,13 @@ For each deal with new substantive activity:
    resolved** (a fresh note shows the reply went out / the item got done), set
    that task's `hs_task_status` to `COMPLETED` instead of leaving it stale.
    Never auto-complete a task you can't actually verify was resolved.
-6. **Verify the deal has an organization linked — Lemlist-replies bucket only**
+6. **Verify the deal has an organization linked — Lemlist-replies buckets only**
    (per `hubspot.json → orgLinking`). Shaffy's team runs a separate automation
-   that auto-creates a deal for every Lemlist reply, landing it in **In
-   conversation (Lemlist)** — that flow doesn't reliably attach a Company. So
-   whenever this sweep touches a deal currently in that exact stage (note added,
-   stage-advance check, field refresh), also:
+   that auto-creates a deal for every Lemlist reply, landing it in **Reply
+   (to-be-enriched)** (or, for older deals, directly in **In conversation
+   (Lemlist)**) — that flow doesn't reliably attach a Company. So whenever this
+   sweep touches a deal currently in either of those two stages (note added,
+   enrichment pass, stage-advance check, field refresh), also:
    1. **Check for an associated Company**:
       `search_crm_objects(companies, associatedWith: deals EQUAL [dealId])`.
       If one exists, done — nothing to do.

@@ -19,6 +19,7 @@
       "label": "Clinic Partnerships",
       "primary": true,
       "stages": {
+        "replyToBeEnriched":   { "id": "4154315512", "label": "Reply (to-be-enriched)" },
         "inboundRequest":      { "id": "3744632513", "label": "Inbound request" },
         "inConversation":      { "id": "3744632514", "label": "In conversation (Lemlist)" },
         "askedForInformation": { "id": "3744632516", "label": "Asked for information" },
@@ -28,9 +29,11 @@
         "firstOrderPlaced":    { "id": "3744632518", "label": "First order placed" },
         "activelyOrdering":    { "id": "3744632519", "label": "Actively ordering (active L3M)" },
         "noOrdersL3M":         { "id": "4047247046", "label": "No orders (L3M)" },
-        "closedLost":          { "id": "3744104178", "label": "Closed Lost" }
+        "closedLost":          { "id": "3744104178", "label": "Closed Lost" },
+        "interestedNotNow":    { "id": "4065138365", "label": "Interested (not now)" }
       },
       "stageOrder": [
+        "replyToBeEnriched",
         "inboundRequest",
         "inConversation",
         "askedForInformation",
@@ -41,8 +44,9 @@
         "activelyOrdering",
         "noOrdersL3M"
       ],
-      "_earlyFunnelStages_note": "2026-07-25, per Shaffy: the pre-Contracting stages, where a deal is still pure top-of-funnel outreach/qualification. Used to scope the automated Description/Next step refresh (ingest.fieldRefresh) — Contracting-onward deals are managed by hand and the sweep leaves their Description/Next step alone.",
-      "earlyFunnelStages": ["3744632513", "3744632514", "3744632516", "3744632517"]
+      "_replyToBeEnriched_note": "2026-08-15, per Shaffy: Lemlist's auto-create automation now lands every fresh reply-triggered deal at 'Reply (to-be-enriched)' (4154315512) instead of landing it directly at 'In conversation (Lemlist)'. This is the new intake bucket — see ingest.enrichment below for what the sweep does with deals sitting here.",
+      "_earlyFunnelStages_note": "2026-07-25, per Shaffy: the pre-Contracting stages, where a deal is still pure top-of-funnel outreach/qualification. Used to scope the automated Description/Next step refresh (ingest.fieldRefresh) — Contracting-onward deals are managed by hand and the sweep leaves their Description/Next step alone. Extended 2026-08-15 to include the new intake stage.",
+      "earlyFunnelStages": ["4154315512", "3744632513", "3744632514", "3744632516", "3744632517"]
     },
     "salesPipeline": {
       "id": "default",
@@ -86,7 +90,25 @@
       "enabled": true,
       "descriptionProperty": "description",
       "nextStepProperty": "hs_next_step",
-      "maxSentencesEach": 2
+      "maxSentencesEach": 2,
+      "_nextStepFormat_note": "2026-08-15, per Shaffy: hs_next_step is now a short dated log, not free prose — easier to scan history on the board card. Each line: 'M/D: <what happened>. Next step: <the action>' (no year, no leading zeros — '8/14' not '08/14'). On every touch, PREPEND a new dated line (newest first); do not overwrite prior lines. Cap at the 4 most recent lines (drop the oldest) so the card stays short. One line per date touched — if the deal is touched twice same day, replace that day's line rather than adding a second.",
+      "nextStepFormat": "{M}/{D}: {what happened}. Next step: {action}",
+      "nextStepMaxLines": 4
+    },
+    "enrichment": {
+      "_note": "2026-08-15, per Shaffy: new step, runs before the normal ingest pass. Lemlist's auto-create automation now lands every fresh reply-triggered deal at 'Reply (to-be-enriched)' (pipelines.clinicPartnerships.stages.replyToBeEnriched) instead of 'In conversation (Lemlist)'. For every deal sitting in that stage: (1) read the Lemlist reply thread and write a [new-deal] note with context (who/company/what they said) same as new-deal-discovery.md §3; (2) set b2bType from the reply/company content; (3) set ordersPmProperty to '1-5' (ordersPmDefault) if no volume signal exists yet — never leave it blank; (4) classify and move the stage using the SAME three-way rule as ingest.stageAdvanceRule (default → In conversation (Lemlist); asks a question/wants info or pricing → Asked for information; agrees to/confirms a call → Demo scheduled) — a deal only stays at Reply (to-be-enriched) if the sweep can't reach it at all (e.g. thread not found); (5) apply fieldRefresh (description + the dated hs_next_step log) same as any other early-funnel deal.",
+      "enabled": true,
+      "sourceStageId": "4154315512",
+      "sourceStageLabel": "Reply (to-be-enriched)",
+      "b2bType": {
+        "property": "b2b_type",
+        "_note": "Infer from the clinic's own description/specialty in the reply or company name — not a guess from the campaign name alone. Leave unset only if genuinely unclear from the content (rare); never blocks the stage move.",
+        "options": ["IVF clinic", "Acupuncture Fertility", "TRT and men's health", "Egg-freezing", "Fertility guidance", "Urologist", "OB/GYN", "Family Doctor"]
+      },
+      "ordersPmProperty": "orders_pm",
+      "ordersPmDefault": "1-5",
+      "_ordersPmDefault_note": "Only default to '1-5' when the thread gives no volume signal. If a patient count/volume is mentioned (e.g. '~250 TRT patients', '5-10/mo'), map it to the closest bucket instead: 1-5, 6-10, 11-25, 26-50, 51-100, 100-200.",
+      "companyBackfill": "orgLinking applies here too — same as the 'In conversation (Lemlist)' bucket, verify/backfill the Company before or when moving the deal off this stage."
     }
   },
   "tasks": {
@@ -128,7 +150,7 @@
     "notionPillar": "New sales"
   },
   "newDealDiscovery": {
-    "_note": "Re-enabled 2026-08-11 at Shaffy's request — the sweep creates HubSpot deals again for genuine new opportunities with no existing deal (was disabled 2026-07-25 - 2026-08-11). Company + contact are found-or-created and linked same as before.",
+    "_note": "Re-enabled 2026-08-11 at Shaffy's request — the sweep creates HubSpot deals again for genuine new opportunities with no existing deal (was disabled 2026-07-25 - 2026-08-11). Company + contact are found-or-created and linked same as before. This block covers opportunities the sweep finds that have NO deal at all yet (e.g. came in via email/Shopify, not Lemlist). Deals the external Lemlist automation already auto-created are handled by ingest.enrichment instead, not this block.",
     "enabled": true,
     "lookbackDays": 2,
     "defaultPipeline": "2314112732",
@@ -145,11 +167,11 @@
     }
   },
   "orgLinking": {
-    "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply, landing it straight in 'In conversation (Lemlist)'. This workflow does NOT create those deals — but whenever it touches one (a note, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow.",
+    "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply. As of 2026-08-15 it lands straight in 'Reply (to-be-enriched)' instead of 'In conversation (Lemlist)' (see ingest.enrichment) — both stages are in scope below since older deals may still sit at the latter. This workflow does NOT create those deals — but whenever it touches one (a note, the enrichment pass, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow.",
     "enabled": true,
-    "scopeStageId": "3744632514",
-    "scopeStageLabel": "In conversation (Lemlist)",
-    "_scope_note": "Checked every time W1 touches a deal in this stage specifically — this is literally the 'Lemlist replies' bucket. Not re-checked on every run for deals that have already moved past it (they were checked once, on the way through).",
+    "scopeStageIds": ["4154315512", "3744632514"],
+    "scopeStageLabels": ["Reply (to-be-enriched)", "In conversation (Lemlist)"],
+    "_scope_note": "Checked every time W1 touches a deal in either of these stages — this is literally the 'Lemlist replies, not yet human-reviewed' bucket. Not re-checked on every run for deals that have already moved past both (they were checked once, on the way through).",
     "matchBy": "the deal's associated contact's email domain",
     "personalDomains": ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "protonmail.com", "proton.me", "live.com", "msn.com"],
     "_personalDomains_note": "If the only contact email is on one of these, don't create a company from it (same rule as new-deal-discovery.md) — flag in the digest for manual review instead."

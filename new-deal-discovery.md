@@ -24,6 +24,13 @@ moment it appears.
 `newDealDiscovery.enabled`. New deals go into `defaultPipeline` at `defaultStage`,
 owned by `defaultOwnerId` (all defined there).
 
+> **2026-08-15:** this covers opportunities W0 finds with **no deal at all yet**
+> (email, Shopify, thin Lemlist intros the external automation hasn't caught).
+> Deals the external Lemlist automation *did* auto-create now land at **Reply
+> (to-be-enriched)** — those are handled by W1's enrichment pass
+> (`hubspot.json → ingest.enrichment`, `hubspot-sync.md` §1b), not this doc: context
+> note, `b2b_type` category, `orders_pm` volume, then classified into a stage.
+
 ---
 
 ## 0. Preflight

@@ -108,7 +108,23 @@
       "ordersPmProperty": "orders_pm",
       "ordersPmDefault": "1-5",
       "_ordersPmDefault_note": "Only default to '1-5' when the thread gives no volume signal. If a patient count/volume is mentioned (e.g. '~250 TRT patients', '5-10/mo'), map it to the closest bucket instead: 1-5, 6-10, 11-25, 26-50, 51-100, 100-200.",
-      "companyBackfill": "orgLinking applies here too — same as the 'In conversation (Lemlist)' bucket, verify/backfill the Company before or when moving the deal off this stage."
+      "companyBackfill": "orgLinking applies here too — same as the 'In conversation (Lemlist)' bucket, verify/backfill the Company before or when moving the deal off this stage.",
+      "declineHandling": {
+        "_note": "2026-08-15, per Shaffy: run this FIRST, before b2b_type/orders_pm/stage-classification — for deals still sitting at Reply (to-be-enriched) only. This is the one narrow, scoped exception to ingest.allowStageClose:false: only this specific pre-human-review intake stage, and only on unambiguous decline language. Never applied to any other stage.",
+        "enabled": true,
+        "clearDeclineSignals": ["don't contact me", "do not contact", "not interested", "not relevant", "unsubscribe", "remove me from your list", "stop emailing", "no thank you", "we're all set", "please stop", "not looking for additional services", "take me off"],
+        "onClearDecline": {
+          "action": "moveToClosedLost",
+          "stageId": "3744104178",
+          "_note": "Write the [new-deal] context note (what they said, why it reads as a decline) same as usual, then move straight to Closed Lost. Skip b2b_type/orders_pm/company-backfill — not worth enriching a dead lead. This is the one case in the whole workflow where the sweep sets a close state on its own."
+        },
+        "onUncertain": {
+          "action": "flagOnly",
+          "noteMarkerPrefix": "[flag-uncertain]",
+          "_note": "Genuinely ambiguous (reads negative-ish but isn't a clean decline, e.g. deflects to a colleague, vague brush-off, sarcastic/unclear tone) — do NOT move the stage and do NOT run the normal positive-path enrichment (b2b_type/orders_pm/classification). Just add a note flagging it's probably not relevant and why, and leave the deal at Reply (to-be-enriched) for Shaffy to move by hand. Mention these in the digest as a distinct 'flagged for manual review' list."
+        },
+        "_notNegative_note": "If the reply is genuinely not a decline (positive, neutral, or a real question), skip this whole block and proceed with the normal enrichment path above (context note, b2b_type, orders_pm, stage classification)."
+      }
     }
   },
   "tasks": {

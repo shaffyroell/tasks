@@ -30,18 +30,35 @@ Lemlist, Shopify, Notion); work the steps in order.
 2. **Enrich "Reply (to-be-enriched)" deals** (`hubspot.json → ingest.enrichment`,
    added 2026-08-15): Lemlist's auto-create automation now lands every fresh
    reply-triggered deal at this stage instead of straight into **In conversation
-   (Lemlist)**. For each deal sitting there: read the Lemlist thread and write a
-   `[new-deal]` context note (same as step 1); set **B2B_Type** (`b2b_type`) from
-   what the clinic/practice actually is — IVF clinic, Acupuncture Fertility, TRT
-   and men's health, Egg-freezing, Fertility guidance, Urologist, OB/GYN, Family
-   Doctor; set **Orders_PM** (`orders_pm`) to the closest volume bucket if the
-   thread mentions one, else default to **`1-5`** — never leave it blank; set
-   **`amount` to `2500`** (`hubspot.json → defaultACV`) if not already set; then
-   classify into the right stage with the same three-way call as step 6's
-   stage-advance rule (default → In conversation (Lemlist); asks a
-   question/wants info or pricing → Asked for information; agrees to/confirms a
-   call → Demo scheduled). Verify/backfill the Company here too (`orgLinking`
-   now covers both this stage and In conversation (Lemlist)).
+   (Lemlist)**. For each deal sitting there:
+
+   a. **Screen for a decline first** (`ingest.enrichment.declineHandling`,
+      added 2026-08-15, this stage only): read the reply for unambiguous
+      not-interested language ("don't contact me," "not relevant,"
+      "unsubscribe," "no thank you," etc.).
+      - **Clearly declined** → write the `[new-deal]` note explaining why, then
+        move straight to **Closed Lost** — skip the rest of this step. This is
+        the one place in the whole workflow the sweep sets a close state on its
+        own, scoped tightly to this pre-human-review intake stage.
+      - **Genuinely ambiguous** (reads negative-ish but isn't clean — deflects
+        to a colleague, vague brush-off) → add a `[flag-uncertain]` note saying
+        it's probably not relevant and why, **leave the stage as-is** for
+        Shaffy to move by hand, and skip the rest of this step. List these
+        separately in the digest.
+      - **Not a decline** (positive, neutral, or a real question) → continue below.
+
+   b. Read the Lemlist thread and write a `[new-deal]` context note (same as
+      step 1); set **B2B_Type** (`b2b_type`) from what the clinic/practice
+      actually is — IVF clinic, Acupuncture Fertility, TRT and men's health,
+      Egg-freezing, Fertility guidance, Urologist, OB/GYN, Family Doctor; set
+      **Orders_PM** (`orders_pm`) to the closest volume bucket if the thread
+      mentions one, else default to **`1-5`** — never leave it blank; set
+      **`amount` to `2500`** (`hubspot.json → defaultACV`) if not already set;
+      then classify into the right stage with the same three-way call as step
+      7's stage-advance rule (default → In conversation (Lemlist); asks a
+      question/wants info or pricing → Asked for information; agrees to/confirms
+      a call → Demo scheduled). Verify/backfill the Company here too
+      (`orgLinking` now covers both this stage and In conversation (Lemlist)).
 
 3. **Shopify — inbound contact-form messages FIRST** (before the email threads):
    read **only** the website `"New customer message"` contact-form submissions
@@ -119,7 +136,9 @@ Lemlist, Shopify, Notion); work the steps in order.
 
 End with a CEO digest: **new deals created** (deal — contact — company — stage —
 why), **enriched deals** (deal — B2B_Type — Orders_PM — stage it landed at),
-deals updated (notes + the narrow stage moves only + which early-funnel deals had
+**declined deals moved to Closed Lost** (deal — why) and **flagged for manual
+review** (deal — why, still at Reply (to-be-enriched)) from step 2a, deals
+updated (notes + the narrow stage moves only + which early-funnel deals had
 Description/Next step refreshed), low-confidence opportunities found but NOT
 created (for manual review), HubSpot Tasks created/completed (deal — subject —
 why), organizations linked/created (deal — company — domain), stale deals flagged

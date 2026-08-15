@@ -68,6 +68,22 @@ source is down — note the gap.
 Per `hubspot.json → ingest.enrichment`. Lemlist's auto-create automation now lands
 every fresh reply at this stage instead of directly at "In conversation
 (Lemlist)". Pull every deal at `dealstage = 4154315512` and for each:
+
+0. **Screen for a decline first** (`ingest.enrichment.declineHandling`, added
+   2026-08-15, this stage only — the one narrow exception to §8's "never touch a
+   close state"). Read the reply for unambiguous not-interested language:
+   "don't contact me," "not relevant," "unsubscribe," "no thank you," "not
+   looking for additional services," etc.
+   - **Clearly declined** → write a `[new-deal]` note explaining why it reads as
+     a decline, then move the deal straight to **Closed Lost** (`3744104178`).
+     Skip steps 2-6 below — not worth enriching a dead lead.
+   - **Genuinely ambiguous** (deflects to a colleague, vague brush-off, unclear
+     tone — reads negative-ish but isn't a clean decline) → add a
+     `[flag-uncertain]` note saying it's probably not relevant and why, **leave
+     the stage exactly as-is**, and skip steps 2-6. Shaffy moves it by hand.
+     List these separately in the digest from genuine new-deal creates.
+   - **Not a decline** (positive, neutral, or a real question) → continue to
+     step 1.
 1. **Context note** — read the Lemlist thread (`get_inbox_conversation`), write a
    `[new-deal]` note same as §1 (who/company/what they said, channel, date).
 2. **Category** — set `b2b_type` from what the practice actually is: IVF clinic,
@@ -76,7 +92,8 @@ every fresh reply at this stage instead of directly at "In conversation
    the campaign name.
 3. **Volume** — set `orders_pm` to the closest bucket (`1-5`, `6-10`, `11-25`,
    `26-50`, `51-100`, `100-200`) if the thread mentions a patient count/volume,
-   else default to **`1-5`**. Never leave it blank.
+   else default to **`1-5`**. Never leave it blank. Also set `amount` to `2500`
+   (`hubspot.json → defaultACV`) if not already set.
 4. **Classify the stage** — same three-way call as §6.3's stage-advance rule:
    default → In conversation (Lemlist); asks a question/wants info or pricing →
    Asked for information; agrees to/confirms a call → Demo scheduled. A deal only
@@ -291,7 +308,10 @@ subject — resolved by what) ·
 **Organizations linked/created** (deal — company matched or created — domain,
 per §6.6) ·
 **Stage moves** (`deal: In conversation → Asked for information/Demo scheduled —
-why` — this is the only kind of stage move that should ever appear here) ·
+why` — this is the only kind of stage move that should ever appear here, aside
+from §1b's decline handling) ·
+**Declined deals moved to Closed Lost** (deal — why, §1b) · **Flagged for manual
+review** (deal — why, still at Reply (to-be-enriched), §1b) ·
 **Stale deals flagged** (deal — days quiet — follow-up drafted? y/n) · **New
 opportunities found but NOT created** (contact/company — why it looks genuine — for
 Shaffy to add manually) · **Skipped/degraded**.

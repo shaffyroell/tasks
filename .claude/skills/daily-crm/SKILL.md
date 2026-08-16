@@ -117,6 +117,27 @@ Lemlist, Shopify, Notion); work the steps in order.
    associate it — the one narrow exception to never creating records
    (company-only, never a deal or contact).
 
+   **Touch-tracking fields — update on every deal with a new development**
+   (`hubspot.json → touchTracking`, added 2026-08-16): keep `last_touch_date`,
+   `last_touch_direction` (Inbound/Outbound), `Last_Message` (last literal
+   message either side sent, prefixed `Client:`/`SwimScore:`), `Initial_reply_lead`
+   (the lead's first-ever reply, set once), `Initial_reply_SS` (SwimScore's reply
+   *to* that first reply — **leave empty if we haven't replied yet**, this is a
+   deliberate follow-up-owed flag), `time_to_first_reply_hrs` (our response
+   latency: their first reply → our reply to it, NOT their reaction time to our
+   cold email — leave blank while `Initial_reply_SS` is empty), and
+   `Lemlist_campaign_reply` current. `reply_channel` (email/linkedin/call) is the
+   *acquisition* channel and is set once at deal creation, never overwritten by a
+   later touch on a different channel. Determine the true last touch by checking
+   **both** Lemlist (`get_inbox_conversation`, full thread) and Gmail — search by
+   the lead's actual email, not routed through Shaffy's inbox, since a teammate
+   (info@, elara.k@, stewart.hill@, syb@) emailing the lead directly is a real
+   SwimScore-side touch whether or not Shaffy is cc'd. Always also check Gmail for
+   a Calendly booking/acceptance notification — a booking can be the true last
+   touch even with no new Lemlist reply. Lemlist sometimes mislabels SwimScore's
+   own reply-in-thread as an inbound "emailsReplied" — read the actual
+   sender/content, don't trust the activity type blindly.
+
 8. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`):
    **before flagging (or re-affirming) any deal as stale, verify directly** — an
    undated `from:`/`to:` search on that contact's email, reading the actual last
@@ -142,8 +163,10 @@ updated (notes + the narrow stage moves only + which early-funnel deals had
 Description/Next step refreshed), low-confidence opportunities found but NOT
 created (for manual review), HubSpot Tasks created/completed (deal — subject —
 why), organizations linked/created (deal — company — domain), stale deals flagged
-(with/without drafted message), and Notion to-dos added/advanced/closed per
-pillar. Surface the top risks + decisions.
+(with/without drafted message), **deals with `Initial_reply_SS` empty** (a lead
+replied and nobody from SwimScore has answered yet — this is a same-day
+follow-up list, distinct from the 14d+ stale check), and Notion to-dos
+added/advanced/closed per pillar. Surface the top risks + decisions.
 
 10. **Post the recap to `#daily-recap`**, in order:
    a. **"Updates from yesterday"** — one factual line per source, scoped to the

@@ -187,6 +187,59 @@
       "_demoScheduled_note": "Not auto-assigned on creation, even if a call seems implied — Shaffy places a new deal at Demo scheduled by hand when a specific time is actually confirmed (e.g. Improved Health Solutions / Fernando Hernandez, 2026-08-11)."
     }
   },
+  "touchTracking": {
+    "_note": "2026-08-16, per Shaffy: track raw touch-level data on every deal so the pipeline shows exactly where each conversation stands, independent of dealstage. Applies whenever the sweep touches a deal with any new development (same scope as ingest's note/field-refresh pass) — not a separate sweep. Backfilled once across the full open pipeline on 2026-08-16.",
+    "enabled": true,
+    "fields": {
+      "lastTouchDate": {
+        "property": "last_touch_date",
+        "type": "date",
+        "_note": "Date of the most recent verified touch on the deal from ANY source — email (Gmail), Lemlist reply, or a Calendly booking/acceptance. Always verify directly per the sources block below; never infer from hs_lastmodifieddate, which gets touched by unrelated property backfills (e.g. the defaultACV pass) with no real contact."
+      },
+      "lastTouchDirection": {
+        "property": "last_touch_direction",
+        "type": "enumeration",
+        "options": ["Inbound", "Outbound"],
+        "_note": "Direction of that same most-recent touch. Inbound = the contact replied or booked/accepted a call. Outbound = SwimScore sent the last message and hasn't heard back yet. A Calendly acceptance counts as Inbound even though it has no literal message text."
+      },
+      "lastMessage": {
+        "property": "last_message",
+        "_note": "The literal text of the last message either side sent — NOT a Calendly booking (no message text; let last_touch_date/direction carry that instead, referencing it parenthetically here if useful). ALWAYS prefix with 'Client:' or 'SwimScore:' so the sender is legible at a glance.",
+        "prefixFormat": "{Client|SwimScore}: {message text}"
+      },
+      "initialReplyLead": {
+        "property": "initial_reply_lead",
+        "_note": "The lead's first-ever reply to our outreach. Set once, never overwritten by later messages (see last_message for the latest)."
+      },
+      "initialReplySS": {
+        "property": "initial_reply_ss",
+        "_note": "SwimScore's reply TO that first lead reply — NOT our original cold-outreach copy that started the thread. Leave EMPTY if we have not yet replied to the lead's message; this is an intentional flag meaning a reply is owed. Fill in as soon as we do reply. Call out any deal with this empty in the digest as needing a follow-up.",
+        "emptyMeansFollowUpOwed": true
+      },
+      "timeToFirstReplyHrs": {
+        "property": "time_to_first_reply_hrs",
+        "type": "number",
+        "_note": "Our response latency: hours between the lead's first reply and initial_reply_ss (OUR reply to it) — NOT the time the lead took to respond to our original cold email. Leave blank whenever initial_reply_ss is empty (can't compute yet)."
+      },
+      "replyChannel": {
+        "property": "reply_channel",
+        "type": "enumeration",
+        "options": ["email", "linkedin", "call"],
+        "_note": "The ACQUISITION channel — how we originally found/reached this lead (Lemlist email campaign, Lemlist LinkedIn campaign, or a genuine cold call with no prior Lemlist/LinkedIn touch). Set ONCE at deal creation; never overwritten later by a different channel a subsequent touch happens to use (e.g. a demo call held later does NOT change this to 'call')."
+      },
+      "lemlistCampaignReply": {
+        "property": "lemlist_campaign_reply",
+        "_note": "The Lemlist campaign name the reply came from (from get_inbox_conversation activity's campaignId, cross-referenced with the #lemlist-replies Slack notification text). Leave blank if the deal didn't originate from a traceable Lemlist thread."
+      }
+    },
+    "sources": {
+      "_note": "2026-08-16, per Shaffy: determining the true last touch requires checking BOTH Lemlist and Gmail, not just one — a reply sometimes lands only in Lemlist's tracked inbox, sometimes only as a direct Gmail reply to the original sending alias.",
+      "checkLemlist": "get_inbox_conversation on the deal's Lemlist contactId — the FULL thread, not just the get_inbox_conversations preview.",
+      "checkGmail": "Search from:/to: the lead's actual email address directly — do NOT route this through 'cc:shaffy' or Shaffy's inbox only. Any SwimScore team sender counts as a real outbound SwimScore touch even when Shaffy is only cc'd for visibility, not the primary sender: info@myswimscore.com, elara.k@maleswimscore.com, stewart.hill@checkswimscore.com, syb@myswimscore.com, or any other *swimscore*/*malescore*/campaign-alias domain SwimScore sends from.",
+      "checkCalendly": "ALWAYS also search Gmail for Calendly booking/acceptance notifications (from:notifications@calendly.com, from:teamcalendly@send.calendly.com, or subject:\"Accepted:\") for the contact — a booking can be the true last touch even when Lemlist shows no new reply.",
+      "_lemlistMislabel_warning": "Lemlist sometimes tags SwimScore's own outbound reply-in-thread as an inbound 'emailsReplied' activity (occasionally even with a positive aiLeadInterest score). Read the actual message content and signer, don't trust the Lemlist activity 'type' field blindly for direction."
+    }
+  },
   "orgLinking": {
     "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply. As of 2026-08-15 it lands straight in 'Reply (to-be-enriched)' instead of 'In conversation (Lemlist)' (see ingest.enrichment) — both stages are in scope below since older deals may still sit at the latter. This workflow does NOT create those deals — but whenever it touches one (a note, the enrichment pass, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow.",
     "enabled": true,

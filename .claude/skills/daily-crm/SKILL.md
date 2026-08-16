@@ -142,6 +142,18 @@ Lemlist, Shopify, Notion); work the steps in order.
    own reply-in-thread as an inbound "emailsReplied" — read the actual
    sender/content, don't trust the activity type blindly.
 
+   **CRITICAL — never trust search_threads' inline messages as a complete thread**
+   (`hubspot.json → touchTracking.sources._CRITICAL_threadTruncation_warning`):
+   confirmed in production that `search_threads` silently truncates long
+   back-and-forth threads (returned 4-5 of a real 16-message thread for
+   Onto.Health, cutting off weeks of activity including the actual last touch,
+   with zero indication of truncation). For any thread that looks like an
+   ongoing exchange, call `get_thread` on that threadId directly — if it
+   overflows to a saved file (common for long threads), read it with
+   `jq '[.messages[] | {date, sender, toRecipients, ccRecipients, subject, snippet}] | sort_by(.date)'`
+   to get the true last message. One extra call is cheap; a stale last-touch
+   date reported as current is not.
+
 8. **Stale check → flag + drafted follow-up** (`hubspot.json.staleFollowUp`):
    **before flagging (or re-affirming) any deal as stale, verify directly** — an
    undated `from:`/`to:` search on that contact's email, reading the actual last

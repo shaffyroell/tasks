@@ -129,8 +129,12 @@ Lemlist, Shopify, Notion); work the steps in order.
    `Lemlist_campaign_reply` current. `reply_channel` (email/linkedin/call) is the
    *acquisition* channel and is set once at deal creation, never overwritten by a
    later touch on a different channel. Determine the true last touch by checking
-   **both** Lemlist (`get_inbox_conversation`, full thread) and Gmail — search by
-   the lead's actual email, not routed through Shaffy's inbox, since a teammate
+   **both** Lemlist (`get_inbox_conversation`, full thread) and Gmail — search
+   **domain-wide** (`from:@theirdomain.com OR to:@theirdomain.com`), not just the
+   one contact's address, since other people at the same clinic often correspond
+   too and a single-address search misses them (fall back to a single-address
+   search only on a personal domain like gmail.com, where domain-wide would pull
+   in unrelated people). Not routed through Shaffy's inbox only, since a teammate
    (info@, elara.k@, stewart.hill@, syb@) emailing the lead directly is a real
    SwimScore-side touch whether or not Shaffy is cc'd. Always also check Gmail for
    a Calendly booking/acceptance notification — a booking can be the true last

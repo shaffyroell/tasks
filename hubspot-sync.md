@@ -37,6 +37,33 @@ Config: `hubspot.json`.
 > deal creation for Lemlist replies now happens outside this workflow)* →
 > **W1 (this, notes + the narrow Lemlist stage move + org-link backfill)** → W2
 > (`daily-open-items.md`, Notion to-dos). Run with `/daily-crm`.
+>
+> **2026-08-17 — stages relabeled to action-owed; W0 confirmed retired for good.**
+> HubSpot renamed the two early-funnel stages (same ids, new meaning):
+> **"In conversation (Lemlist)" → "Interested, send Information"** (`3744632514`)
+> and **"Asked for information" → "Interested, send follow-up"** (`3744632516`).
+> The classification question is no longer *"did their reply ask a question"* —
+> it's **"has SwimScore actually sent this lead the info/pricing yet?"** No →
+> **Interested, send Information**. Yes (virtually every SwimScore reply includes
+> it) and no meeting booked → **Interested, send follow-up**. A specific time
+> agreed by both sides → **Demo scheduled** (Shaffy's "meeting" bucket, label
+> unchanged). No interest → **Closed Lost** (only via the Reply-to-be-enriched
+> decline screen, §1b) or flag **Interested (not now)** (`4065138365`) for Shaffy
+> to set by hand — e.g. a lead we can't service yet (unsupported state), not just
+> a cold reply. See §6.3 below, now fully rewritten. Also confirmed: Lemlist's
+> automation creates the deal directly on every reply now (not just landing at
+> Reply-to-be-enriched some of the time) — this workflow **never** creates a deal,
+> full stop; treat any "no deal found" case as worth listing for Shaffy, not as
+> "the automation hasn't caught up yet."
+>
+> **Touch-tracking fields are not a separate pass.** Whenever a deal is created or
+> touched, set `last_touch_date`/`last_touch_direction`/`last_message`/
+> `initial_reply_lead`/`initial_reply_ss`/`reply_channel` (`hubspot.json →
+> touchTracking`) in the **same edit** as the note/stage/field-refresh — a live
+> run on 2026-08-17 skipped these on several newly-created deals by treating them
+> as optional. Before ending any run, spot-check with a `last_touch_date
+> NOT_HAS_PROPERTY` search across early-funnel deals — it should always come back
+> empty.
 
 ---
 
@@ -52,14 +79,14 @@ source is down — note the gap.
   `isYourTurn:true`, read the thread via `get_inbox_conversation(contactId)` (carries
   `aiLeadInterest` positive/neutral/negative).
 - **Match** the lead email / company domain to a HubSpot deal.
-  - **Existing deal** (the normal case now — a separate automation auto-creates a
-    deal for every Lemlist reply, see the banner above) → if there's new content,
-    update it (steps 4–5); if the deal is at **In conversation (Lemlist)**, also
-    check it has a linked Company (step 6.6) and apply the stage-advance rule
-    (step 6.3).
-  - **No deal found** (the external flow hasn't caught up yet, or this came
-    through email/Shopify instead of Lemlist) + genuine B2B interest → **still do
-    not create a deal.** List it in the digest under "New opportunities (not
+  - **Existing deal** (the normal case, always — Lemlist's automation creates a
+    deal directly on every reply, see the banner above) → if there's new content,
+    update it (steps 4–5); if the deal is at **Interested, send Information** or
+    **Interested, send follow-up**, also check it has a linked Company (step 6.6)
+    and apply the stage-advance rule (step 6.3).
+  - **No deal found** (came through email/Shopify instead of Lemlist, or the same
+    lead already has a deal under a slightly different contact) + genuine B2B
+    interest → **still do not create a deal.** List it in the digest under "New opportunities (not
     created — create manually)" with contact, company, and why it looks genuine.
     Negative replies ("no thanks", "unsubscribe", wrong-email) don't even need
     listing.
@@ -94,12 +121,16 @@ every fresh reply at this stage instead of directly at "In conversation
    `26-50`, `51-100`, `100-200`) if the thread mentions a patient count/volume,
    else default to **`1-5`**. Never leave it blank. Also set `amount` to `2500`
    (`hubspot.json → defaultACV`) if not already set.
-4. **Classify the stage** — same three-way call as §6.3's stage-advance rule:
-   default → In conversation (Lemlist); asks a question/wants info or pricing →
-   Asked for information; agrees to/confirms a call → Demo scheduled. A deal only
-   stays at Reply (to-be-enriched) if the thread genuinely can't be read yet.
+4. **Classify the stage** — same info-owed call as §6.3's stage-advance rule:
+   no reply with info/pricing sent yet → Interested, send Information; SwimScore
+   has already replied with info/pricing → Interested, send follow-up; a meeting
+   time is agreed → Demo scheduled. A deal only stays at Reply (to-be-enriched) if
+   the thread genuinely can't be read yet.
 5. **Company** — verify/backfill per §6.6 (now in scope for this stage too).
 6. **Fields** — apply the description/next-step refresh per §6.4.
+7. **Touch tracking** — set `last_touch_date`/`last_touch_direction`/`last_message`/
+   `initial_reply_lead`/`initial_reply_ss`/`reply_channel` in the same edit, per
+   `hubspot.json → touchTracking`. Not optional, not a separate pass.
 
 ## 2. Shopify — B2B inbound contact-form messages only (check first)
 SwimScore's website (www.myswimscore.com) contact form is a real inbound channel for
@@ -175,26 +206,39 @@ For each deal with new substantive activity:
    in this structure: **Background → Timeline (timestamped; Gmail = source of truth)
    → Latest status → Next step**. Synthesize across all channels; name the channel
    and date per point.
-3. **Stage moves — narrow, one rule only.** Per `hubspot.json → ingest.stageAdvanceRule`:
-   - **Only touch a deal's stage if it is currently "In conversation (Lemlist)"**
-     (`3744632514`) **and** the development is a Lemlist reply showing real
-     interest. Every deal already at Asked for information, Demo scheduled,
-     Contracting, Portal onboarding, First order placed, Actively ordering, No
-     orders (L3M), or Closed Lost — **leave the stage exactly as-is**, no matter
-     what happened (call held, proposal sent, pilot started, order placed). Log it
-     all in the note; Shaffy moves the card himself.
-   - **Reply asks a question / wants pricing or info, no call agreed yet** → move to
-     **Asked for information** (`3744632516`).
-   - **Reply agrees to, requests, or confirms a call/demo/onboarding time** → move
-     to **Demo scheduled** (`3744632517`).
+3. **Stage moves — narrow, two-stage rule, now action-owed not question-owed.** Per
+   `hubspot.json → ingest.stageAdvanceRule` (rewritten 2026-08-17):
+   - **Only touch a deal's stage if it is currently "Interested, send Information"**
+     (`3744632514`) **or "Interested, send follow-up"** (`3744632516`). Every deal
+     already at Demo scheduled, Contracting, Portal onboarding, First order placed,
+     Actively ordering, No orders (L3M), Interested (not now), or Closed Lost —
+     **leave the stage exactly as-is**, no matter what happened (call held, proposal
+     sent, pilot started, order placed). Log it all in the note; Shaffy moves the
+     card himself.
+   - **Classify by whether SwimScore has actually sent the info/pricing yet, not by
+     what the lead's message said:**
+     - No SwimScore reply with info/pricing sent yet → **Interested, send
+       Information** (`3744632514`) — this is also the default landing stage for
+       any fresh, un-replied-to inbound touch.
+     - SwimScore has replied with info/pricing (check for an outbound message after
+       their inbound one — virtually every reply template includes pricing/an
+       overview attachment) and no meeting is booked → **Interested, send
+       follow-up** (`3744632516`).
+     - A specific meeting/call time is agreed by both sides (not just proposed by
+       one side) → **Demo scheduled** (`3744632517`).
+   - **No interest:** don't move the stage yourself outside of §1b's decline screen
+     (Reply-to-be-enriched stage only). For a clear decline elsewhere, or a soft
+     "not now" (e.g. we can't service their state yet), log the note and suggest
+     the move (Closed Lost or Interested (not now), `4065138365`) for Shaffy.
    - Record `old → new — why` in the note either way (including "left unchanged,
-     already past In conversation" when that's the case — makes the digest legible).
-   - Honor `ingest.autoApply`. Never set Closed Lost or any close state — that's
-     always manual.
+     already past Interested, send follow-up" when that's the case — makes the
+     digest legible).
+   - Honor `ingest.autoApply`. Never set Closed Lost or any close state yourself
+     outside §1b's narrow exception — that's always manual.
 4. **Refresh Description + Next step — early-funnel deals only** (per
    `hubspot.json → ingest.fieldRefresh` and `pipelines.clinicPartnerships.earlyFunnelStages`
-   = Reply (to-be-enriched), Inbound request, In conversation (Lemlist), Asked
-   for information, Demo scheduled). If the deal you just wrote a note on is in
+   = Reply (to-be-enriched), Inbound request, Interested, send Information,
+   Interested, send follow-up, Demo scheduled). If the deal you just wrote a note on is in
    one of those five stages, also update its native `description` and
    `hs_next_step` fields to match the fresh state. `description` = who the
    contact/company is + where things stand, **max 2 sentences**. `hs_next_step`
@@ -307,8 +351,8 @@ the top; the one exception is company-only org-linking backfill, §6.6).
 subject — resolved by what) ·
 **Organizations linked/created** (deal — company matched or created — domain,
 per §6.6) ·
-**Stage moves** (`deal: In conversation → Asked for information/Demo scheduled —
-why` — this is the only kind of stage move that should ever appear here, aside
+**Stage moves** (`deal: Interested, send Information → Interested, send
+follow-up/Demo scheduled — why` — this is the only kind of stage move that should ever appear here, aside
 from §1b's decline handling) ·
 **Declined deals moved to Closed Lost** (deal — why, §1b) · **Flagged for manual
 review** (deal — why, still at Reply (to-be-enriched), §1b) ·

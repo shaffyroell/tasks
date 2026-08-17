@@ -12,17 +12,18 @@
     "pillars": ["Onboarding", "New sales", "Research", "Clinic & patient portal", "Support", "Finance", "Marketing"],
     "statuses": ["To Do", "In Progress", "Blocked", "Done"]
   },
-  "_stages_note": "Verified live against HubSpot get_properties(deals, dealstage) on 2026-07-25 — these are the ACTUAL current stage ids/labels. Re-verify this way before trusting stage names if they're ever suspect again; the board is renamed from time to time without this file being updated.",
+  "_stages_note": "Re-verified live against HubSpot get_properties(deals, dealstage) on 2026-08-17 — these are the ACTUAL current stage ids/labels. Re-verify this way before trusting stage names if they're ever suspect again; the board is renamed from time to time without this file being updated.",
+  "_2026-08-17_stageRename_note": "2026-08-17, per Shaffy: HubSpot relabeled the two early-funnel stages to describe the ACTION OWED rather than 'did they ask a question'. Same ids, new labels/keys/meaning — see ingest.stageAdvanceRule and ingest.enrichment for the new classification rule this drives.",
   "pipelines": {
     "clinicPartnerships": {
       "id": "2314112732",
       "label": "Clinic Partnerships",
       "primary": true,
       "stages": {
-        "replyToBeEnriched":   { "id": "4154315512", "label": "Reply (to-be-enriched)" },
-        "inboundRequest":      { "id": "3744632513", "label": "Inbound request" },
-        "inConversation":      { "id": "3744632514", "label": "In conversation (Lemlist)" },
-        "askedForInformation": { "id": "3744632516", "label": "Asked for information" },
+        "replyToBeEnriched":     { "id": "4154315512", "label": "Reply (to-be-enriched)" },
+        "inboundRequest":        { "id": "3744632513", "label": "Inbound request" },
+        "interestedSendInfo":    { "id": "3744632514", "label": "Interested, send Information", "_wasLabel": "In conversation (Lemlist)", "_wasKey": "inConversation" },
+        "interestedSendFollowup":{ "id": "3744632516", "label": "Interested, send follow-up", "_wasLabel": "Asked for information", "_wasKey": "askedForInformation" },
         "demoScheduled":       { "id": "3744632517", "label": "Demo scheduled" },
         "contracting":         { "id": "3744104176", "label": "Contracting" },
         "portalOnboarding":    { "id": "3744104177", "label": "Portal onboarding" },
@@ -35,8 +36,8 @@
       "stageOrder": [
         "replyToBeEnriched",
         "inboundRequest",
-        "inConversation",
-        "askedForInformation",
+        "interestedSendInfo",
+        "interestedSendFollowup",
         "demoScheduled",
         "contracting",
         "portalOnboarding",
@@ -79,11 +80,13 @@
     "allowStageAdvance": true,
     "allowStageClose": false,
     "stageAdvanceRule": {
-      "_note": "The ONLY automated dealstage change this workflow is allowed to make. All replies land deals in 'In conversation (Lemlist)' by default; when a Lemlist reply on one of those deals shows real interest, move it forward exactly one step — never skip past 'Demo scheduled', never touch a deal already at 'Contracting' or later (those are updated manually).",
-      "onlyFromStageId": "3744632514",
-      "onlyFromStageLabel": "In conversation (Lemlist)",
-      "toStageOnInfoRequest": { "id": "3744632516", "label": "Asked for information", "when": "reply asks a question / requests more info / pricing, but hasn't asked for or agreed to a call yet" },
-      "toStageOnDemoInterest": { "id": "3744632517", "label": "Demo scheduled", "when": "reply agrees to, requests, or confirms a call/demo/onboarding time" }
+      "_note": "2026-08-17, per Shaffy — REPLACES the old 'did they ask a question' test. The two early stages describe the ACTION OWED, not the reply content: 'Interested, send Information' = we haven't sent the lead our info/pricing yet; 'Interested, send follow-up' = we HAVE sent it and they haven't booked a meeting. The classification question is therefore 'has SwimScore actually replied to this lead's interest with the info packet yet?' — check the deal's notes/thread for an outbound SwimScore reply after their inbound message, not the inbound message's content. Applies both to Lemlist's auto-created deals (the normal case now) and to any deal this sweep touches while already sitting in one of these two stages — never skip past 'Demo scheduled', never touch a deal already at 'Contracting' or later (those are updated manually).",
+      "defaultStageId": "3744632514",
+      "defaultStageLabel": "Interested, send Information",
+      "_defaultStageId_note": "Lemlist auto-creates the deal directly at this stage on every reply — this sweep never creates deals (W0/new-deal-discovery.md is retired, see newDealDiscovery below). This is also the correct landing stage any time a genuinely new inbound touch arrives with no SwimScore reply yet.",
+      "toStageOnInfoSent": { "id": "3744632516", "label": "Interested, send follow-up", "when": "SwimScore has already replied to the lead's interest with info/pricing (virtually every outbound reply includes it) and no meeting is booked yet — regardless of whether their inbound message asked a specific question" },
+      "toStageOnDemoInterest": { "id": "3744632517", "label": "Demo scheduled", "when": "a specific meeting/call time is agreed by both sides (proposed-but-unconfirmed stays at send follow-up)" },
+      "toStageOnNoInterest": { "_note": "No automated advance for this — flag for Shaffy. A clear, unambiguous decline can be moved to Closed Lost only via ingest.enrichment.declineHandling (Reply-to-be-enriched stage only); a soft 'not now' (e.g. service unavailable in their state) → suggest 'Interested (not now)' (4065138365) in the note but let Shaffy move it." }
     },
     "fieldRefresh": {
       "_note": "2026-07-25, per Shaffy: keep the native HubSpot 'Description' and 'Next step' fields current on early-funnel deals (pipelines.clinicPartnerships.earlyFunnelStages) — these show on the board cards, so both must stay SHORT. Refresh them whenever the sweep writes a [hubspot-ingest] note on one of these deals (not a separate daily pass over untouched deals). Contracting-onward deals are NOT touched — Shaffy manages those fields by hand.",
@@ -96,7 +99,7 @@
       "nextStepMaxLines": 4
     },
     "enrichment": {
-      "_note": "2026-08-15, per Shaffy: new step, runs before the normal ingest pass. Lemlist's auto-create automation now lands every fresh reply-triggered deal at 'Reply (to-be-enriched)' (pipelines.clinicPartnerships.stages.replyToBeEnriched) instead of 'In conversation (Lemlist)'. For every deal sitting in that stage: (1) read the Lemlist reply thread and write a [new-deal] note with context (who/company/what they said) same as new-deal-discovery.md §3; (2) set b2bType from the reply/company content; (3) set ordersPmProperty to '1-5' (ordersPmDefault) if no volume signal exists yet — never leave it blank; (4) classify and move the stage using the SAME three-way rule as ingest.stageAdvanceRule (default → In conversation (Lemlist); asks a question/wants info or pricing → Asked for information; agrees to/confirms a call → Demo scheduled) — a deal only stays at Reply (to-be-enriched) if the sweep can't reach it at all (e.g. thread not found); (5) apply fieldRefresh (description + the dated hs_next_step log) same as any other early-funnel deal.",
+      "_note": "2026-08-15, per Shaffy: new step, runs before the normal ingest pass. Lemlist's auto-create automation now lands every fresh reply-triggered deal at 'Reply (to-be-enriched)' (pipelines.clinicPartnerships.stages.replyToBeEnriched) instead of 'In conversation (Lemlist)'. For every deal sitting in that stage: (1) read the Lemlist reply thread and write a [new-deal] note with context (who/company/what they said) same as new-deal-discovery.md §3 (historical reference only — W0 itself is retired, see newDealDiscovery below); (2) set b2bType from the reply/company content; (3) set ordersPmProperty to '1-5' (ordersPmDefault) if no volume signal exists yet — never leave it blank; (4) classify and move the stage using the SAME info-owed rule as ingest.stageAdvanceRule (2026-08-17: default → Interested, send Information since nothing's been sent yet; once SwimScore replies with info → Interested, send follow-up; a meeting gets booked → Demo scheduled) — a deal only stays at Reply (to-be-enriched) if the sweep can't reach it at all (e.g. thread not found); (5) apply fieldRefresh (description + the dated hs_next_step log) same as any other early-funnel deal; (6) backfill touchTracking fields (last_touch_date etc.) in the SAME edit as the stage/field-refresh — not a separate pass, see touchTracking._note.",
       "enabled": true,
       "sourceStageId": "4154315512",
       "sourceStageLabel": "Reply (to-be-enriched)",
@@ -108,7 +111,7 @@
       "ordersPmProperty": "orders_pm",
       "ordersPmDefault": "1-5",
       "_ordersPmDefault_note": "Only default to '1-5' when the thread gives no volume signal. If a patient count/volume is mentioned (e.g. '~250 TRT patients', '5-10/mo'), map it to the closest bucket instead: 1-5, 6-10, 11-25, 26-50, 51-100, 100-200.",
-      "companyBackfill": "orgLinking applies here too — same as the 'In conversation (Lemlist)' bucket, verify/backfill the Company before or when moving the deal off this stage.",
+      "companyBackfill": "orgLinking applies here too — same as the 'Interested, send Information' bucket, verify/backfill the Company before or when moving the deal off this stage.",
       "declineHandling": {
         "_note": "2026-08-15, per Shaffy: run this FIRST, before b2b_type/orders_pm/stage-classification — for deals still sitting at Reply (to-be-enriched) only. This is the one narrow, scoped exception to ingest.allowStageClose:false: only this specific pre-human-review intake stage, and only on unambiguous decline language. Never applied to any other stage.",
         "enabled": true,
@@ -171,8 +174,9 @@
     "value": 2500
   },
   "newDealDiscovery": {
-    "_note": "Re-enabled 2026-08-11 at Shaffy's request — the sweep creates HubSpot deals again for genuine new opportunities with no existing deal (was disabled 2026-07-25 - 2026-08-11). Company + contact are found-or-created and linked same as before. This block covers opportunities the sweep finds that have NO deal at all yet (e.g. came in via email/Shopify, not Lemlist). Deals the external Lemlist automation already auto-created are handled by ingest.enrichment instead, not this block.",
-    "enabled": true,
+    "_note": "RETIRED 2026-08-17, per Shaffy — supersedes the 2026-08-11 re-enable note below. Lemlist's automation now creates the HubSpot deal directly the moment a lead replies (not just a subset that the sweep had to catch) — this sweep must NEVER create a deal, full stop, for any source (Lemlist, email, Shopify). If a genuinely new B2B opportunity is found with no matching deal, list it in the digest for Shaffy to review — do not create it, and do not treat a missing deal as 'the automation hasn't caught up yet' the way earlier notes assumed. This whole block (including stageAssignRule) is historical reference only while enabled:false.",
+    "_history_note": "Re-enabled 2026-08-11 at Shaffy's request (was disabled 2026-07-25 - 2026-08-11), then retired again 2026-08-17 once Lemlist's own automation started covering deal creation directly.",
+    "enabled": false,
     "lookbackDays": 2,
     "defaultPipeline": "2314112732",
     "defaultStage": "3744632514",
@@ -180,15 +184,16 @@
     "minConfidence": "medium",
     "noteMarkerPrefix": "[new-deal]",
     "stageAssignRule": {
-      "_note": "2026-08-11, per Shaffy: a new deal never lands anywhere past these two stages — mirrors ingest.stageAdvanceRule's classification, just applied at creation time instead of only to existing 'In conversation' deals.",
+      "_note": "2026-08-11, per Shaffy: a new deal never lands anywhere past these two stages — mirrors ingest.stageAdvanceRule's classification, just applied at creation time instead of only to existing 'Interested, send Information' deals. Kept for historical reference only — this block no longer runs (enabled:false above).",
       "defaultStageId": "3744632514",
-      "defaultStageLabel": "In conversation (Lemlist)",
-      "toStageOnInfoRequest": { "id": "3744632516", "label": "Asked for information", "when": "the inbound reply itself asks a question / requests more info or pricing" },
+      "defaultStageLabel": "Interested, send Information",
+      "toStageOnInfoSent": { "id": "3744632516", "label": "Interested, send follow-up", "when": "SwimScore has already replied with info/pricing before the deal would be created (rare at creation time)" },
       "_demoScheduled_note": "Not auto-assigned on creation, even if a call seems implied — Shaffy places a new deal at Demo scheduled by hand when a specific time is actually confirmed (e.g. Improved Health Solutions / Fernando Hernandez, 2026-08-11)."
     }
   },
   "touchTracking": {
     "_note": "2026-08-16, per Shaffy: track raw touch-level data on every deal so the pipeline shows exactly where each conversation stands, independent of dealstage. Applies whenever the sweep touches a deal with any new development (same scope as ingest's note/field-refresh pass) — not a separate sweep. Backfilled once across the full open pipeline on 2026-08-16.",
+    "_2026-08-17_gotcha_note": "2026-08-17 gotcha, found live: these fields got silently skipped on several newly-created deals in one run — description/hs_next_step were set but last_touch_date/last_touch_direction/last_message/initial_reply_lead/initial_reply_ss/reply_channel were not, leaving real gaps in the pipeline. These fields are NOT optional and are NOT a separate pass — set them in the exact same manage_crm_objects call as description/hs_next_step every single time a deal is created or touched. Before ending any run, spot-check: search open early-funnel deals for last_touch_date NOT_HAS_PROPERTY — that query should always return zero.",
     "enabled": true,
     "fields": {
       "lastTouchDate": {
@@ -244,10 +249,10 @@
     }
   },
   "orgLinking": {
-    "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply. As of 2026-08-15 it lands straight in 'Reply (to-be-enriched)' instead of 'In conversation (Lemlist)' (see ingest.enrichment) — both stages are in scope below since older deals may still sit at the latter. This workflow does NOT create those deals — but whenever it touches one (a note, the enrichment pass, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow.",
+    "_note": "2026-07-25 (2), per Shaffy: a SEPARATE automation (outside this workflow, outside our control) now auto-creates a HubSpot deal for every Lemlist reply directly (2026-08-17: confirmed this is now the ONLY path deals get created through — this workflow itself never creates one, see newDealDiscovery.enabled:false). As of 2026-08-15 it lands straight in 'Reply (to-be-enriched)' instead of 'Interested, send Information' (see ingest.enrichment) — both stages are in scope below since older deals may still sit at the latter. This workflow does NOT create those deals — but whenever it touches one (a note, the enrichment pass, the stage-advance rule, the field refresh), it must first verify the deal has an associated Company, and create+link one if it doesn't. This is a narrow exception to 'never create records': company-only, and only to backfill a gap left by the external deal-creation flow. IMPORTANT (2026-08-17 incident): search for the existing company/contact by domain/email BEFORE creating anything — the automation frequently creates the contact (and sometimes the company) ahead of the deal, so a blind create here produces duplicate company records. Always search first, reuse on match.",
     "enabled": true,
     "scopeStageIds": ["4154315512", "3744632514"],
-    "scopeStageLabels": ["Reply (to-be-enriched)", "In conversation (Lemlist)"],
+    "scopeStageLabels": ["Reply (to-be-enriched)", "Interested, send Information"],
     "_scope_note": "Checked every time W1 touches a deal in either of these stages — this is literally the 'Lemlist replies, not yet human-reviewed' bucket. Not re-checked on every run for deals that have already moved past both (they were checked once, on the way through).",
     "matchBy": "the deal's associated contact's email domain",
     "personalDomains": ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com", "aol.com", "protonmail.com", "proton.me", "live.com", "msn.com"],

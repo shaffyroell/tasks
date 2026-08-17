@@ -1,49 +1,106 @@
 ---
-description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → create deals for genuine new opportunities (landing at In conversation or Asked for information), log HubSpot deal notes (+ narrow Lemlist stage move + Description/Next step refresh on early-funnel deals + HubSpot Tasks for anything clearly owed on our side + Company backfill on Lemlist-created deals), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
+description: Daily SwimScore CEO sweep — Lemlist + email + Slack + calls → match every reply to the deal Lemlist's own automation already created (this sweep never creates one), log HubSpot deal notes (+ info-owed stage move between "Interested, send Information"/"Interested, send follow-up"/"Demo scheduled" + Description/Next step + touch-tracking refresh on early-funnel deals + HubSpot Tasks for anything clearly owed on our side + Company backfill on Lemlist-created deals), flag stale deals with a drafted follow-up, and update the SwimScore Notion board
 ---
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
 the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Work the steps in order; open with a per-source preflight line
 (HubSpot, Gmail, Slack, Granola, Lemlist, Shopify, Notion).
 
-> **2026-07-25 — scope narrowed at Shaffy's request:** this sweep no longer
-> creates HubSpot deals, and no longer advances stages freely. See step 6 for the
-> one stage move still allowed, the Description/Next step refresh on early-funnel
-> deals, and the (high-bar, deal-related-only) HubSpot Task creation.
+> **2026-08-17 — deal creation retired for good; stages relabeled to action-owed.**
+> Supersedes the 2026-08-11 note below in full: Lemlist's automation now creates
+> the HubSpot deal directly on every reply (not just catching up eventually) —
+> **this sweep never creates a deal, under any circumstance, from any source**
+> (Lemlist, email, Shopify). `newDealDiscovery` in `hubspot.json` is
+> `enabled:false`; step 1 below no longer creates anything, it only matches and
+> enriches. If a genuinely new B2B opportunity truly has no matching deal, list it
+> in the digest for Shaffy — don't create it, and don't assume "the automation
+> hasn't caught up yet."
 >
-> **2026-07-25 (2):** a separate automation now auto-creates a HubSpot deal for
-> every Lemlist reply. This sweep still never creates deals — but for any deal in
-> "In conversation (Lemlist)" it touches, it now verifies a Company is linked and
-> creates+links one (by domain) if the external flow didn't. See step 6.
+> HubSpot also relabeled the two early-funnel stages (same ids, new meaning):
+> **"In conversation (Lemlist)" → "Interested, send Information"** (`3744632514`,
+> we haven't sent the lead our info/pricing yet) and **"Asked for information" →
+> "Interested, send follow-up"** (`3744632516`, we've sent it and they haven't
+> booked a meeting). The classification test everywhere below is now **"has
+> SwimScore actually replied to this lead with info/pricing yet?"** — not "did
+> their message ask a question." No reply sent → Interested, send Information
+> (also the default landing/classification for any fresh un-replied-to touch).
+> Replied with info, no meeting booked → Interested, send follow-up. A specific
+> meeting time agreed by both sides → Demo scheduled (Shaffy's "meeting" bucket,
+> label unchanged). No interest → don't move it yourself outside step 2a's decline
+> screen — flag Closed Lost or **Interested (not now)** (`4065138365`, e.g. a
+> lead we can't service yet) for Shaffy.
 >
-> **2026-08-11 — deal creation re-enabled, superseding the 2026-07-25 note
-> above:** Shaffy asked for new HubSpot deals back, with one change from the old
-> (pre-2026-07-25) behavior — a new deal never auto-lands past **In conversation
-> (Lemlist)** or **Asked for information** (`hubspot.json →
-> newDealDiscovery.stageAssignRule`), never further along the pipeline on
-> autopilot. Step 1 now creates a deal (via W0, `new-deal-discovery.md`) for
-> genuine new opportunities instead of just listing them.
+> **Touch-tracking fields are not optional and not a separate pass** — set
+> `last_touch_date`/`last_touch_direction`/`last_message`/`initial_reply_lead`/
+> `initial_reply_ss`/`reply_channel` (`hubspot.json → touchTracking`) in the exact
+> same edit as any note/stage/field-refresh, on every deal touched or enriched. A
+> live run on 2026-08-17 skipped these on several newly-created-then-enriched
+> deals by treating them as a follow-up step. Before finishing any run, spot-check
+> with a `last_touch_date NOT_HAS_PROPERTY` search across early-funnel deals — it
+> should always come back empty.
+>
+> ~~**2026-07-25 — scope narrowed at Shaffy's request:** this sweep no longer
+> creates HubSpot deals, and no longer advances stages freely.~~ ~~**2026-07-25
+> (2):** a separate automation now auto-creates a HubSpot deal for every Lemlist
+> reply.~~ ~~**2026-08-11 — deal creation re-enabled:** Shaffy asked for new
+> HubSpot deals back, with one change from the old behavior — a new deal never
+> auto-lands past In conversation (Lemlist) or Asked for information, never
+> further along the pipeline on autopilot.~~ *(all superseded 2026-08-17, see
+> above — deal creation is retired again, permanently, and the stage names/logic
+> changed)*
 
-1. **Lemlist — new & updated conversations.** Pull the full team inbox
-   (`get_inbox_conversations listId=teamConversations`, paginated; read threads via
-   `get_inbox_conversation`, note `aiLeadInterest`). Almost every reply now already
-   has a deal (the external Lemlist-to-HubSpot flow creates one) — match to it and
-   update (step 6). Genuine B2B interest with **no** deal (the external flow hasn't
-   caught up, or it came via email/Shopify) → **create the deal** (W0,
-   `new-deal-discovery.md`): find-or-create the company + contact, land the deal at
-   **Asked for information** if the reply asks a question/requests info or
-   pricing, else **In conversation (Lemlist)** (the default — never assign further
-   automatically), and add a `[new-deal]` note summarizing the thread. Low-confidence
-   intros (thin, no real service text) still just get listed in the digest for
-   review rather than created. Negative replies are not deals.
+1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
+   `get_inbox_conversation` for the thread + `aiLeadInterest`). **Every reply now
+   already has a deal** — Lemlist's automation creates it directly. Match the lead
+   email/domain to its HubSpot deal (search by contact email, and by company
+   domain — the automation sometimes creates the contact/company ahead of the
+   deal) and update it (step 7). **Never create a deal or a contact.** If genuine
+   B2B interest truly has no matching deal anywhere, list it in the digest for
+   Shaffy to review manually — do not create it yourself. Negative replies aren't
+   worth listing.
 
-2. **Shopify — check inbound contact-form messages FIRST** (before the email
-   threads). Read **only** the website `"New customer message"` contact-form
-   submissions (they arrive as emails to `info@myswimscore.com`). Keep only B2B
-   clinic/partner intent → match to a deal or hand to W0. **Do NOT read Shopify
-   orders or the customer list** — those are B2C and out of scope.
+2. **Enrich "Reply (to-be-enriched)" deals** (`hubspot.json → ingest.enrichment`,
+   added 2026-08-15): Lemlist's automation lands every fresh reply-triggered deal
+   at this stage instead of straight into **Interested, send Information**. For
+   each deal sitting there:
 
-3. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
+   a. **Screen for a decline first** (`ingest.enrichment.declineHandling`,
+      added 2026-08-15, this stage only): read the reply for unambiguous
+      not-interested language ("don't contact me," "not relevant,"
+      "unsubscribe," "no thank you," etc.).
+      - **Clearly declined** → write a `[new-deal]` note explaining why, then
+        move straight to **Closed Lost** — skip the rest of this step. This is
+        the one place in the whole workflow the sweep sets a close state on its
+        own, scoped tightly to this pre-human-review intake stage.
+      - **Genuinely ambiguous** (reads negative-ish but isn't clean — deflects
+        to a colleague, vague brush-off) → add a `[flag-uncertain]` note saying
+        it's probably not relevant and why, **leave the stage as-is** for
+        Shaffy to move by hand, and skip the rest of this step. List these
+        separately in the digest.
+      - **Not a decline** (positive, neutral, or a real question) → continue below.
+
+   b. Read the Lemlist thread and write a `[new-deal]` context note (who/company/
+      what they said, channel, date); set **B2B_Type** (`b2b_type`) from what the
+      clinic/practice actually is — IVF clinic, Acupuncture Fertility, TRT and
+      men's health, Egg-freezing, Fertility guidance, Urologist, OB/GYN, Family
+      Doctor; set **Orders_PM** (`orders_pm`) to the closest volume bucket if the
+      thread mentions one, else default to **`1-5`** — never leave it blank; set
+      **`amount` to `2500`** (`hubspot.json → defaultACV`) if not already set;
+      then classify into the right stage using the **info-owed rule** (no reply
+      with info sent yet → Interested, send Information; SwimScore already
+      replied with info/pricing → Interested, send follow-up; a meeting time is
+      agreed → Demo scheduled). Verify/backfill the Company here too
+      (`orgLinking` covers both this stage and Interested, send Information).
+      **Backfill touch-tracking fields in this same pass** (step 7's rules).
+
+3. **Shopify — inbound contact-form messages FIRST** (before the email threads):
+   read **only** the website `"New customer message"` contact-form submissions
+   (arrive as emails to `info@myswimscore.com`). Keep only B2B clinic/partner
+   intent → match to an existing deal, or list in the digest if none exists. **Do
+   NOT read Shopify orders or customers** — B2C, out of scope. **Never create a
+   deal.**
+
+4. **Email — read ALL of Shaffy's threads** (`shaffy@myswimscore.com` is the source
    of truth after Lemlist). For every serious conversation (calls held, proposals,
    pricing, scheduling, commitments), find its deal and capture what moved. **Also
    read threads where Shaffy is only CC'd by a teammate** (`cc:shaffy@myswimscore.com`
@@ -53,46 +110,67 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    thread's actual latest message — never report "no activity" from an impression;
    state the literal last-message date/sender for every deal touched.
 
-4. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
+5. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
    wellness-portal-dev, legal, daily-status, + any other account channel. Read
    threads. Pull anything that changes a deal or is an internal action item.
 
-5. **Calls — read all recent Granola notes** for decisions, pain points, next steps.
+6. **Calls — read all recent Granola notes** for decisions, pain points, next steps.
 
-6. **Update HubSpot per client — only on a development.** Check the deal's existing
+7. **Update HubSpot per client — only on a development.** Check the deal's existing
    notes first (no duplicates); if something moved, add/refresh a `[hubspot-ingest]`
    note (Background → timestamped Timeline → Latest → Next step). **Stage moves are
-   narrow** (`hubspot.json → ingest.stageAdvanceRule`): only ever move a deal off
-   **In conversation (Lemlist)** to **Asked for information** or **Demo scheduled**,
-   and only when a Lemlist reply shows real interest. Every deal already at
-   Contracting, Portal onboarding, First order placed, Actively ordering, No orders
-   (L3M), or Closed Lost keeps its current stage no matter what happened — just log
-   the note. Honor autoApply; never touch a close state.
+   narrow, two stages only, classified by action owed** (`hubspot.json →
+   ingest.stageAdvanceRule`, rewritten 2026-08-17): only touch a deal currently at
+   **Interested, send Information** or **Interested, send follow-up**. Ask **has
+   SwimScore actually sent info/pricing yet** (check for an outbound reply after
+   their inbound message — not what their message said): no → stays/moves to
+   Interested, send Information; yes and no meeting booked → Interested, send
+   follow-up; a specific meeting time agreed by both sides → Demo scheduled. Every
+   deal already at Demo scheduled or later keeps its current stage regardless of
+   what happened — just log the note. No interest → flag Closed Lost or Interested
+   (not now) for Shaffy rather than setting it yourself (exception: step 2a's
+   decline screen). Honor autoApply; never touch a close state yourself outside
+   that one exception.
 
-   **On early-funnel deals only** (Inbound request / In conversation / Asked for
-   info / Demo scheduled — `pipelines.clinicPartnerships.earlyFunnelStages`), also
-   refresh the native `description` and `hs_next_step` fields to match — **max 2
-   sentences each**, since they render on the HubSpot board cards. Skip this for
-   Contracting-onward deals; Shaffy manages those fields by hand.
+   **On early-funnel deals only** (Reply (to-be-enriched) / Inbound request /
+   Interested, send Information / Interested, send follow-up / Demo scheduled —
+   `pipelines.clinicPartnerships.earlyFunnelStages`), also refresh the native
+   `description` and `hs_next_step` fields to match — **max 2 sentences each**,
+   since they render on the HubSpot board cards. Skip this for Contracting-onward
+   deals; Shaffy manages those fields by hand.
 
-   **For any deal at "In conversation (Lemlist)" you touch, verify it has a
-   linked Company** (`hubspot.json → orgLinking`) — the external automation that
-   auto-creates these deals doesn't reliably attach one. If missing, match or
-   create a company by the contact's email domain and associate it — the one
-   narrow exception to never creating records (company-only, never a deal or
-   contact).
+   **For any deal at "Reply (to-be-enriched)" or "Interested, send Information"
+   you touch, verify it has a linked Company** (`hubspot.json → orgLinking`) —
+   Lemlist's automation doesn't reliably attach one. **Search for the existing
+   company by domain first** — the automation frequently creates the
+   contact/company ahead of the deal, so a blind create produces duplicates
+   (confirmed live 2026-08-17: created 5 duplicate companies this way in one
+   run). If none exists, match or create a company by the contact's email domain
+   and associate it — the one narrow exception to never creating records
+   (company-only, never a deal or contact).
+
+   **Touch-tracking fields — update on every deal with a new development, IN THE
+   SAME EDIT as the note/stage/field-refresh above, not a separate pass**
+   (`hubspot.json → touchTracking`): `last_touch_date`, `last_touch_direction`,
+   `last_message` (prefixed `Client:`/`SwimScore:`), `initial_reply_lead`,
+   `initial_reply_ss` (leave empty if we haven't replied — that's a deliberate
+   follow-up-owed flag), `time_to_first_reply_hrs`, `reply_channel`. Determine the
+   true last touch by checking **both** Lemlist and Gmail domain-wide, and always
+   check for a Calendly booking/acceptance too. **Not optional**: before finishing
+   the run, search early-funnel deals for `last_touch_date NOT_HAS_PROPERTY` — it
+   should come back empty.
 
    **Create a HubSpot Task linked to the deal only for clearly deal-related items
    where we clearly owe a reply, or something clearly important surfaced in
    email — high bar** (`hubspot.json → tasks`, pipeline-wide). Not a catch-all:
-   skip minor or ambiguous items, and anything the stale-follow-up flow (step 7)
+   skip minor or ambiguous items, and anything the stale-follow-up flow (step 8)
    already covers — a cluttered task list gets ignored. **Verify against the
    deal's existing notes/activity first that it isn't already done.** Dedupe on a
    `Ref:` line in the task body; complete an existing task if a fresh note shows
    its item got resolved.
 
-7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
+8. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
    **Before flagging or re-affirming any deal as stale, verify directly**: an undated
    `from:`/`to:` search on that contact's email, reading the actual last message's
    date — never carry forward a prior run's stale flag unchecked. For each open deal
@@ -102,8 +180,11 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    (`Follow up with <clinic> — quiet <N>d`), Owner Shaffy, Link the deal, dedup on
    `Ref hubspot:stale:<dealId>`, and **draft a short, specific follow-up message from
    the deal's HubSpot context** into the to-do (only if a real message fits).
+   **Check for an existing to-do with the same `Ref` first and update it in
+   place** — a live run on 2026-08-16/17 found two rows for the same deal with
+   different day-counts.
 
-8. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
+9. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
    reconcile internal to-dos across the seven pillars (Onboarding, New sales,
    Marketing, Research, Clinic & patient portal, Support, Finance) from
    business-strategy, product/portal, legal, finance, and support signal — check
@@ -112,16 +193,16 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    database (linked from `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or
    only execution items and nothing that measures progress, needs a new to-do.
 
-End with a digest: **new deals created** (deal — contact — company — stage —
-why), deals updated with notes (+ the narrow In conversation → Asked
-for information/Demo scheduled stage moves only, + which early-funnel deals had
-their Description/Next step refreshed), low-confidence opportunities found but
-NOT created (for manual review), **HubSpot Tasks created/completed** (deal —
-subject — why), **stale deals flagged (with/without drafted message)**, and
+End with a digest: **enriched deals** (deal — B2B_Type — Orders_PM — stage it
+landed at), deals updated with notes (+ the info-owed stage moves only + which
+early-funnel deals had their Description/Next step refreshed), **new
+opportunities found but with no matching deal** (for Shaffy to review — never
+created by this sweep), **HubSpot Tasks created/completed** (deal — subject —
+why), **stale deals flagged (with/without drafted message)**, and
 Notion to-dos added/advanced/closed per pillar. Call out the top risks and
 decisions for the CEO.
 
-9. **Post the recap to `#daily-recap` in Slack**, in this order:
+10. **Post the recap to `#daily-recap` in Slack**, in this order:
 
    **a. "Updates from yesterday"** — one line per source, factual, scoped to the
    last calendar day (not a re-hash of the multi-day CRM sweep):

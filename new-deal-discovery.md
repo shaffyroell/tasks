@@ -1,12 +1,23 @@
 # W0 — Daily New-Deal Discovery (create + link + note in HubSpot)
 
-> ## Re-enabled 2026-08-11
-> Disabled 2026-07-25 – 2026-08-11. Shaffy asked for deal creation back, with one
+> ## RETIRED 2026-08-17 — supersedes the 2026-08-11 re-enable note below
+> Lemlist's own automation now creates the HubSpot deal directly the moment a lead
+> replies — not just eventually catching up, but every time. There is no longer a
+> gap for W0 to fill: `/daily-crm` no longer calls this workflow, and
+> `hubspot.json → newDealDiscovery.enabled` is `false`. **The daily sweep must
+> never create a deal, contact, or (outside the narrow orgLinking exception)
+> company, for any source.** If a genuinely new B2B opportunity is found with no
+> matching deal anywhere, list it in the digest for Shaffy to review by hand.
+> This entire document is kept for historical reference only — none of the steps
+> below should run.
+>
+> ~~## Re-enabled 2026-08-11~~
+> ~~Disabled 2026-07-25 – 2026-08-11. Shaffy asked for deal creation back, with one
 > change from the old behavior: a new deal is created directly in HubSpot (no more
 > "list for manual add"), but it only ever lands in **In conversation (Lemlist)**
 > or **Asked for information** — never further along the pipeline on autopilot.
 > See §3 for the exact stage logic (`hubspot.json → newDealDiscovery.stageAssignRule`).
-> `/daily-crm` calls this again as part of the normal W0 → W1 → W2 chain.
+> `/daily-crm` calls this again as part of the normal W0 → W1 → W2 chain.~~
 
 **Run this first each morning (~06:50 Europe/Amsterdam), before W1.** It reads the
 last day of inbound mail **and fresh Lemlist replies**, finds **genuine new

@@ -30,14 +30,21 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 > screen — flag Closed Lost or **Interested (not now)** (`4065138365`, e.g. a
 > lead we can't service yet) for Shaffy.
 >
-> **Touch-tracking fields are not optional and not a separate pass** — set
-> `last_touch_date`/`last_touch_direction`/`last_message`/`initial_reply_lead`/
-> `initial_reply_ss`/`reply_channel` (`hubspot.json → touchTracking`) in the exact
-> same edit as any note/stage/field-refresh, on every deal touched or enriched. A
-> live run on 2026-08-17 skipped these on several newly-created-then-enriched
-> deals by treating them as a follow-up step. Before finishing any run, spot-check
-> with a `last_touch_date NOT_HAS_PROPERTY` search across early-funnel deals — it
-> should always come back empty.
+> **Touch-tracking fields are not optional and not a separate pass — and apply to
+> every touch, not just deal creation.** Set `last_touch_date`/
+> `last_touch_direction`/`last_message`/`initial_reply_lead`/`initial_reply_ss`/
+> `reply_channel` (`hubspot.json → touchTracking`) in the exact same edit as any
+> note/stage/field-refresh, on every deal touched, enriched, OR simply
+> re-evaluated — not only newly-created ones. Two related bugs found live on
+> 2026-08-17: (1) these fields got skipped entirely on newly-created deals by
+> treating them as a follow-up step; (2) `Initial_reply_lead`/`Initial_reply_SS`
+> were left blank on pre-existing deals because they'd been filed as
+> create-time-only — but Lemlist's automation creates every deal now, so nothing
+> else ever sets those two. **Always re-derive all five fields from a fresh
+> full-thread read (Lemlist + Gmail, both directions) — never trust a stored
+> value just because nothing "new" happened today; the value may have been wrong
+> since the deal was created.** See step 7 for the full procedure and the
+> mandatory end-of-run spot-checks (three, not one).
 >
 > ~~**2026-07-25 — scope narrowed at Shaffy's request:** this sweep no longer
 > creates HubSpot deals, and no longer advances stages freely.~~ ~~**2026-07-25
@@ -157,16 +164,39 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    and associate it — the one narrow exception to never creating records
    (company-only, never a deal or contact).
 
-   **Touch-tracking fields — update on every deal with a new development, IN THE
-   SAME EDIT as the note/stage/field-refresh above, not a separate pass**
-   (`hubspot.json → touchTracking`): `last_touch_date`, `last_touch_direction`,
-   `last_message` (prefixed `Client:`/`SwimScore:`), `initial_reply_lead`,
-   `initial_reply_ss` (leave empty if we haven't replied — that's a deliberate
-   follow-up-owed flag), `time_to_first_reply_hrs`, `reply_channel`. Determine the
-   true last touch by checking **both** Lemlist and Gmail domain-wide, and always
-   check for a Calendly booking/acceptance too. **Not optional**: before finishing
-   the run, search early-funnel deals for `last_touch_date NOT_HAS_PROPERTY` — it
-   should come back empty.
+   **Touch-tracking fields — check and correct on EVERY deal you touch for ANY
+   reason (note, stage check, enrichment, field refresh), IN THE SAME EDIT as
+   the note/stage/field-refresh above, not a separate pass, and not limited to
+   deals with activity in today's lookback window** (`hubspot.json →
+   touchTracking`): `last_touch_date`, `last_touch_direction`, `last_message`
+   (prefixed `Client:`/`SwimScore:`), `initial_reply_lead`, `initial_reply_ss`
+   (**no prefix on these two** — leave `initial_reply_ss` empty only if we
+   genuinely haven't replied yet, a deliberate follow-up-owed flag),
+   `time_to_first_reply_hrs`, `reply_channel`.
+
+   **2026-08-17 gotcha, twice in one run.** "Update touch tracking" had been
+   misread as "update the latest-touch fields only" — `initial_reply_lead`/
+   `initial_reply_ss` were left blank on every deal not created in the current
+   run because they'd been filed as create-time-only. Lemlist's automation
+   creates every deal now, so nothing else ever sets those two — any deal
+   touched without explicitly checking them stays permanently blank. Separately,
+   `last_touch_date`/`last_touch_direction`/`last_message` were themselves stale
+   on deals with no new activity today, because whatever set them at creation
+   captured only the lead's inbound trigger and missed a same-day SwimScore
+   reply that came later. **Fix: every time you touch a deal, for any reason,
+   read the FULL thread (Lemlist + Gmail, both directions) and recompute all
+   five fields from that read — never assume a stored value is correct just
+   because today's trigger wasn't about that field.**
+
+   Determine the true last touch by checking **both** Lemlist and Gmail
+   domain-wide, and always check for a Calendly booking/acceptance too.
+
+   **Not optional — before finishing any run, spot-check all three:**
+   `last_touch_date NOT_HAS_PROPERTY` and `initial_reply_ss NOT_HAS_PROPERTY`
+   across early-funnel deals should both come back empty (except deals with a
+   genuinely real reason — no thread exists, or a reply is genuinely still
+   owed, which belongs in the digest); and no `initial_reply_lead`/
+   `initial_reply_ss` value should start with `Client:` or `SwimScore:`.
 
    **Create a HubSpot Task linked to the deal only for clearly deal-related items
    where we clearly owe a reply, or something clearly important surfaced in

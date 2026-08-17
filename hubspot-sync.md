@@ -56,14 +56,26 @@ Config: `hubspot.json`.
 > full stop; treat any "no deal found" case as worth listing for Shaffy, not as
 > "the automation hasn't caught up yet."
 >
-> **Touch-tracking fields are not a separate pass.** Whenever a deal is created or
-> touched, set `last_touch_date`/`last_touch_direction`/`last_message`/
+> **Touch-tracking fields are not a separate pass, and apply to every touch, not
+> just deal creation.** Whenever a deal is created, touched, or simply
+> re-evaluated, set `last_touch_date`/`last_touch_direction`/`last_message`/
 > `initial_reply_lead`/`initial_reply_ss`/`reply_channel` (`hubspot.json →
-> touchTracking`) in the **same edit** as the note/stage/field-refresh — a live
-> run on 2026-08-17 skipped these on several newly-created deals by treating them
-> as optional. Before ending any run, spot-check with a `last_touch_date
-> NOT_HAS_PROPERTY` search across early-funnel deals — it should always come back
-> empty.
+> touchTracking`) in the **same edit** as the note/stage/field-refresh. Two bugs
+> found live on 2026-08-17: (1) these fields got skipped entirely on
+> newly-created deals by treating them as optional; (2) `initial_reply_lead`/
+> `initial_reply_ss` were left blank on pre-existing deals because they'd been
+> filed as create-time-only — Lemlist's automation creates every deal now, so
+> nothing else ever sets those two. **Always re-derive all five fields from a
+> fresh full-thread read (Lemlist + Gmail, both directions) — never trust a
+> stored value just because nothing "new" happened today; it may have been
+> wrong since the deal was created.** `initial_reply_lead`/`initial_reply_ss`
+> must never carry the `Client:`/`SwimScore:` prefix — that belongs only on
+> `last_message`. Before ending any run, spot-check all three: `last_touch_date
+> NOT_HAS_PROPERTY` and `initial_reply_ss NOT_HAS_PROPERTY` across early-funnel
+> deals should both come back empty (except a genuinely real reason — no thread
+> exists, or a reply is genuinely still owed, which belongs in the digest); and
+> no `initial_reply_lead`/`initial_reply_ss` should start with `Client:` or
+> `SwimScore:`.
 
 ---
 

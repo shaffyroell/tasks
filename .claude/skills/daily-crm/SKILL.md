@@ -32,14 +32,21 @@ Lemlist, Shopify, Notion); work the steps in order.
 > screen — flag Closed Lost or **Interested (not now)** (`4065138365`, e.g. a
 > lead we can't service yet) for Shaffy.
 >
-> **Touch-tracking fields are not optional and not a separate pass** — set
-> `last_touch_date`/`last_touch_direction`/`last_message`/`initial_reply_lead`/
-> `initial_reply_ss`/`reply_channel` (`hubspot.json → touchTracking`) in the exact
-> same edit as any note/stage/field-refresh, on every deal touched or enriched. A
-> live run on 2026-08-17 skipped these on several newly-created-then-enriched
-> deals by treating them as a follow-up step. Before finishing any run, spot-check
-> with a `last_touch_date NOT_HAS_PROPERTY` search across early-funnel deals — it
-> should always come back empty.
+> **Touch-tracking fields are not optional and not a separate pass — and apply to
+> every touch, not just deal creation.** Set `last_touch_date`/
+> `last_touch_direction`/`last_message`/`initial_reply_lead`/`initial_reply_ss`/
+> `reply_channel` (`hubspot.json → touchTracking`) in the exact same edit as any
+> note/stage/field-refresh, on every deal touched, enriched, OR simply
+> re-evaluated — not only newly-created ones. Two related bugs found live on
+> 2026-08-17: (1) these fields got skipped entirely on newly-created deals by
+> treating them as a follow-up step; (2) `Initial_reply_lead`/`Initial_reply_SS`
+> were left blank on pre-existing deals because they'd been filed as
+> create-time-only — but Lemlist's automation creates every deal now, so nothing
+> else ever sets those two. **Always re-derive all five fields from a fresh
+> full-thread read (Lemlist + Gmail, both directions) — never trust a stored
+> value just because nothing "new" happened today; the value may have been wrong
+> since the deal was created.** See step 7 for the full procedure and the
+> mandatory end-of-run spot-checks (three, not one).
 >
 > ~~**2026-08-11 — deal creation re-enabled:** Shaffy asked for new HubSpot deals
 > back (had been off 2026-07-25 – 2026-08-11), with one change from the old
@@ -168,33 +175,70 @@ Lemlist, Shopify, Notion); work the steps in order.
    and associate it — the one narrow exception to never creating records
    (company-only, never a deal or contact).
 
-   **Touch-tracking fields — update on every deal with a new development, IN THE
-   SAME EDIT as the note/stage/field-refresh above, not a separate pass**
-   (`hubspot.json → touchTracking`, added 2026-08-16): keep `last_touch_date`,
+   **Touch-tracking fields — check and correct on EVERY deal you touch for ANY
+   reason (note, stage check, enrichment, field refresh), IN THE SAME EDIT as
+   the note/stage/field-refresh above, not a separate pass, and not limited to
+   deals with activity in today's lookback window** (`hubspot.json →
+   touchTracking`, added 2026-08-16): keep `last_touch_date`,
    `last_touch_direction` (Inbound/Outbound), `Last_Message` (last literal
    message either side sent, prefixed `Client:`/`SwimScore:`), `Initial_reply_lead`
-   (the lead's first-ever reply, set once), `Initial_reply_SS` (SwimScore's reply
-   *to* that first reply — **leave empty if we haven't replied yet**, this is a
-   deliberate follow-up-owed flag), `time_to_first_reply_hrs` (our response
-   latency: their first reply → our reply to it, NOT their reaction time to our
-   cold email — leave blank while `Initial_reply_SS` is empty), and
-   `Lemlist_campaign_reply` current. `reply_channel` (email/linkedin/call) is the
-   *acquisition* channel and is set once at deal creation, never overwritten by a
-   later touch on a different channel. Determine the true last touch by checking
-   **both** Lemlist (`get_inbox_conversation`, full thread) and Gmail — search
-   **domain-wide** (`from:@theirdomain.com OR to:@theirdomain.com`), not just the
-   one contact's address, since other people at the same clinic often correspond
-   too and a single-address search misses them (fall back to a single-address
-   search only on a personal domain like gmail.com, where domain-wide would pull
-   in unrelated people). Not routed through Shaffy's inbox only, since a teammate
+   (the lead's first-ever reply, **no prefix**), `Initial_reply_SS` (SwimScore's
+   reply *to* that first reply, **no prefix** — **leave empty if we genuinely
+   haven't replied yet**, this is a deliberate follow-up-owed flag), and
+   `time_to_first_reply_hrs` (their first reply → our reply to it, NOT their
+   reaction time to our cold email — leave blank while `Initial_reply_SS` is
+   empty). `reply_channel` (email/linkedin/call) is the *acquisition* channel,
+   set once at deal creation, never overwritten by a later touch on a different
+   channel.
+
+   **2026-08-17 gotcha, twice in one run — read before touching any deal.**
+   "Update touch tracking" had been misread as "update the LATEST-touch fields
+   only." `Initial_reply_lead`/`Initial_reply_SS` were then left untouched on
+   every deal not created in the current run, because they'd been filed
+   mentally as create-time-only. That was true back when this workflow created
+   deals; now Lemlist's automation creates every deal, so **nothing else ever
+   sets those two fields** — any deal touched without explicitly checking them
+   stays permanently blank. A second bug in the same pass: `last_touch_date`/
+   `last_touch_direction`/`last_message` were themselves stale on deals with NO
+   new activity today, because whatever set them at deal creation had captured
+   only the lead's inbound trigger and missed a same-day SwimScore reply that
+   came later — and the sweep left them alone since nothing looked "new."
+   **The fix: every single time you touch a deal, for any reason, read the
+   FULL thread (Lemlist `get_inbox_conversation` + Gmail, both directions) and
+   recompute all five fields from that read — never assume a stored value is
+   correct just because today's trigger wasn't about that field.** If
+   `Initial_reply_lead`/`Initial_reply_SS` are blank and a real exchange
+   exists anywhere in the deal's history, backfill both now, regardless of
+   whether that exchange happened today.
+
+   Determine the true last touch by checking **both** Lemlist
+   (`get_inbox_conversation`, full thread) and Gmail — search **domain-wide**
+   (`from:@theirdomain.com OR to:@theirdomain.com`), not just the one contact's
+   address, since other people at the same clinic often correspond too and a
+   single-address search misses them (fall back to a single-address search
+   only on a personal domain like gmail.com, where domain-wide would pull in
+   unrelated people). Not routed through Shaffy's inbox only, since a teammate
    (info@, elara.k@, stewart.hill@, syb@) emailing the lead directly is a real
-   SwimScore-side touch whether or not Shaffy is cc'd. Always also check Gmail for
-   a Calendly booking/acceptance notification — a booking can be the true last
-   touch even with no new Lemlist reply. Lemlist sometimes mislabels SwimScore's
-   own reply-in-thread as an inbound "emailsReplied" — read the actual
-   sender/content, don't trust the activity type blindly. **Not optional**: before
-   finishing the run, search early-funnel deals for `last_touch_date
-   NOT_HAS_PROPERTY` — it should come back empty.
+   SwimScore-side touch whether or not Shaffy is cc'd. Always also check Gmail
+   for a Calendly booking/acceptance notification — a booking can be the true
+   last touch even with no new Lemlist reply. Lemlist sometimes mislabels
+   SwimScore's own reply-in-thread as an inbound "emailsReplied" — read the
+   actual sender/content, don't trust the activity type blindly.
+
+   **Format rule, violated on a few pre-existing deals in production:**
+   `Initial_reply_lead`/`Initial_reply_SS` must be the literal reply text with
+   **no** `Client:`/`SwimScore:` prefix — that prefix belongs exclusively on
+   `Last_Message`; the property name already establishes the sender for the
+   other two.
+
+   **Not optional — before finishing any run, spot-check all three:**
+   1. `last_touch_date NOT_HAS_PROPERTY` across early-funnel deals — should be empty.
+   2. `initial_reply_ss NOT_HAS_PROPERTY` across early-funnel deals — should be
+      empty except deals with a genuinely real reason (no thread exists yet, or
+      SwimScore genuinely hasn't replied — which itself belongs in the digest's
+      reply-owed list, not silently skipped).
+   3. No `initial_reply_lead`/`initial_reply_ss` value starts with `Client:` or
+      `SwimScore:`.
 
    **CRITICAL — never trust search_threads' inline messages as a complete thread**
    (`hubspot.json → touchTracking.sources._CRITICAL_threadTruncation_warning`):

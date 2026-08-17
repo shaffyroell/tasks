@@ -107,6 +107,15 @@ Lemlist, Shopify, Notion); work the steps in order.
    `newer_than:Nd` sweep can miss a thread's actual latest message — never report
    "no activity" from an impression; state the literal last-message date/sender.
 
+   **Also search the Sent folder directly** (`in:sent newer_than:Nd`, not just
+   `in:inbox`) — `in:inbox` alone misses any reminder/follow-up Shaffy sends
+   personally that hasn't gotten a reply yet, since a Sent-only message with no
+   inbound reply never shows up under `in:inbox`. Match each Sent recipient to a
+   deal and log it as a real outbound touch (note + `hubspot.json → touchTracking`:
+   `last_touch_date`/`last_touch_direction: Outbound`/`last_message`) even with no
+   new inbound reply — this is exactly the kind of touch that must prevent a false
+   stale flag in step 8.
+
 5. **Slack — sweep the deal channels** in `hubspot.json.slackChannels` (outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
    wellness-portal-dev, legal, daily-status, + others). Read threads.

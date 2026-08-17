@@ -166,6 +166,16 @@ sending domains) and CC Shaffy. Search beyond the direct inbox, e.g.
 teammate senders, and fold any deal-relevant development into the right deal's note
 — don't skip a thread just because Shaffy wasn't the direct recipient.
 
+**2026-08-17, per Shaffy — also search Sent directly**
+(`in:sent newer_than:<lookbackDays>d`), not just `in:inbox`/`cc:`. A reminder or
+follow-up Shaffy sends personally that hasn't gotten a reply yet is a Sent-only
+message — it never surfaces under `in:inbox` and would otherwise be invisible to
+this sweep. Match each Sent recipient's email/domain to its deal and log the send
+as a real outbound touch (note + `hubspot.json → touchTracking`:
+`last_touch_date`/`last_touch_direction: Outbound`/`last_message`), even though
+there's no new inbound reply to pair it with. This is exactly the kind of touch
+that must stop a deal from getting a false stale flag in §7.
+
 ### 3a. Verifying recency — never characterize, always check the actual last message
 A date-windowed search (`newer_than:Nd`, `cc:` search, importance flags) can surface
 a thread without the reader actually noticing that thread's *most recent* message is

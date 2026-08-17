@@ -110,6 +110,13 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    thread's actual latest message — never report "no activity" from an impression;
    state the literal last-message date/sender for every deal touched.
 
+   **Also search the Sent folder directly** (`in:sent newer_than:Nd`, not just
+   `in:inbox`) — inbox-only misses any reminder/follow-up Shaffy sends personally
+   that hasn't gotten a reply yet, since a Sent-only message never shows up under
+   `in:inbox`. Match each Sent recipient to a deal and log it as a real outbound
+   touch (note + touchTracking fields) even with no new inbound reply — this must
+   prevent a false stale flag in step 8.
+
 5. **Slack — sweep the deal channels** in `hubspot.json.slackChannels`: outbound /
    lemlist-replies, pipeline-clients, business-strategy, clinic-portal-dev,
    wellness-portal-dev, legal, daily-status, + any other account channel. Read

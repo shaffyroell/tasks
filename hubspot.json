@@ -70,7 +70,7 @@
     "lookbackDays": 3,
     "noteMarkerPrefix": "[hubspot-ingest]",
     "sources": {
-      "email":   { "enabled": true,  "provider": "gmail" },
+      "email":   { "enabled": true,  "provider": "gmail", "_note": "2026-08-17, per Shaffy: the daily sweep must search BOTH `in:inbox newer_than:Nd` AND `in:sent newer_than:Nd` — inbox-only misses any reminder/follow-up Shaffy sends personally that hasn't gotten a reply yet (a Sent-only message never shows up under in:inbox). Match each Sent message's recipient to a deal and log it as a real outbound touch (note + touchTracking last_touch_date/direction=Outbound/last_message) even with no new inbound reply — this is exactly the kind of touch that should prevent a false stale flag in step 8/9." },
       "slack":   { "enabled": true },
       "granola": { "enabled": true },
       "lemlist": { "enabled": true, "_note": "Lemlist MCP connected. Read reply threads via get_inbox_conversations + get_inbox_conversation (carries AI interest scoring: aiLeadInterest positive/neutral/negative). Map a positive reply to a stage advance; a negative reply to Closed Lost (with approval). Match the Lemlist lead email to the HubSpot deal's contact." },

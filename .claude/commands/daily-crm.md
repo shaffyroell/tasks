@@ -6,6 +6,42 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Work the steps in order; open with a per-source preflight line
 (HubSpot, Gmail, Slack, Granola, Lemlist, Front, Shopify, Notion).
 
+> **2026-08-18 (2) — NON-NEGOTIABLE four-point check, every single run, no
+> exceptions, no scope-cutting for time.** Found live: a run skipped the actual
+> deal-matching/creation check, eyeballed 3 example deals, wrongly generalized
+> "looks handled" to the whole batch, and reported no new deals needed —
+> **22 genuine B2B replies from one day had a contact record but zero linked
+> deal.** Re-verified three independent ways (by contact association, by
+> company association, by scanning every deal created in the window) before
+> the gap was believed and fixed. That verification depth — not a spot-check
+> of a few examples — is the bar every run must clear:
+> 1. **Are there new replies in Lemlist (email or LinkedIn)?** Pull the full
+>    team inbox for the lookback window, both channels, not email-only.
+> 2. **Does the deal exist in HubSpot? Search deeply.** For every contact from
+>    step 1 (and 3/4 below): search by the contact record's association to a
+>    deal AND by the company record's association to a deal — a deal can be
+>    linked to a colleague/company contact instead of the one who replied, or
+>    to the company with no contact link at all. If genuinely no deal exists
+>    anywhere (**the common case — check don't assume**), create one
+>    (`newDealDiscovery`): Reply-to-be-enriched, no owner, relevant context
+>    (notes, touch-tracking, company link). **`hubspot_owner_id` gets
+>    auto-populated by HubSpot on create even when omitted from the create
+>    call** — always re-fetch every newly created deal's owner field and clear
+>    it in a follow-up update; never assume omitting the property on create was
+>    enough.
+> 3. **Are there new replies from today in Front or Shaffy's Gmail (sent +
+>    inbox)?** For each: check whether it's already logged as a deal activity
+>    note (dedup per `perMessageNoteRule`); if not, add it to the relevant deal
+>    (note + `last_touch_date`/`last_touch_direction`/`last_message` etc.).
+> 4. **Are there new replies in Shopify, and has each been followed up with in
+>    Front?**
+>
+> These four are the floor for every run, not a nice-to-have subset — if time
+> pressure means the full per-email note/field-refresh pass (steps 2/7 below)
+> can't be completed exhaustively for every deal, say so explicitly in the
+> digest and name what's outstanding; never silently narrow scope on the
+> deal-existence check itself.
+>
 > **2026-08-18 — this workflow is CONTEXT-ONLY: it never moves a deal's stage,
 > for any reason, ever.** Supersedes the 2026-08-17 "deal creation retired" note
 > below in full, and reverses it: this workflow now **creates** a HubSpot deal

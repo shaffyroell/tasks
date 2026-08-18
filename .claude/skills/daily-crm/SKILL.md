@@ -1,12 +1,12 @@
 ---
 name: daily-crm
-description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations (deals are created automatically by Lemlist's own automation on every reply — this sweep never creates one), enriches every deal Lemlist's automation dropped at "Reply (to-be-enriched)" (context note, B2B_Type category, Orders_PM volume, then classifies into the right stage — added 2026-08-15), reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage between "Interested, send Information" and "Interested, send follow-up"/"Demo scheduled" based on whether SwimScore has actually sent the lead info yet, not on what their reply said — relabeled 2026-08-17; refreshes Description/Next step — a short dated log — on early-funnel deals; backfills touch-tracking fields in the same edit, never a separate pass; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first; backfills a missing Company on any "Reply (to-be-enriched)" or "Interested, send Information" deal it touches, since Lemlist's automation doesn't reliably attach one), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
+description: Daily SwimScore sweep. Checks Lemlist for new/updated conversations, plus Front's Email Replies shared inbox as a supplementary reply source (added 2026-08-18, filtered for lemwarmup/auto-reply noise) — deals are created automatically by Lemlist's own automation on every reply, this sweep never creates one), enriches every deal Lemlist's automation dropped at "Reply (to-be-enriched)" (context note, B2B_Type category, Orders_PM volume, then classifies into the right stage — added 2026-08-15), reads ALL of Shaffy's emails, sweeps the Slack deal channels, reads Granola call notes, logs HubSpot deal notes on any development (advancing stage between "Interested, send Information" and "Interested, send follow-up"/"Demo scheduled" based on whether SwimScore has actually sent the lead info yet, not on what their reply said — relabeled 2026-08-17; refreshes Description/Next step — a short dated log — on early-funnel deals; backfills touch-tracking fields in the same edit, never a separate pass; creates a HubSpot Task on the deal only for clearly deal-related items we clearly still owe — high bar, checked against existing notes first; backfills a missing Company on any "Reply (to-be-enriched)" or "Interested, send Information" deal it touches, since Lemlist's automation doesn't reliably attach one), flags deals with no contact in 2-3 weeks (adding a Notion To-Do with a follow-up message drafted from HubSpot context), and updates the SwimScore Notion board across all pillars. Run daily.
 ---
 
 Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
 the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 `hubspot.json`. Open with a per-source preflight (HubSpot, Gmail, Slack, Granola,
-Lemlist, Shopify, Notion); work the steps in order.
+Lemlist, Front, Shopify, Notion); work the steps in order.
 
 > **2026-08-17 — deal creation retired for good; stages relabeled to action-owed.**
 > Supersedes the 2026-08-11 "deal creation re-enabled" note below in full: Lemlist's
@@ -63,6 +63,34 @@ Lemlist, Shopify, Notion); work the steps in order.
    B2B interest truly has no matching deal anywhere, list it in the digest for
    Shaffy to review manually — do not create it yourself. Negative replies aren't
    worth listing.
+
+1b. **Front — Email Replies inbox, supplementary (added 2026-08-18).** Sweep the
+   shared **Email Replies** inbox (`inb_nh7fs`, ticket prefix `SU-####`) via
+   `mcp__Front__search_conversations` (`filters.inboxId: inb_nh7fs`,
+   `scope: all_inboxes`, `filters.after` bounded to the lookback window) — it
+   aggregates replies across all of SwimScore's rotating cold-outreach sending
+   mailboxes (myswimscore.com/withswimscore.com/swimscoreview.com/
+   viewswimscore.com/malescore.com/goswimscore.com). This runs **in addition to**
+   step 1's Lemlist check, not instead of it — the two frequently carry the SAME
+   underlying reply (Front is just those sending mailboxes viewed through a
+   shared inbox), so check the deal's existing notes/touchTracking before logging
+   anything, to avoid a duplicate note for one physical message.
+
+   **Filter noise before treating anything as a real reply**: subjects ending
+   `- lemwarmup` are Lemlist's own email-warmup network (fake back-and-forth
+   threads that build sender reputation, always auto-resolved) — never a real
+   lead; anything matching an auto-reply/OOO pattern (`Automatic reply:`,
+   `Thank you for your email`, `We will get back to you shortly`,
+   `Thank you for contacted...`) isn't a real reply either.
+
+   For every conversation that survives the filter: read it with
+   `read_conversation`, match the contact email/domain to its HubSpot deal (same
+   matching rule as step 1), and fold it into the same enrich/note/touch-tracking
+   pass as any other reply. **Never create a deal or contact from Front** — list
+   an unmatched one in the digest like any other source. Front's own ticket
+   status (Open/Waiting/Resolved) and `<name> - In Contact` tags are Front-side
+   handling state (who's working the thread inside Front), not HubSpot
+   dealstage — informational only, never mapped onto dealstage.
 
 2. **Enrich "Reply (to-be-enriched)" deals** (`hubspot.json → ingest.enrichment`,
    added 2026-08-15): Lemlist's automation lands every fresh reply-triggered deal

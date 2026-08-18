@@ -1,7 +1,13 @@
 ---
 name: notion-todos
-description: W2 — update internal SwimScore To-Dos in Notion from HubSpot (primary) plus fresh Gmail/Slack/Granola/Lemlist, reconciling existing items (check what it's for, mark Done / advance) and adding new ones in the house style. Use after the HubSpot deal sync.
+description: "RETIRED 2026-08-18 (Notion removed from the SwimScore workflow, per Shaffy) — do not run. W2 — update internal SwimScore To-Dos in Notion from HubSpot (primary) plus fresh Gmail/Slack/Granola/Lemlist, reconciling existing items (check what it's for, mark Done / advance) and adding new ones in the house style. Internal follow-up items now go on a HubSpot Task instead, created directly by daily-crm (see hubspot.json → staleFollowUp and tasks)."
 ---
+
+> **RETIRED 2026-08-18, per Shaffy — do not run this skill.** Notion and
+> Granola were removed from the SwimScore workflow. Internal/stale-deal
+> follow-up items now go on a HubSpot Task, created directly by the daily-crm
+> sweep (`hubspot.json → staleFollowUp` / `tasks`). Kept below as historical
+> reference only.
 
 Run W2, the internal To-Dos workflow defined in `daily-open-items.md` in this repo.
 Read HubSpot first (latest deal stages + the newest `[hubspot-ingest …]` notes) as

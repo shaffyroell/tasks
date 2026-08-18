@@ -1,6 +1,12 @@
 ---
-description: W2 — update internal SwimScore To-Dos in Notion (reads HubSpot + fresh sources)
+description: "RETIRED 2026-08-18 (Notion removed) — do not run. W2 — update internal SwimScore To-Dos in Notion (reads HubSpot + fresh sources)"
 ---
+
+> **RETIRED 2026-08-18, per Shaffy — do not run.** Notion and Granola were
+> removed from the SwimScore workflow; internal/stale-deal follow-ups now go
+> on a HubSpot Task, created directly by the daily-crm sweep. Kept below as
+> historical reference only.
+
 Run W2, the internal To-Dos workflow defined in `daily-open-items.md` in this repo.
 Read HubSpot first (latest deal stages + the newest `[hubspot-ingest …]` notes) as
 the primary account signal, then also read fresh Gmail, Slack, Granola, Lemlist, and

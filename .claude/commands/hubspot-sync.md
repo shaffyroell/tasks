@@ -1,11 +1,11 @@
 ---
-description: W1 — sync every HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) — dated notes, action-owed stage classification (Interested, send Information → Interested, send follow-up → Demo scheduled), Description/Next step + touch-tracking refresh on early-funnel deals, HubSpot Tasks (high bar, deal-related only) for anything clearly owed on our side, and Company backfill for deals Lemlist's automation creates without one. Deal/contact creation is never this workflow's job — Lemlist's own automation creates the deal directly on every reply (W0/new-deals retired 2026-08-17)
+description: W1 — sync every HubSpot deal from the full conversation (Slack, Lemlist, email; Granola removed 2026-08-18) — dated notes, action-owed stage classification (Interested, send Information → Interested, send follow-up → Demo scheduled), Description/Next step + touch-tracking refresh on early-funnel deals, HubSpot Tasks (high bar, deal-related only) for anything clearly owed on our side, and Company backfill for deals Lemlist's automation creates without one. Deal/contact creation is never this workflow's job — Lemlist's own automation creates the deal directly on every reply (W0/new-deals retired 2026-08-17)
 ---
 Run W1, the daily HubSpot deal sync defined in `hubspot-sync.md` in this repo.
 Start with the Step 0 preflight across all four sources (HubSpot, Gmail, Slack,
-Granola, Lemlist) and open with the readiness line. Load **every open deal** from
+Lemlist) and open with the readiness line. Load **every open deal** from
 HubSpot (exclude Closed Lost), and for each deal gather the full recent
-conversation across **Granola, Slack, Lemlist, email, and B2B Shopify website
+conversation across **Slack, Lemlist, email, and B2B Shopify website
 inquiries** by matching the deal's contact emails / company domain (B2C patient
 orders are out of scope — B2B only). Write one consolidated `[hubspot-ingest]` note to
 each deal that had fresh activity **only if it isn't already there** (what

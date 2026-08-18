@@ -1,13 +1,13 @@
 ---
 name: hubspot-sync
-description: W1 — sync every open HubSpot deal from the full conversation (Granola, Slack, Lemlist, email) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. Backfills a missing Company (by domain, matched or created) on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one. Deal/contact creation itself is W0's job (new-deals, re-enabled 2026-08-11), not this workflow's. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
+description: W1 — sync every open HubSpot deal from the full conversation (Slack, Lemlist, email; Granola removed 2026-08-18) into HubSpot as dated notes. Advances stage only from "In conversation (Lemlist)" to "Asked for information"/"Demo scheduled" on a genuinely interested reply — never creates deals, never touches any later stage (Contracting onward is manual-only). Refreshes Description + Next step (max 2 sentences each, for the board cards) on early-funnel deals. Creates a HubSpot Task, linked to the deal, only for clearly deal-related items where we clearly owe a reply or something clearly important needs flagging — high bar, verified against existing notes/activity first so nothing gets double-flagged, never for minor stuff. Backfills a missing Company (by domain, matched or created) on any "In conversation (Lemlist)" deal it touches, since a separate automation now auto-creates those deals without one. Deal/contact creation itself is W0's job (new-deals, re-enabled 2026-08-11), not this workflow's. HubSpot is the single source of truth. Use to keep the pipeline current each morning.
 ---
 
 Run W1, the daily HubSpot deal sync defined in `hubspot-sync.md` in this repo.
 Start with the Step 0 preflight across all four sources (HubSpot, Gmail, Slack,
-Granola, Lemlist) and open with the readiness line. Load **every open deal** from
+Lemlist) and open with the readiness line. Load **every open deal** from
 HubSpot (exclude Closed Lost), and for each deal gather the full recent
-conversation across **Granola, Slack, Lemlist, email, and B2B Shopify website
+conversation across **Slack, Lemlist, email, and B2B Shopify website
 inquiries** by matching the deal's contact emails / company domain (B2C patient
 orders are out of scope — B2B only). Write one consolidated `[hubspot-ingest]` note to
 each deal that had fresh activity **only if it isn't already there** (what

@@ -1,10 +1,19 @@
 ---
-description: Daily SwimScore CEO sweep, CONTEXT-ONLY (rewritten 2026-08-18) — Lemlist (first replies, email + LinkedIn) + Front's Email Replies inbox (supplementary, email-only follow-ups) + email + Slack + calls → match every reply to its deal, or CREATE one if a genuinely new B2B reply has no match anywhere (lands at "Reply (to-be-enriched)", no owner, and stays there — this workflow never moves any deal's stage, ever); analyzes all emails from the last 2 days and adds one HubSpot activity note per individual email observed (that email's own text, not the chain) + a same-pass touch-tracking update; refreshes Description/Next step + HubSpot Tasks for anything clearly owed + Company backfill on Reply-to-be-enriched deals; flags stale deals with a drafted follow-up; and updates the SwimScore Notion board
+description: Daily SwimScore CEO sweep, CONTEXT-ONLY (rewritten 2026-08-18, Notion+Granola removed 2026-08-18) — Lemlist (first replies, email + LinkedIn) + Front's Email Replies inbox (supplementary, email-only follow-ups) + email + Slack → match every reply to its deal, or CREATE one if a genuinely new B2B reply has no match anywhere (lands at "Reply (to-be-enriched)", no owner, and stays there — this workflow never moves any deal's stage, ever); analyzes all emails from the last 2 days and adds one HubSpot activity note per individual email observed (that email's own text, not the chain) + a same-pass touch-tracking update; refreshes Description/Next step + HubSpot Tasks for anything clearly owed + Company backfill on Reply-to-be-enriched deals; flags stale deals with a drafted follow-up as a HubSpot Task
 ---
-Run the full daily sweep. HubSpot is the single source of truth for the pipeline;
-the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
-`hubspot.json`. Work the steps in order; open with a per-source preflight line
-(HubSpot, Gmail, Slack, Granola, Lemlist, Front, Shopify, Notion).
+Run the full daily sweep. HubSpot is the single source of truth for the pipeline
+— including internal follow-ups (as HubSpot Tasks) now that Notion is out of
+scope. Config: committed `hubspot.json`. Work the steps in order; open with a
+per-source preflight line (HubSpot, Gmail, Slack, Lemlist, Front, Shopify).
+
+> **2026-08-18 (3) — Notion and Granola removed from this workflow, per
+> Shaffy.** Call notes (former step 6, Granola) are no longer read as a source
+> — Slack/email/Lemlist/Front remain. The SwimScore Notion board reconciliation
+> (former step 9) is retired — internal follow-up items (including the stale-deal
+> nudge in step 7) now go on a HubSpot Task instead of a Notion To-Do. The Slack
+> recap no longer links to Notion To-Dos/Key Goals. `notion-todos` (W2) is
+> retired accordingly — do not run it. If Notion or Granola access is restored
+> later, this note is what to revert.
 
 > **2026-08-18 (2) — NON-NEGOTIABLE four-point check, every single run, no
 > exceptions, no scope-cutting for time.** Found live: a run skipped the actual
@@ -240,9 +249,7 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    wellness-portal-dev, legal, daily-status, + any other account channel. Read
    threads. Pull anything that changes a deal or is an internal action item.
 
-6. **Calls — read all recent Granola notes** for decisions, pain points, next steps.
-
-7. **Update HubSpot per client — add context, never move a stage.** Check
+6. **Update HubSpot per client — add context, never move a stage.** Check
    existing notes first (dedup per message, per `perMessageNoteRule` — same
    date+direction+first-line means skip); write one `[hubspot-ingest]` note
    PER EMAIL observed (that email's own text only, not the quoted chain) for
@@ -320,34 +327,25 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    **Create a HubSpot Task linked to the deal only for clearly deal-related items
    where we clearly owe a reply, or something clearly important surfaced in
    email — high bar** (`hubspot.json → tasks`, pipeline-wide). Not a catch-all:
-   skip minor or ambiguous items, and anything the stale-follow-up flow (step 8)
+   skip minor or ambiguous items, and anything the stale-follow-up flow (step 7)
    already covers — a cluttered task list gets ignored. **Verify against the
    deal's existing notes/activity first that it isn't already done.** Dedupe on a
    `Ref:` line in the task body; complete an existing task if a fresh note shows
    its item got resolved.
 
-8. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
+7. **Stale check → flag + drafted follow-up** (per `hubspot.json.staleFollowUp`).
    **Before flagging or re-affirming any deal as stale, verify directly**: an undated
    `from:`/`to:` search on that contact's email, reading the actual last message's
    date — never carry forward a prior run's stale flag unchecked. For each open deal
-   confirmed quiet, compute last contact date across email/Lemlist/Slack/calls. If
+   confirmed quiet, compute last contact date across email/Lemlist/Slack. If
    >14d (high priority >21d) and a nudge is warranted (alive, not awaiting a booked
-   call): add a To-Do to the SwimScore Notion board under **New sales**
-   (`Follow up with <clinic> — quiet <N>d`), Owner Shaffy, Link the deal, dedup on
-   `Ref hubspot:stale:<dealId>`, and **draft a short, specific follow-up message from
-   the deal's HubSpot context** into the to-do (only if a real message fits).
-   **Check for an existing to-do with the same `Ref` first and update it in
-   place** — a live run on 2026-08-16/17 found two rows for the same deal with
-   different day-counts.
-
-9. **Update the SwimScore Notion board from all channels** (W2 `daily-open-items.md`):
-   reconcile internal to-dos across the seven pillars (Onboarding, New sales,
-   Marketing, Research, Clinic & patient portal, Support, Finance) from
-   business-strategy, product/portal, legal, finance, and support signal — check
-   what each item is for, mark Done / advance, dedup on `Ref`, add new ones in
-   house style per `STYLE.md`. Also check goal coverage against the **Key Goals**
-   database (linked from `SWIMSCORE_NOTION.md`) — a goal with no linked to-do, or
-   only execution items and nothing that measures progress, needs a new to-do.
+   call): create a HubSpot Task linked to the deal (`hubspot.json → tasks` rules —
+   subject `Follow up with <clinic> — quiet <N>d`, owner Shaffy, priority HIGH if
+   >21d else MEDIUM, dedup on `Ref: hubspot:task:<dealId>:stale`), and **draft a
+   short, specific follow-up message from the deal's HubSpot context** into the
+   task body (only if a real message fits). **Check for an existing open task
+   with the same `Ref` first and update it in place rather than creating a
+   duplicate.**
 
 End with a digest: **deals created** (deal — company — source, all landed at
 Reply-to-be-enriched with no owner), **emails logged** (deal — count of notes
@@ -357,13 +355,12 @@ manual review** (deal — why) from step 2a, **deals where context was added but
 the conversation has clearly moved past Reply-to-be-enriched** (deal — what
 happened — e.g. "call confirmed for 8/27," "info sent, awaiting response" —
 call these out clearly so Shaffy knows what's ready to move by hand),
-**HubSpot Tasks created/completed** (deal — subject — why), organizations
-linked/created (deal — company — domain), owners cleared (deal), **stale deals
-flagged (with/without drafted message)**, and Notion to-dos added/advanced/closed
-per pillar. Call out the top risks and decisions for the CEO — especially any
-deal that's clearly ready for Shaffy to move by hand.
+**HubSpot Tasks created/completed** (deal — subject — why, including stale-deal
+follow-up tasks from step 7), organizations linked/created (deal — company —
+domain), and owners cleared (deal). Call out the top risks and decisions for
+the CEO — especially any deal that's clearly ready for Shaffy to move by hand.
 
-10. **Post the recap to `#daily-recap` in Slack**, in this order:
+8. **Post the recap to `#daily-recap` in Slack**, in this order:
 
    **a. "Updates from yesterday"** — one line per source, factual, scoped to the
    last calendar day (not a re-hash of the multi-day CRM sweep):
@@ -387,18 +384,15 @@ deal that's clearly ready for Shaffy to move by hand.
    Skip a bullet entirely if there's nothing real to report — don't pad it.
 
    **b. "Short-term goals"** (by category: Pipeline, Marketing, Product/Onboarding,
-   Support, ...) **and "To dos (specific)"**, plus links to the Notion To-Dos board
-   and Key Goals database. **Filter the to-dos by business judgment, not by
-   mechanically listing every open/High-priority Notion item** — the full board is
-   one click away, so this list should only carry what actually moves the needle
-   this week: revenue/pipeline decisions, live customer-facing issues, and anything
-   genuinely blocked or needing Shaffy's input. Two defaults that follow from this:
+   Support, ...) **and "To dos (specific)"**, drawn from open HubSpot Tasks and
+   deal context (Notion is no longer a source). **Filter the to-dos by business
+   judgment, not by mechanically listing every open task** — this list should
+   only carry what actually moves the needle this week: revenue/pipeline
+   decisions, live customer-facing issues, and anything genuinely blocked or
+   needing Shaffy's input. Two defaults that follow from this:
    - **Don't list every stale deal individually** — name the highest-value one(s),
      batch the rest as a cleanup pass.
-   - **Suppress routine dev-team-execution items** (most of Clinic & patient
-     portal / Support) — Dmytro and Harsh close these out themselves in their own
-     channels without needing Shaffy's attention. Only surface a dev item if it's
+   - **Suppress routine dev-team-execution items** — only surface one if it's
      (a) blocked or stalled past a normal turnaround, (b) needs a decision only
      Shaffy can make, or (c) is a live patient/customer-facing issue right now
-     (e.g. a data bug affecting current users) — not just "high priority" in
-     Notion. Everything else stays tracked in Notion, just not in the Slack recap.
+     (e.g. a data bug affecting current users).

@@ -56,27 +56,35 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
 > above — deal creation is retired again, permanently, and the stage names/logic
 > changed)*
 
-1. **Lemlist — new & updated.** Full team inbox (`teamConversations`, paginated;
-   `get_inbox_conversation` for the thread + `aiLeadInterest`). **Every reply now
-   already has a deal** — Lemlist's automation creates it directly. Match the lead
-   email/domain to its HubSpot deal (search by contact email, and by company
-   domain — the automation sometimes creates the contact/company ahead of the
-   deal) and update it (step 7). **Never create a deal or a contact.** If genuine
-   B2B interest truly has no matching deal anywhere, list it in the digest for
-   Shaffy to review manually — do not create it yourself. Negative replies aren't
-   worth listing.
+1. **Lemlist — new & updated. Check this FIRST, for first replies.** Full team
+   inbox (`teamConversations`, paginated; `get_inbox_conversation` for the thread
+   + `aiLeadInterest`). **Lemlist is the primary source for a lead's first reply
+   on either channel a campaign runs on — email AND LinkedIn** — check both, not
+   email only. **Every reply now already has a deal** — Lemlist's automation
+   creates it directly. Match the lead email/domain to its HubSpot deal (search
+   by contact email, and by company domain — the automation sometimes creates the
+   contact/company ahead of the deal) and update it (step 7). **Never create a
+   deal or a contact.** If genuine B2B interest truly has no matching deal
+   anywhere, list it in the digest for Shaffy to review manually — do not create
+   it yourself. Negative replies aren't worth listing.
 
-1b. **Front — Email Replies inbox, supplementary (added 2026-08-18).** Sweep the
-   shared **Email Replies** inbox (`inb_nh7fs`, ticket prefix `SU-####`) via
+1b. **Front — Email Replies inbox, supplementary, email-only (added 2026-08-18).**
+   Checked AFTER step 1, not instead of it. **Front is scoped to email only** (it
+   has no LinkedIn visibility) and its real value is catching **email follow-ups
+   that may never surface in Lemlist** — a lead replying again later in the same
+   email thread, or on a side thread, after their tracked Lemlist reply, isn't
+   always still visible in Lemlist's inbox view. Sweep the shared **Email
+   Replies** inbox (`inb_nh7fs`, ticket prefix `SU-####`) via
    `mcp__Front__search_conversations` (`filters.inboxId: inb_nh7fs`,
    `scope: all_inboxes`, `filters.after` bounded to the lookback window) — it
    aggregates replies across all of SwimScore's rotating cold-outreach sending
    mailboxes (myswimscore.com/withswimscore.com/swimscoreview.com/
-   viewswimscore.com/malescore.com/goswimscore.com). This runs **in addition to**
-   step 1's Lemlist check, not instead of it — the two frequently carry the SAME
-   underlying reply (Front is just those sending mailboxes viewed through a
-   shared inbox), so check the deal's existing notes/touchTracking before logging
-   anything, to avoid a duplicate note for one physical message.
+   viewswimscore.com/malescore.com/goswimscore.com). Front and Lemlist
+   frequently carry the SAME underlying first reply (Front is just those sending
+   mailboxes viewed through a shared inbox), so check the deal's existing
+   notes/touchTracking before logging anything, to avoid a duplicate note for one
+   physical message — but don't assume overlap; a later email-only follow-up may
+   be genuinely new information step 1 never saw.
 
    **Filter noise before treating anything as a real reply**: subjects ending
    `- lemwarmup` are Lemlist's own email-warmup network (fake back-and-forth

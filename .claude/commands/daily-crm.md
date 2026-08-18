@@ -102,6 +102,33 @@ the SwimScore Notion board holds internal + follow-up to-dos. Config: committed
    handling state (who's working the thread inside Front), not HubSpot
    dealstage — informational only, never mapped onto dealstage.
 
+   **Mandatory verification rules, found live 2026-08-18 (`hubspot.json →
+   ingest.sources.front._2026-08-18_gotcha_note`) — a manual spot-check of 30
+   deals HubSpot showed as `last_touch_direction: Outbound` (waiting on the lead)
+   found 3 that were flat wrong: one had DECLINED 2 days earlier, one had
+   CONFIRMED A CALL DATE, one had said yes and was waiting on a booking link we
+   owed them.** None were caught because the sweep trusted HubSpot's stored
+   field instead of reading Front directly. Going forward, every single run:
+   1. **Never use HubSpot's stored `last_touch_direction`/`last_touch_date` to
+      decide whether a deal needs checking** — that's exactly the field being
+      verified; using it to skip the check is circular. Query Front for every
+      deal with a conversation touched in the lookback window regardless of what
+      HubSpot currently shows.
+   2. **Front's own `kind`/`origin.kind` fields lie about direction** — they
+      routinely mislabel SwimScore's own outbound reply-in-thread as
+      inbound-from-customer (mirrors the Lemlist `emailsReplied` mislabeling
+      warning in step 7, but for Front — confirmed on nearly every SwimScore
+      auto-reply in this campaign). Never trust `kind` for direction; read the
+      message content and signature to determine who actually sent it.
+   3. **A contact can have multiple Front conversations** — a domain/name search
+      can return 2-3 threads (older campaign touches) or an outright false-match
+      on a different contact. The conversation with the newest `updatedAt` is
+      **not** reliably the one with the newest real message (a stale thread got
+      re-touched by system processing and sorted above a real reply in one live
+      case). Read every conversation the search returns for that contact,
+      confirm by content it's actually them, and take the true
+      chronologically-latest message across all of them.
+
 2. **Enrich "Reply (to-be-enriched)" deals** (`hubspot.json → ingest.enrichment`,
    added 2026-08-15): Lemlist's automation lands every fresh reply-triggered deal
    at this stage instead of straight into **Interested, send Information**. For

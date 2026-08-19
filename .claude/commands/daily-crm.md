@@ -18,9 +18,11 @@ The guardrails, restated here so they are visible without loading anything else:
    that has none.** A separate automation already creates one on every Lemlist
    reply, so a Lemlist/Front/Gmail lead with no deal is a digest line, not a gap
    to fill.
-3. **Never create or edit a contact** — only link an *existing* contact found by
-   email to its deal, never create one. Never set or clear a deal's owner —
-   ownership is what the Slack brief splits on.
+3. **Never edit an existing contact's fields.** Linking a contact to its deal is
+   fine, and creating a contact or company is fine too — but only search-first,
+   reuse-on-match, create-only-if-nothing-exists. A blind create risks
+   duplicates. Never set or clear a deal's owner — ownership is what the Slack
+   brief splits on.
 4. **Every write is idempotent.** This runs several times a day; a second run an
    hour later must produce no duplicate notes and no churn.
 
@@ -29,12 +31,14 @@ The four steps, in order:
 1. Sweep every deal at **Reply (to-be-enriched)** and fill its touch-tracking
    fields from the real conversation — Lemlist's full thread plus every matching
    Front conversation — establishing who spoke last and whether SwimScore has
-   actually replied yet, and link every thread participant's existing contact
-   record to the deal.
-2. Read **every Gmail message from today and yesterday** (inbox *and* sent), and
-   attach each lead-related thread to its deal as one full-thread note, updated
-   in place as the thread grows — linking any participant's existing contact
-   record along the way.
+   actually replied yet, and link (or create if genuinely new) every thread
+   participant's contact record on the deal.
+2. Read **every Gmail message from today and yesterday for shaffy@myswimscore.com**
+   — inbox *and* sent — and attach each lead-related thread to its deal as one
+   full-thread note, updated in place as the thread grows, linking/creating
+   participant contact records along the way. Reconcile a thread count so
+   nothing goes unlogged (see the skill) — this is exactly the step that missed
+   8 real deals on 2026-08-19.
 3. Check the **Shopify contact form** for new B2B enquiries — the one place this
    workflow creates a deal.
 4. Post the **stale brief** (no touchpoint in 4+ days) to `#daily-recap`, split

@@ -1,184 +1,161 @@
 # HubSpot pipeline setup — the single source of truth
 
-The pipeline sync keeps **every HubSpot deal current** from the full
-conversation. Each morning it reads **Granola, Slack, Lemlist, and email**, writes
-a dated note to the right deal, and — as of **2026-07-25, at Shaffy's request** —
-moves the deal stage in exactly **one** narrow situation (see "How a stage
-moves" below), refreshes the board-card fields on early-funnel deals (see
-"Description + Next step"), creates a HubSpot Task on a deal whenever something
-is clearly owed on our side (see "HubSpot Tasks"), and backfills a missing
-Company on deals a separate Lemlist automation creates (see "Organization
-backfill"). HubSpot holds everything — it's the canonical record.
+The enrichment sweep keeps every HubSpot deal **in context** — it reads Lemlist,
+Front, and Gmail, writes the conversation onto the right deal as a note, and
+fills the touch-tracking fields that say where each conversation actually stands.
+HubSpot holds everything; it's the canonical record.
+
+**It never moves a deal between stages.** See "Stages are manual" below.
 
 ## What's connected
 
-All five run through the **connected account** in this environment (no tokens to
-paste for the core pipeline):
+All run through the **connected account** in this environment (no tokens to paste
+for the core pipeline):
 
 | Capability | Provider | Used for |
 |---|---|---|
-| CRM (source of truth) | **HubSpot** (MCP) | Deals, stages, notes — read + write |
-| Email | **Gmail** (native MCP) | Full email conversation per deal |
-| Chat | **Slack** (MCP) | Client / Connect + internal account channels |
-| Meeting notes | **Granola** (MCP) | Call decisions and next steps |
-| Outreach | **Lemlist** (MCP) | Cold-sequence replies + AI interest scoring |
+| CRM (source of truth) | **HubSpot** (MCP) | Deals, notes, context fields — read + write |
+| Outreach | **Lemlist** (MCP) | First replies, email **and** LinkedIn |
+| Shared inbox | **Front** (MCP) | Email replies across the rotating sending mailboxes |
+| Email | **Gmail** (native MCP) | Shaffy's full conversation per deal |
+| Chat | **Slack** (MCP) | Output only — the stale brief to `#daily-recap` |
+| Store | **Shopify** (MCP) | B2B website contact form only; orders/customers out of scope |
 
 ## The pipeline this is wired to
 
-`hubspot.json` is committed (IDs + flags only, **no secrets**) and holds the live
-pipeline pulled from this account:
+`hubspot.json` is committed (IDs + rules only, **no secrets**) and holds the live
+pipeline pulled from this account.
 
-- **Primary pipeline:** **Clinic Partnerships** (`id 2314112732`) — where the
-  active deals live. Stages, in order:
-  `Inbound request → In conversation (Lemlist) → Asked for information → Demo
-  scheduled → Contracting → Portal onboarding → First order placed → Actively
-  ordering (active L3M) → No orders (L3M)` (+ `Closed Lost`).
-- **Secondary:** the default **Sales Pipeline** is also mapped, in case a deal
-  lives there.
-- **Default owner:** Syb Roell (`163314964`) — new deals are assigned here (moot
-  while W0 is disabled, see below).
+**Primary pipeline: Clinic Partnerships** (`2314112732`). Stages, in order:
 
-> Stage **internal ids** (e.g. `3744632516` = *Asked for information*) differ from
-> their labels, and **labels get renamed in the HubSpot UI without notice** — this
-> file was last verified stale on 2026-07-25 (it still said "Discovery Scheduled"
-> for that id). The workflows always read the id from `hubspot.json`, never
-> hard-code it, but the *label prose* in these docs can still drift. If a stage
-> name here looks off, don't trust it — re-run
-> `get_properties(objectType="deals", propertyNames=["dealstage","pipeline"])` to
-> get the current ids/labels and update `hubspot.json` + this file to match.
+| Stage | ID |
+|---|---|
+| Reply (to-be-enriched) | `4154315512` |
+| Inbound request | `3744632513` |
+| Interested, send Information | `3744632514` |
+| Interested, send follow-up | `3744632516` |
+| Demo scheduled | `3744632517` |
+| Contracting | `3744104176` |
+| Portal onboarding | `3744104177` |
+| First order placed | `3744632518` |
+| Actively ordering (active L3M) | `3744632519` |
+| No orders (L3M) | `4047247046` |
+| Closed Lost | `3744104178` |
+| Interested (not now) | `4065138365` |
 
-## How a stage moves
+**Reply (to-be-enriched)** is the intake bucket: a separate automation drops every
+Lemlist reply here, and this workflow's step 1 sweeps it for context.
 
-**2026-07-25 — narrowed at Shaffy's request.** W1 (`hubspot-sync.md`) no longer
-advances a deal freely on "clear evidence" across the whole funnel. The **only**
-automated stage change left, per `hubspot.json → ingest.stageAdvanceRule`:
+> Stage **internal ids** differ from their labels, and **labels get renamed in the
+> HubSpot UI without notice** — this file has drifted before. The workflow always
+> reads the id from `hubspot.json`, never hard-codes it, but the label prose in
+> these docs can still go stale. If a name here looks off, re-run
+> `get_properties(objectType="deals", propertyNames=["dealstage","pipeline"])` and
+> update `hubspot.json` + this file to match.
 
-- A deal sitting in **In conversation (Lemlist)** gets a Lemlist reply that shows
-  real interest →
-  - asks a question / wants pricing, no call agreed yet → **Asked for information**
-  - agrees to / requests / confirms a call or demo → **Demo scheduled**
-- **Every other deal keeps its stage, always** — Contracting, Portal onboarding,
-  First order placed, Actively ordering, No orders (L3M): a call held, a proposal
-  sent, a pilot started, an order placed, none of it moves the card. W1 logs it in
-  a note; Shaffy moves the card by hand. This applies even to a deal that would
-  "obviously" advance on the old rules — the automation just doesn't do it anymore.
+## Owners
 
-Other guardrails in `hubspot.json`:
+Verified live against `search_owners` on 2026-08-19. These two ids drive the
+Slack stale-brief split:
 
-- `ingest.autoApply` — `true` applies the one allowed move; `false` proposes it in
-  the digest instead.
-- `ingest.allowStageAdvance` — gates that one move.
-- `ingest.allowStageClose` — **off by default**: *Closed Lost* is never set
-  automatically; always listed for approval. (There's no distinct "Closed Won"
-  stage in this pipeline anymore — a won deal just progresses to Portal
-  onboarding → First order placed → Actively ordering.)
-- Deals are **never silently demoted** — that's always manual too.
+| Owner | ID | Email |
+|---|---|---|
+| Alex from SwimScore | `163314964` | info@myswimscore.com |
+| Shaffy from SwimScore | `162479602` | shaffy@myswimscore.com |
 
-## Description + Next step (board-card fields)
+Syb Roell is `165632552` and owns no deals in this workflow. An earlier version
+of `hubspot.json` mislabelled `163314964` as "Syb" — it is Alex.
 
-**Added 2026-07-25, per Shaffy.** Whenever W1 writes a `[hubspot-ingest]` note on
-a deal that's in one of the four **early-funnel stages**
-(`pipelines.clinicPartnerships.earlyFunnelStages` — Inbound request, In
-conversation (Lemlist), Asked for information, Demo scheduled), it also refreshes
-that deal's native `description` and `hs_next_step` (labeled "Next step" in the
-UI) fields. **Max 2 sentences each** — these render directly on the board cards,
-so they need to stay short and scannable, not turn into another note. Deals at
-Contracting or later are *not* touched this way; Shaffy keeps those two fields
-current by hand.
+**The workflow never sets and never clears `hubspot_owner_id`.** Ownership is what
+the Slack brief groups by, so it is left exactly as found.
 
-A one-time backfill populated these fields for all 41 open/lost deals on
-2026-07-25; going forward it's incremental, refreshed only on deals that get a
-fresh note.
+## Stages are manual
 
-## HubSpot Tasks — what SwimScore owes
+The workflow **never writes `dealstage`** — not on a positive reply, a confirmed
+call, a signed agreement, or a flat decline. There is no config flag to turn this
+on; the stage-advance rules were removed entirely.
 
-**Added 2026-07-25, per Shaffy.** When the sweep finds something clearly
-outstanding on our side, it creates a native HubSpot `Task` linked to the deal
-(`hubspot.json → tasks`) — pipeline-wide, not limited to early-funnel deals —
-so it shows up in HubSpot's own task queue instead of only the daily digest.
+What happens instead:
 
-**High bar, deliberately.** This is not a catch-all for every loose thread — only:
-- a person **explicitly asked a question or made a request** that's **clearly
-  still unanswered**, or
-- something **clearly important** surfaces in email that needs flagging (a
-  decision point, a real risk, a hard deadline).
+- A **clean decline** gets a note explaining why it reads that way, and Closed
+  Lost is **suggested** in the digest.
+- A **soft "not now"** gets Interested (not now) suggested, same treatment.
+- A deal whose conversation has clearly **outgrown its stage** — call confirmed,
+  agreement signed, portal live — is named explicitly in the digest so Shaffy can
+  move it by hand.
 
-Skip anything minor, ambiguous, routine, or already covered by the stale-deal
-follow-up flow (`staleFollowUp` — that's for "gone quiet", not "owed a reply"). A
-task list cluttered with tiny items gets ignored, which defeats the point.
+If a run ever changes a stage, that is a bug. The skill's end-of-run spot-check
+covers it.
 
-**Before creating one, the sweep re-checks the deal's existing notes and latest
-activity** for that specific item — if the reply already went out or the thing
-already happened, no task gets created. Tasks are deduped on a `Ref:
-hubspot:task:<dealId>:<slug>` line in the task body (search open, non-completed
-tasks on the deal for a match before creating); an existing open task gets marked
-`COMPLETED` if a fresh note shows its item was resolved — never marked complete
-without that evidence. Default owner is `162479602` ("Support SwimScore" —
-shaffy@myswimscore.com's HubSpot user record), due today, priority HIGH if >7
-days overdue or blocking a live deal, else MEDIUM.
+## What the workflow writes
 
-## Organization backfill (Lemlist-replies bucket)
+**Notes — one per email thread, updated in place.** The note body opens with an
+identity line (`[hubspot-ingest] Thread: gmail:<threadId>`) and a `Latest:` line.
+On a re-run, a thread whose note is already current is skipped; a thread that has
+grown has its existing note **updated** to carry the full current thread. A deal
+with three separate threads keeps three notes. This replaced the older
+one-note-per-individual-message model.
 
-**Added 2026-07-25 (2), per Shaffy.** Shaffy's team runs a **separate
-automation** (outside this workflow, outside our control) that now auto-creates
-a HubSpot deal for every Lemlist reply, landing it straight in **In conversation
-(Lemlist)**. This workflow still never creates deals — but that automation
-doesn't reliably attach a Company, so whenever W1 touches a deal sitting in that
-exact stage (a note, the stage-advance check, the field refresh), it also:
+**Context fields**, recomputed from a fresh read of the whole conversation rather
+than trusted from what's already stored:
 
-1. Checks whether the deal has an associated Company.
-2. If not, takes the domain from the deal's associated contact's email (skipping
-   personal domains — gmail.com, yahoo.com, etc. — those get flagged instead of
-   guessed).
-3. Searches for an existing company by that domain and **associates** it if
-   found (reuse, never duplicate).
-4. If none exists, **creates** one (`{name, domain}`) and associates it to both
-   the deal and the contact.
+- `last_touch_date`, `last_touch_direction`, `last_message` — where the
+  conversation actually stands, including a Calendly booking as a real touch.
+- `initial_reply_lead` / `initial_reply_ss` — each side's first reply, verbatim,
+  **no `Client:`/`SwimScore:` prefix** (that prefix belongs on `last_message`
+  only). `initial_reply_ss` left **empty means a reply is owed** — a deliberate
+  flag that drives the digest and ranks the deal to the top of the Slack brief.
+- `time_to_first_reply_hrs`, `reply_channel`, `lemlist_campaign_reply`.
+- `b2b_type`, `orders_pm` (default `1-5`), `amount` (`2500` when blank).
 
-This is the **one narrow exception** to "this workflow never creates records" —
-company-only, and only to backfill a gap the external flow left behind. It never
-creates a contact or a deal. Verified 2026-07-25: all 19 deals then sitting in
-"In conversation (Lemlist)" already had a company linked (they predated the new
-automation) — so this is a forward-looking safety net, not a backlog to clear.
+**Board-card fields:** `description` (max 2 sentences) and `hs_next_step` (a dated
+log, newest line first, 4 lines max). Both render on the card, so both stay short.
 
-## Lemlist → HubSpot mapping
+## Deal creation — one channel only
 
-Lemlist replies are read via `get_inbox_conversations` → `get_inbox_conversation`,
-which carries `aiLeadInterest` (**positive** ≥4 / neutral / **negative** ≤1). The
-lead's email is matched to the HubSpot deal's contact. A positive reply on a deal
-still sitting in *In conversation (Lemlist)* advances it one step (see above); a
-negative reply is a lost signal (propose *Closed Lost* for approval, never set it
-automatically).
+A separate automation creates a deal the moment a **Lemlist reply** lands, so this
+workflow does not. The single exception is the **Shopify website contact form**
+(`"New customer message"` emails to `info@myswimscore.com`) — nothing else watches
+that channel, so a genuine B2B enquiry with no existing deal gets one created at
+**Reply (to-be-enriched)**, never further along.
 
-> If Lemlist's **native HubSpot integration** is also enabled in your Lemlist
-> account, sequence sends/opens/replies additionally appear on the HubSpot contact
-> timeline — belt-and-suspenders. The workflow reads Lemlist directly via MCP
-> regardless, so it doesn't depend on that sync being on.
+Even there, it searches hard first — by contact email, by company domain, and for
+any deal linked to that company with no contact — because contact-form leads
+frequently already exist from an earlier campaign touch.
+
+B2C patient orders and customers are **never** read.
+
+## Company backfill
+
+The narrow exception to "never creates records". Whenever the workflow touches a
+deal with no associated Company, it takes the domain from the contact's email,
+**searches for an existing company first**, and associates it; only if nothing
+exists does it create one. Personal domains (gmail.com, yahoo.com, …) are flagged
+in the digest rather than guessed.
+
+Search-before-create matters: a blind create produced 5 duplicate companies in one
+live run.
+
+## Two traps that produced wrong data
+
+- **Front and Lemlist both lie about direction.** Front's `kind`/`origin.kind`
+  routinely label SwimScore's own reply-in-thread as inbound-from-customer;
+  Lemlist tags our outbound as an inbound `emailsReplied` activity, sometimes with
+  a positive `aiLeadInterest` score. Decide direction from the body and signature.
+- **`search_threads` silently truncates.** It returned 4 messages of a real
+  16-message thread in production, hiding the actual last touch with no error.
+  Use `get_thread` on any running exchange.
 
 ## Scheduling
 
-Schedule **one** daily Claude Code web session with the prompt **`/daily-crm`** —
-it runs **W1 → W2** in order (sync every deal from all four sources → derive
-Notion to-dos). W0 (new-deal creation) is **disabled** as of 2026-07-25 — see
-`new-deal-discovery.md`. Daily, **07:00 Europe/Amsterdam**, on **Sonnet**. See
-`SCHEDULING.md`.
+One recurring Claude Code web session, prompt **`/daily-crm`**, on **Sonnet**,
+several times a day. Every write is idempotent. See `SCHEDULING.md`.
 
 ## Secrets — usually NONE
 
-The core pipeline reads `hubspot.json` from git and all sources from the connected
+The pipeline reads `hubspot.json` from git and all sources from the connected
 account. Add an env secret only if a scheduled (headless) run's preflight shows a
-source ⚠️ unavailable — then add just that one (e.g. a HubSpot private-app token as
-`HUBSPOT_TOKEN`, Gmail via `EMAIL_ACCOUNTS_JSON`, Slack via
-`SLACK_WORKSPACES_JSON`). Real tokens go in env secrets or a gitignored
-`hubspot.local.json` — **never** in the committed `hubspot.json`.
-
-## Safety
-
-- Writes are conservative: **add a note always; move the stage only in the one
-  narrow Lemlist-reply case above; refresh Description/Next step only on
-  early-funnel deals; create a Task only for a high-bar, clearly-deal-related,
-  clearly-still-owed item, verified against existing notes first.** Never delete;
-  never auto-close; never create a deal.
-- New-deal creation (W0) is **disabled** (`newDealDiscovery.enabled: false`). W1
-  only updates existing deals — a genuine new opportunity gets named in the digest
-  for Shaffy to add by hand, not created automatically.
+source ⚠️ unavailable — then add just that one (HubSpot via `HUBSPOT_TOKEN`, Gmail
+via `EMAIL_ACCOUNTS_JSON`, Slack via `SLACK_WORKSPACES_JSON`). Real tokens go in
+env secrets or a gitignored `hubspot.local.json` — **never** in the committed
+`hubspot.json`.

@@ -1,37 +1,42 @@
-# Roadmap & related workflows
+# Roadmap & scope notes
 
-Things this sweep depends on or could grow into — tracked separately so the daily
-workflow stays focused.
+Things this sweep deliberately doesn't do, and things it could grow into —
+tracked separately so the workflow itself stays focused.
 
-## Done: HubSpot pipeline backfill + stage automation
-The one-off pipeline cleanup is **done**:
-- Backfilled the genuine B2B clinic leads from the full Lemlist team inbox into
-  HubSpot as deals (deal named after the clinic + linked contact + company + domain),
-  each with a conversation note.
-- Enriched every deal note from Shaffy's Gmail threads (source of truth after
-  Lemlist) + Slack + Granola: Background → timestamped Timeline → Latest → Next step.
-- Set stages from real evidence (call held → Discovery Completed, proposal sent →
-  Proposal Sent, onboarding booked → Pilot Discussion, etc.).
+## Where it stands
 
-Keeping it current is now a **daily workflow** — see [`hubspot-sync.md`](./hubspot-sync.md):
-it checks Lemlist, Shopify contact-form inbound, Gmail, Slack, and Granola, moves
-deal stages on fresh evidence, and appends a dated note to each deal so **HubSpot is
-the source of truth**.
+The pipeline backfill is done, and keeping it current is the daily workflow — see
+[`.claude/skills/daily-crm/SKILL.md`](./.claude/skills/daily-crm/SKILL.md). It
+reads Lemlist, Front, Gmail, and the Shopify contact form, writes each
+conversation onto its deal, and posts a stale brief to `#daily-recap`.
 
-## Future
-- **Stale read-in:** the daily run already flags deals with no contact in 14+ days
-  and drafts a follow-up to the SwimScore Notion board (New sales pillar). Could
-  extend to a weekly digest of all open/stalled deals.
-- **Auto-create:** done — daily new-inbound deal creation (create + link company +
-  contact + note) is its own front workflow, `new-deal-discovery.md` (W0).
-  Low-confidence intros are listed for review rather than created.
-- **Closed-lost hygiene:** auto-propose Closed Lost for cold-list hard rejections
-  (currently left out of the pipeline rather than created).
-- **Onboarding template:** Mirva, Epoch Health, and Epic Fertility are converging on
-  Jul 10 onboarding — a one-click onboarding checklist (sample kit + portal setup +
-  one-pager) per new clinic would help.
+As of the 2026-08-19 rewrite it is **enrichment-only**: it adds context and never
+moves a deal between stages. Stage movement, and the judgement that goes with it,
+is Shaffy's.
 
-## Out of scope
-- **B2C Shopify orders/customers** — individual patient purchases are not deals; the
-  sweep only reads B2B website contact-form messages.
+## Could grow into
+
+- **Weekly digest** — the stale brief covers 4+ days quiet, split by owner. A
+  weekly roll-up of everything open and stalled would complement it.
+- **Closed-lost hygiene** — hard rejections are currently *suggested* for Closed
+  Lost in the digest. Acting on them stays manual by design; a batched
+  "approve these 8" flow would keep that judgement with a human while cutting the
+  clicking.
+- **Onboarding template** — a one-click checklist per new clinic (sample kit +
+  portal setup + one-pager) once a deal reaches Portal onboarding.
+
+## Out of scope, on purpose
+
+- **Moving deal stages.** Removed entirely in the 2026-08-19 rewrite. Every
+  earlier version of this repo that automated stage movement got it wrong often
+  enough to be worth not doing.
+- **Creating deals from Lemlist / Front / Gmail.** A separate automation creates a
+  deal on every Lemlist reply. Only the Shopify contact form — which nothing else
+  watches — can create here.
+- **B2C Shopify orders and customers.** Individual patient purchases are not
+  deals; only B2B website contact-form messages are read.
+- **HubSpot Tasks.** Dropped in the rewrite — what's owed surfaces in the Slack
+  stale brief and the digest's reply-owed list instead of a second queue.
+- **Notion and Granola.** Removed as sources; the internal to-do board is no
+  longer part of this workflow.
 - **Microsoft Teams** — see `CONNECTIONS.md`. Not pursued.

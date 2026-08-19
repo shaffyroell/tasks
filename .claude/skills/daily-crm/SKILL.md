@@ -184,6 +184,13 @@ matching deal" so Shaffy can look. That is the whole response.
 - **Never create a second note for a thread that already has one.** Multiple
   distinct threads on one deal each keep their own note.
 
+**Backfill `b2b_type` on any deal you touch, at any stage.** Not just intake
+deals. Deals leave Reply (to-be-enriched) fast, so a type set only there means
+most of the pipeline never gets one — a live check found it filled on 11 of 46
+open deals, which makes the type split in step 4 mostly guesswork. If a deal you
+are touching has `b2b_type` blank and the thread or company makes the answer
+clear, set it. Leave it blank only when genuinely unclear; never guess to fill it.
+
 ## Step 3 — Shopify contact form (the one place deals get created)
 
 Read **only** the website `"New customer message"` contact-form submissions.
@@ -237,30 +244,37 @@ anything; if there is one, leave it out of the ranked lists and note it under a
 short "already booked" line instead. Chasing these is exactly the noise that
 makes the brief get ignored.
 
-Post to `#daily-recap` (`slack.dailyRecapChannel`), **split by deal owner**:
+Post to `#daily-recap` (`slack.dailyRecapChannel`) — **that channel only, never
+any other.**
 
-- **Alex** — `hubspot_owner_id` `163314964`
-- **Shaffy** — `hubspot_owner_id` `162479602`
-- **Unassigned / other** — everything else, as a third group
+**Group by type, and list every single one.** Two groups: **TRT & men's health**,
+and **fertility, IVF & other**. Do not truncate to a top handful and do not
+collapse the tail into a "+28 more" count — Shaffy wants the full list, so print
+every deal in both groups, oldest first within each.
 
-Within each group, rank by who to contact first:
+Type comes from `b2b_type`. It is blank on most of the pipeline, so where it is
+unset, infer the group from the deal name and thread and **mark it as inferred**
+(a `*` on the confirmed ones is enough) — never present a guess as a stored
+value. Close with a one-line count of how many were confirmed vs inferred, so
+the gap stays visible until the field is backfilled.
 
-1. **We owe them a reply** — `initial_reply_ss` empty, or `last_touch_direction`
-   is `Inbound`. They spoke last and we went silent. These go top, oldest first.
-2. **Waiting on them** — we spoke last. Below the first group, oldest first.
+Owner rides on the line rather than splitting the message: mark Alex's deals
+(`hubspot_owner_id` `163314964`) with `(A)`; everything else is Shaffy's
+(`162479602`). Flag unassigned deals explicitly if any appear.
 
-One line per deal: name, days quiet, who spoke last, and the single most useful
-detail for picking it back up (what they asked, what was promised). Keep it
-scannable — if a group runs long, list the top handful and give a count for the
-rest. Skip a group entirely if it is empty rather than printing a header with
-nothing under it.
+Also mark, per line, **who spoke last** — a `⬅` where `initial_reply_ss` is
+empty or `last_touch_direction` is `Inbound`, meaning they spoke and we went
+quiet. Those are the ones to pick up first.
 
-**Then a "needs assigning" section**, from step 1h: every deal at
+One line per deal: name, days quiet, the markers above, and the single most
+useful detail for picking it back up (what they asked, what was promised).
+
+**Open with a "needs assigning" section**, from step 1h: every deal at
 Reply (to-be-enriched) with no owner. These are freshly-arrived replies nobody
-has picked up yet, so they belong at the top of the message, not buried under the
-stale list — a brand-new unassigned reply is more urgent than a deal that has
-been quiet a week. Name the deal and the one-line reason it is worth someone's
-time (what the lead actually said). Skip the section when the bucket is empty.
+has picked up yet, so they belong at the top of the message, above the type
+groups — a brand-new unassigned reply is more urgent than a deal that has been
+quiet a week. Name the deal and the one-line reason it is worth someone's time
+(what the lead actually said). Skip the section when the bucket is empty.
 
 ## Finish with a digest
 

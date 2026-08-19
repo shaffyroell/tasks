@@ -1,6 +1,6 @@
 ---
 name: daily-crm
-description: Enrich the existing HubSpot pipeline with conversation context, then post a stale-deal brief to Slack. Sweeps every deal at "Reply (to-be-enriched)" and fills its touch-tracking fields from the Lemlist inbox and Front (who spoke last, whether SwimScore has replied yet, first reply on each side, channel), then reads every Gmail message from today and yesterday and attaches each lead-related email thread to its deal as a single full-thread note that is updated in place as the thread grows, then checks the Shopify website contact form for new B2B enquiries. Ends by posting to #daily-recap the deals with no touchpoint in 4+ days, split by owner (Alex / Shaffy) and ranked by who to contact first. Runs several times a day; every write is idempotent. This workflow NEVER moves a deal between stages, and creates a deal in exactly one case — a Shopify contact-form enquiry with no existing deal; Lemlist replies get their deal from a separate automation.
+description: Enrich the existing HubSpot pipeline with conversation context, then post a stale-deal brief to Slack. Sweeps every deal at "Reply (to-be-enriched)" and fills its touch-tracking fields from the Lemlist inbox and Front (who spoke last, whether SwimScore has replied yet, first reply on each side, channel), links every thread participant's existing contact record to the deal, then reads every Gmail message from today and yesterday and attaches each lead-related email thread to its deal as a single full-thread note that is updated in place as the thread grows, then checks the Shopify website contact form for new B2B enquiries. Ends by posting to #daily-recap the deals with no touchpoint in 4+ days, split by owner (Alex / Shaffy) and ranked by who to contact first. Runs several times a day; every write is idempotent. This workflow NEVER moves a deal between stages, never creates a contact (only links an existing one), and creates a deal in exactly one case — a Shopify contact-form enquiry with no existing deal; Lemlist replies get their deal from a separate automation.
 ---
 
 Enrich the existing pipeline. Config: committed `hubspot.json`. Open with a
@@ -26,8 +26,10 @@ because nothing else is watching that channel.
    information for the digest, not a gap for this workflow to fill. The website
    contact form is the one channel no automation watches, so it is the one place
    this workflow creates.
-3. **Never create or edit a contact.** Company backfill is the single narrow
-   exception (step 1h) — company records only, search-before-create.
+3. **Never create or edit a contact.** Company backfill (step 1i) and contact-to-deal
+   linking (see "Contact linking" below) are the narrow exceptions — both only
+   associate or create a *company* record, or associate an *existing* contact
+   already found by email search. Neither ever creates or edits a contact record.
 4. **Never set or clear a deal's owner.** Shaffy assigns ownership by hand while
    a deal sits at Reply (to-be-enriched); that is a human judgement about who
    picks the lead up. Leave whatever is there alone — including blank. **Report
@@ -191,6 +193,30 @@ open deals, which makes the type split in step 4 mostly guesswork. If a deal you
 are touching has `b2b_type` blank and the thread or company makes the answer
 clear, set it. Leave it blank only when genuinely unclear; never guess to fill it.
 
+## Contact linking (steps 1 and 2 both)
+
+**Every real participant in a touched thread must be associated with the deal —
+not just the one contact HubSpot happened to attach when the deal was created.**
+A deal often carries only the first person who ever replied; a colleague who
+joins the thread later (a practice manager, another provider at the same clinic)
+frequently has no association to the deal at all, which then hides their
+messages from a Front/Gmail domain search on a later run.
+
+For every distinct external sender or addressee on a thread you touch (steps
+1a/1e/2) — skip SwimScore's own addresses:
+
+- Search HubSpot contacts by email.
+- **Found, not yet associated with this deal** → associate the existing contact
+  record with the deal. Link only — never create or edit the contact record
+  (hard rule 3).
+- **Found, already associated** → nothing to do.
+- **No contact record exists for that email** → leave it unlinked. Note the
+  unlinked email in the digest rather than creating one.
+
+Run this on every deal a run touches, in both step 1 and step 2 — not just
+intake deals — same reasoning as the `b2b_type` backfill above: skipping it
+anywhere outside step 1 means most of the pipeline never gets fully linked.
+
 ## Step 3 — Shopify contact form (the one place deals get created)
 
 Read **only** the website `"New customer message"` contact-form submissions.
@@ -290,6 +316,8 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
   agreement signed, portal live — named explicitly, since only Shaffy can move them
 - Lead threads with no matching deal
 - Companies linked or created
+- **Contacts linked to a deal**, and any thread participant whose email had no
+  contact record at all
 - Anything the run could not complete, named plainly
 
 ## Before you finish — spot-check all four

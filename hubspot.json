@@ -165,6 +165,14 @@
     "_personalDomains_note": "Never create a company from one of these — flag the deal in the digest for manual review instead."
   },
 
+  "contactLinking": {
+    "_note": "Associate every real participant in a touched thread with that deal, not just the one contact HubSpot happened to attach at creation. A deal is often linked to only the first person who ever replied; a colleague who joins later (a practice manager, another provider) frequently has no association at all, which then hides their messages from a later Front/Gmail domain search. Runs on every deal a run touches, in both step 1 and step 2 — not just intake deals.",
+    "enabled": true,
+    "matchBy": "email address of every distinct external sender/addressee on the thread (skip SwimScore's own addresses)",
+    "neverCreate": true,
+    "_neverCreate_note": "This only associates an EXISTING contact record found by email search. No contact record for that email → leave unlinked and note it in the digest. Never create or edit a contact — that stays hard rule 3."
+  },
+
   "staleFollowUp": {
     "_note": "Step 4. A deal is stale when last_touch_date is more than thresholdDays ago. VERIFY DIRECTLY before flagging — an undated from:/to: Gmail search plus Lemlist and Front, reading the actual date of the last message. Never carry a stale flag forward from a stored field or a previous run; that stored field is what is being tested.",
     "enabled": true,

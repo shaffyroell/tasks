@@ -28,8 +28,11 @@ because nothing else is watching that channel.
    this workflow creates.
 3. **Never create or edit a contact.** Company backfill is the single narrow
    exception (step 1h) — company records only, search-before-create.
-4. **Never set or clear a deal's owner.** Ownership drives the Slack split in
-   step 3, so leave whatever is there alone.
+4. **Never set or clear a deal's owner.** Shaffy assigns ownership by hand while
+   a deal sits at Reply (to-be-enriched); that is a human judgement about who
+   picks the lead up. Leave whatever is there alone — including blank. **Report
+   the blanks** rather than filling them: unassigned deals get their own section
+   in the Slack brief (step 4) so they can be assigned.
 5. **Safe to re-run.** This runs several times a day. Every write below is
    idempotent — dedup before you write, and a second run in the same hour must
    produce no duplicate notes and no churn.
@@ -114,12 +117,16 @@ just note it and move on — a dead lead is not worth enriching):
   (no year, no leading zeros). Prepend a new line; keep the 4 most recent; if the
   deal is touched twice in one day, replace that day's line rather than stacking.
 
-**h. Backfill the Company if missing.** **Search by the contact's email domain
+**h. Note whether the deal has an owner.** Do not set one. Collect every deal at
+this stage with `hubspot_owner_id` blank — they go in the "needs assigning"
+section of the Slack brief so Shaffy or Alex can pick them up.
+
+**i. Backfill the Company if missing.** **Search by the contact's email domain
 first** — a blind create made 5 duplicate companies in one live run. Reuse on
 match; create and associate only if nothing exists. Skip entirely for personal
 domains (`orgLinking.personalDomains`) and flag those in the digest instead.
 
-**i. A clean decline** — "not interested", "unsubscribe", "no thank you",
+**j. A clean decline** — "not interested", "unsubscribe", "no thank you",
 "stop", "remove me" — gets a note explaining why it reads as a decline, and a
 **suggestion** of Closed Lost in the note and the digest. Never set it. A soft
 "not now" (service unavailable in their state, revisit next quarter) gets the
@@ -166,6 +173,9 @@ matching deal" so Shaffy can look. That is the whole response.
 - Below that, the full thread in chronological order, each message labelled with
   its date and sender.
 - **Before writing, search the deal's existing notes for that identity line.**
+  This lookup is verified working — search `notes` with a filter of
+  `hs_note_body CONTAINS_TOKEN "<source>:<threadId>"` (e.g. `gmail:1a01374593cf1472`);
+  it returns the one matching note. Read its `Latest:` line to decide what to do:
   - No note for this thread → create it.
   - Note exists and its `Latest:` already matches the thread's newest message →
     **skip. Change nothing.** This is the common case on a re-run.
@@ -220,6 +230,13 @@ from First order placed onward — those are customers, not open pipeline).
 the last message. Never carry a stale flag forward on the strength of a stored
 field or a previous run — that stored field is what you are testing.
 
+**A deal with a future meeting already booked is not stale.** Quiet for a week
+because the call is next Tuesday is the system working, not a lead going cold.
+Check `hs_next_step` and the thread for a confirmed upcoming date before listing
+anything; if there is one, leave it out of the ranked lists and note it under a
+short "already booked" line instead. Chasing these is exactly the noise that
+makes the brief get ignored.
+
 Post to `#daily-recap` (`slack.dailyRecapChannel`), **split by deal owner**:
 
 - **Alex** — `hubspot_owner_id` `163314964`
@@ -237,6 +254,13 @@ detail for picking it back up (what they asked, what was promised). Keep it
 scannable — if a group runs long, list the top handful and give a count for the
 rest. Skip a group entirely if it is empty rather than printing a header with
 nothing under it.
+
+**Then a "needs assigning" section**, from step 1h: every deal at
+Reply (to-be-enriched) with no owner. These are freshly-arrived replies nobody
+has picked up yet, so they belong at the top of the message, not buried under the
+stale list — a brand-new unassigned reply is more urgent than a deal that has
+been quiet a week. Name the deal and the one-line reason it is worth someone's
+time (what the lead actually said). Skip the section when the bucket is empty.
 
 ## Finish with a digest
 
@@ -259,5 +283,10 @@ nothing under it.
 1. `last_touch_date NOT_HAS_PROPERTY` across Reply-to-be-enriched deals → should be empty.
 2. `initial_reply_ss NOT_HAS_PROPERTY` → only deals where we genuinely have not
    replied, and every one of those belongs in the digest's reply-owed list.
-3. No `initial_reply_lead` / `initial_reply_ss` value starts with `Client:` or `SwimScore:`.
+3. No `initial_reply_lead` / `initial_reply_ss` value starts with a sender prefix
+   (`Client:`, `SwimScore:`, or a rep's name like `Katelyn:`), and neither holds a
+   placeholder like `"SwimScore replied"` instead of the literal message. Note
+   there is no "starts-with" operator — a `CONTAINS_TOKEN` filter on these fields
+   returns mostly false positives, so pull the values and eyeball the openings.
+   Fix what you find; do not leave it for the next run.
 4. No deal changed stage during this run. If one did, say so loudly — that is a bug.

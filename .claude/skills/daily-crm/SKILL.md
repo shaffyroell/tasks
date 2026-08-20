@@ -165,6 +165,23 @@ Attach it per the note rule, and recompute that deal's touch-tracking fields
 contact-form enquiry, which step 3 handles. List it in the digest under "no
 matching deal" so Shaffy can look. That is the whole response.
 
+**Calendly and DocuSign notifications are touchpoints, not noise — never bucket
+them as "system/calendar notification noise" and exclude them by sender pattern
+without opening them.** A Calendly acceptance/booking notification or a DocuSign
+signature-completed notification documents a real client action; it is exactly
+the event `last_touch_date` / `last_touch_direction` / `last_message` exist to
+capture (step 1c/1d, `calendarEventFormat`). Open every one, find the deal it
+belongs to (contact email, then company domain), and recompute that deal's
+touch-tracking from it — using the calendar-event description when there is no
+message text. This is a hard requirement found violated in production on
+2026-08-19: an entire run bucketed ~57 threads as "system/calendar/billing
+notification noise" by sender pattern and excluded them wholesale, which meant
+any Calendly booking or DocuSign signature in that batch never updated its
+deal. The **only** administrative sends safe to exclude by sender pattern
+without opening them are ones with no client on either end: SwimScore's own
+internal team calendar invites, Mercury/banking notifications, HubSpot's own
+system emails, and generic Google account/security notifications.
+
 **Account for every thread the searches return — this is not optional.** Treat
 the combined result of `in:inbox newer_than:2d`, `in:sent newer_than:2d`,
 `cc:shaffy@myswimscore.com`, and the team-sender searches (1e) as a checklist,
@@ -339,7 +356,12 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
 - **Contacts linked to a deal, and any contact created** for a previously-
   unrecorded thread participant
 - **Step 2 thread count**: threads returned by the Gmail searches vs. threads
-  accounted for (touched + explicitly excluded + no-matching-deal) — must match
+  accounted for (touched + explicitly excluded + no-matching-deal) — must match.
+  Break out the excluded bucket: how many were Calendly/DocuSign notifications
+  (each individually opened and attributed to a deal, per "Calendly and DocuSign
+  notifications are touchpoints, not noise" above) vs. genuine administrative
+  noise (internal team invites, banking, HubSpot/Google system mail). Never
+  report a single unbroken "notification noise" number.
 - Anything the run could not complete, named plainly
 
 ## Before you finish — spot-check all five
@@ -359,4 +381,8 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
    plus explicitly excluded plus no-matching-deal. If it doesn't, the run is not
    done; go back and close the gap before reporting completion. Do not let a
    clean-looking digest substitute for this count actually matching — that is
-   exactly what masked the 2026-08-19 gap.
+   exactly what masked the 2026-08-19 gap. Within the excluded bucket, confirm
+   every Calendly/DocuSign notification was individually opened and attributed
+   to a deal rather than lumped into "notification noise" by sender pattern —
+   that exact shortcut, on the very next run, hid an unknown number of real
+   client touchpoints inside a ~57-thread bucket that was never opened.

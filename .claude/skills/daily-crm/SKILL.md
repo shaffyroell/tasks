@@ -1,18 +1,25 @@
 ---
 name: daily-crm
-description: Enrich the existing HubSpot pipeline with conversation context, then post a stale-deal brief to Slack. Sweeps every deal at "Reply (to-be-enriched)" and fills its touch-tracking fields from the Lemlist inbox and Front (who spoke last, whether SwimScore has replied yet, first reply on each side, channel), links every thread participant's contact record to the deal (creating one, search-first, only if genuinely new), then reads every Gmail message from today and yesterday — inbox and sent, for shaffy@myswimscore.com — reconciling a thread count so none go unlogged, and attaches each lead-related email thread to its deal as a single full-thread note that is updated in place as the thread grows, then checks the Shopify website contact form for new B2B enquiries. Ends by posting to #daily-recap the deals with no touchpoint in 4+ days, split by owner (Alex / Shaffy) and ranked by who to contact first. Runs several times a day; every write is idempotent. This workflow NEVER moves a deal between stages and NEVER edits an existing contact's fields, and creates a deal in exactly one case — a Shopify contact-form enquiry with no existing deal; Lemlist replies get their deal from a separate automation.
+description: Enrich the existing HubSpot pipeline with conversation context, then post a stale-deal brief to Slack. Sweeps every deal at "Reply (to-be-enriched)" and fills its touch-tracking fields from the Lemlist inbox and Front (who spoke last, whether SwimScore has replied yet, first reply on each side, channel), links every thread participant's contact record to the deal (creating one, search-first, only if genuinely new), then reads every Gmail message from the last 24 hours — inbox and sent, for shaffy@myswimscore.com — reconciling a thread count so none go unlogged, and attaches each lead-related email thread to its deal as a single full-thread note that is updated in place as the thread grows. Then audits every open pipeline deal with an empty initial_reply_ss against Front to catch replies that were sent but never logged — this reply-owed list is the workflow's key metric. Then checks the Shopify website contact form for new B2B enquiries. Ends by posting to #daily-recap the deals with no touchpoint in 4+ days, split by owner (Alex / Shaffy) and ranked by who to contact first. Runs several times a day; every write is idempotent. This workflow NEVER moves a deal between stages and NEVER edits an existing contact's fields, and creates a deal in exactly one case — a Shopify contact-form enquiry with no existing deal; Lemlist replies get their deal from a separate automation.
 ---
 
 Enrich the existing pipeline. Config: committed `hubspot.json`. Open with a
 per-source preflight (HubSpot, Lemlist, Front, Gmail, Shopify, Slack), then work
-the four steps in order.
+the five steps in order.
 
 ## What this workflow is
 
 Its job is to put **context** on deals that already exist, and then tell Slack
 which ones have gone quiet. It adds notes and fills fields. The one thing it
-creates is a deal for a website contact-form enquiry that has none (step 3),
+creates is a deal for a website contact-form enquiry that has none (step 4),
 because nothing else is watching that channel.
+
+Its single most important number is the **reply-owed list** — every deal where
+`initial_reply_ss` is empty, meaning nobody has logged a SwimScore reply to the
+lead's first message. Steps 1 and 2 only refresh that field for deals they
+happen to touch; step 3 exists specifically to verify it pipeline-wide against
+Front, because a logging gap on an older deal reads exactly like a real one and
+sends someone chasing a reply that was already sent.
 
 ## Hard rules — no exceptions, ever
 
@@ -21,7 +28,7 @@ because nothing else is watching that channel.
    stage is Shaffy's to move, by hand, always. If the conversation has clearly
    outgrown its stage, say so in the digest — never act on it.
 2. **Never create a deal — with exactly one exception: a Shopify contact-form
-   enquiry (step 3).** A separate automation already creates a deal the moment a
+   enquiry (step 4).** A separate automation already creates a deal the moment a
    Lemlist reply lands, so a Lemlist, Front, or Gmail lead with no deal is
    information for the digest, not a gap for this workflow to fill. The website
    contact form is the one channel no automation watches, so it is the one place
@@ -36,7 +43,7 @@ because nothing else is watching that channel.
    a deal sits at Reply (to-be-enriched); that is a human judgement about who
    picks the lead up. Leave whatever is there alone — including blank. **Report
    the blanks** rather than filling them: unassigned deals get their own section
-   in the Slack brief (step 4) so they can be assigned.
+   in the Slack brief (step 5) so they can be assigned.
 5. **Safe to re-run.** This runs several times a day. Every write below is
    idempotent — dedup before you write, and a second run in the same hour must
    produce no duplicate notes and no churn.
@@ -138,13 +145,13 @@ same treatment suggesting Interested (not now). Anything negative-but-ambiguous
 — a vague brush-off, a deflection to a colleague — gets a `[flag-uncertain]`
 note and its own line in the digest.
 
-## Step 2 — Every Gmail message from today and yesterday
+## Step 2 — Every Gmail message from the last 24 hours
 
 Read **all** of Shaffy's mail in the window, not a filtered subset:
 
-- `in:inbox newer_than:2d` **and** `in:sent newer_than:2d` — sent matters on its
+- `in:inbox newer_than:1d` **and** `in:sent newer_than:1d` — sent matters on its
   own, because a follow-up he sent that has not been answered never appears in
-  the inbox, and missing it produces a false stale flag in step 3.
+  the inbox, and missing it produces a false stale flag in step 5.
 - Threads where he is only cc'd (`cc:shaffy@myswimscore.com`) and threads from
   the team senders listed in step 1e — these carry pipeline news constantly.
 
@@ -162,7 +169,7 @@ Attach it per the note rule, and recompute that deal's touch-tracking fields
 (step 1c) from the thread's true latest message.
 
 **If a lead's thread has no deal anywhere, do not create one** — unless it is a
-contact-form enquiry, which step 3 handles. List it in the digest under "no
+contact-form enquiry, which step 4 handles. List it in the digest under "no
 matching deal" so Shaffy can look. That is the whole response.
 
 **Calendly and DocuSign notifications are touchpoints, not noise — never bucket
@@ -224,7 +231,7 @@ what's missing before finishing — do not report completion on a partial pass.
 **Backfill `b2b_type` on any deal you touch, at any stage.** Not just intake
 deals. Deals leave Reply (to-be-enriched) fast, so a type set only there means
 most of the pipeline never gets one — a live check found it filled on 11 of 46
-open deals, which makes the type split in step 4 mostly guesswork. If a deal you
+open deals, which makes the type split in step 5 mostly guesswork. If a deal you
 are touching has `b2b_type` blank and the thread or company makes the answer
 clear, set it. Leave it blank only when genuinely unclear; never guess to fill it.
 
@@ -254,7 +261,55 @@ Run this on every deal a run touches, in both step 1 and step 2 — not just
 intake deals — same reasoning as the `b2b_type` backfill above: skipping it
 anywhere outside step 1 means most of the pipeline never gets fully linked.
 
-## Step 3 — Shopify contact form (the one place deals get created)
+## Step 3 — Reply-owed audit: verify `initial_reply_ss` against Front, pipeline-wide
+
+This is the workflow's key metric, added 2026-08-20. `initial_reply_ss` empty
+means "nobody has logged a SwimScore reply to this lead" — Shaffy and the team
+try to reply immediately, so on most deals an empty field is far more likely to
+be a **logging gap** than an actual unanswered lead. Steps 1 and 2 only refresh
+this field for deals they happen to touch (Reply-to-be-enriched, or a thread
+that landed in the last-24h Gmail window) — a deal sitting further along the
+pipeline with no recent Gmail activity can carry a stale, wrongly-empty value
+indefinitely. This step closes that gap directly.
+
+**Scope:** every OPEN deal in the Clinic Partnerships pipeline —
+`dealstage NOT IN staleFollowUp.excludeStages` (Closed Lost, First order placed,
+Actively ordering, No orders L3M) — not just Reply-to-be-enriched.
+(`replyOwedAudit.scope` in hubspot.json.) Re-checking a deal step 1 already
+verified today is redundant but harmless; it keeps this one rule instead of two.
+
+**Filter:** `initial_reply_ss NOT_HAS_PROPERTY` (blank).
+
+**Check source: Front only.** For each matching deal, `search_conversations` on
+the contact's email AND company domain, then `read_conversation` on **every**
+result — same discipline as the touch-tracking Front source in step 1. Front
+aggregates every rotating cold-outreach mailbox, so a same-day reply the team
+sent shows up there even when it never reached Gmail or Lemlist.
+
+**If a genuine SwimScore reply is found** (a real reply to the lead's first
+message — verbatim, no prefix, never a placeholder like `"SwimScore replied"`):
+the stored empty field was **wrong**, not a gap to fill with new judgement —
+correct it.
+- Set `initial_reply_ss` to the literal reply text.
+- Recompute `time_to_first_reply_hrs` from the two real timestamps.
+- Refresh `last_touch_date` / `last_touch_direction` / `last_message`
+  (`touchTracking.fields`) from whichever event is now the true latest.
+- Attach or update the thread note per the note rule (identity line
+  `front:<conversationId>`) — an audit pass never skips the note.
+- Log it: deal name, how long the reply sat unlogged, who replied and when.
+  This is the actual point of the step — it tells Shaffy which deals were a
+  logging gap already handled vs. which ones genuinely still need a reply, so
+  follow-up chases the right list.
+
+**If no SwimScore reply is found in Front:** the empty field is correct. Leave
+it exactly as-is — do not write anything, do not guess, do not assume "we
+probably replied." This deal genuinely belongs on the reply-owed list.
+
+**Never infer a reply happened because "the team usually replies fast."** That
+assumption is exactly what this audit exists to verify, not a substitute for
+checking. Only real Front content counts as evidence.
+
+## Step 4 — Shopify contact form (the one place deals get created)
 
 Read **only** the website `"New customer message"` contact-form submissions.
 They arrive as emails to `info@myswimscore.com`, so the step-2 sweep will
@@ -288,7 +343,7 @@ For each submission in the window:
 
 Every deal created here goes in the digest: deal — company — "Shopify contact form".
 
-## Step 4 — Post the stale brief to Slack
+## Step 5 — Post the stale brief to Slack
 
 A deal is stale when its `last_touch_date` is more than **4 days** ago
 (`staleFollowUp.thresholdDays`). Scope: open deals in the Clinic Partnerships
@@ -345,8 +400,15 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
 - Notes created vs. notes updated in place
 - **Deals created from the contact form** — deal — company — the enquiry, and
   whether HubSpot auto-assigned an owner that needs correcting
-- **Reply owed** — every deal where `initial_reply_ss` is empty. This is the
-  same-day follow-up list and it is the most actionable thing here.
+- **Reply owed** — every deal where `initial_reply_ss` is empty, after the step-3
+  audit has run. This is the workflow's key metric and the most actionable thing
+  here — it should now be trustworthy pipeline-wide, not just for deals steps 1-2
+  happened to touch.
+- **Reply-owed audit (step 3)** — how many open deals were checked, how many
+  had a real Front reply that was missing and got corrected (name each one, with
+  how long it sat unlogged), and how many were confirmed genuinely still owed.
+  A zero-corrections run is a fine outcome — it means the field was already
+  trustworthy — but say so explicitly rather than omitting the section.
 - Declines with Closed Lost suggested, and `[flag-uncertain]` deals — each still
   sitting at its current stage, awaiting Shaffy
 - **Deals whose conversation has clearly outgrown their stage** — call confirmed,
@@ -364,11 +426,13 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
   report a single unbroken "notification noise" number.
 - Anything the run could not complete, named plainly
 
-## Before you finish — spot-check all five
+## Before you finish — spot-check all six
 
 1. `last_touch_date NOT_HAS_PROPERTY` across Reply-to-be-enriched deals → should be empty.
-2. `initial_reply_ss NOT_HAS_PROPERTY` → only deals where we genuinely have not
-   replied, and every one of those belongs in the digest's reply-owed list.
+2. `initial_reply_ss NOT_HAS_PROPERTY` across the whole open pipeline → after
+   step 3 has run, every deal on this list should be one you actually checked
+   against Front and confirmed still owed — not one you skipped because it
+   wasn't at Reply-to-be-enriched or in the Gmail window.
 3. No `initial_reply_lead` / `initial_reply_ss` value starts with a sender prefix
    (`Client:`, `SwimScore:`, or a rep's name like `Katelyn:`), and neither holds a
    placeholder like `"SwimScore replied"` instead of the literal message. Note
@@ -386,3 +450,9 @@ quiet a week. Name the deal and the one-line reason it is worth someone's time
    to a deal rather than lumped into "notification noise" by sender pattern —
    that exact shortcut, on the very next run, hid an unknown number of real
    client touchpoints inside a ~57-thread bucket that was never opened.
+6. Every open deal that had `initial_reply_ss` blank at the START of step 3 was
+   actually checked against Front — not assumed clean because it "probably got
+   a reply." Count them: deals checked in step 3 should equal the count from
+   spot-check 2 taken before step 3 ran. If a deal was skipped, the reply-owed
+   list is not trustworthy yet and the run is not done — this check exists
+   because the whole point of step 3 is that an unchecked deal is worthless data.

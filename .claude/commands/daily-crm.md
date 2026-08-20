@@ -1,5 +1,5 @@
 ---
-description: Enrich the existing HubSpot pipeline with conversation context (Reply-to-be-enriched sweep, then every Gmail message from today and yesterday, then the Shopify contact form), and post a stale-deal brief to #daily-recap split by owner. Never moves a stage. Runs several times a day.
+description: Enrich the existing HubSpot pipeline with conversation context (Reply-to-be-enriched sweep, then every Gmail message from the last 24 hours, then a pipeline-wide reply-owed audit against Front, then the Shopify contact form), and post a stale-deal brief to #daily-recap split by owner. Never moves a stage. Runs several times a day.
 ---
 
 Run the pipeline enrichment sweep.
@@ -26,22 +26,27 @@ The guardrails, restated here so they are visible without loading anything else:
 4. **Every write is idempotent.** This runs several times a day; a second run an
    hour later must produce no duplicate notes and no churn.
 
-The four steps, in order:
+The five steps, in order:
 
 1. Sweep every deal at **Reply (to-be-enriched)** and fill its touch-tracking
    fields from the real conversation — Lemlist's full thread plus every matching
    Front conversation — establishing who spoke last and whether SwimScore has
    actually replied yet, and link (or create if genuinely new) every thread
    participant's contact record on the deal.
-2. Read **every Gmail message from today and yesterday for shaffy@myswimscore.com**
+2. Read **every Gmail message from the last 24 hours for shaffy@myswimscore.com**
    — inbox *and* sent — and attach each lead-related thread to its deal as one
    full-thread note, updated in place as the thread grows, linking/creating
    participant contact records along the way. Reconcile a thread count so
    nothing goes unlogged (see the skill) — this is exactly the step that missed
    8 real deals on 2026-08-19.
-3. Check the **Shopify contact form** for new B2B enquiries — the one place this
+3. **Reply-owed audit (the key metric):** for every OPEN pipeline deal with
+   `initial_reply_ss` blank — not just Reply-to-be-enriched — check Front for a
+   reply that was sent but never logged, and correct it if found. Most replies
+   go out immediately, so a blank field is usually a logging gap, not a real
+   one; this is what keeps the reply-owed list trustworthy. Log every correction.
+4. Check the **Shopify contact form** for new B2B enquiries — the one place this
    workflow creates a deal.
-4. Post the **stale brief** (no touchpoint in 4+ days) to `#daily-recap`, split
+5. Post the **stale brief** (no touchpoint in 4+ days) to `#daily-recap`, split
    by owner — Alex, then Shaffy — and ranked by who to contact first.
 
 End with the digest described in the skill.

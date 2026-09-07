@@ -11,8 +11,8 @@
     {
       "name": "Crewline",
       "type": "client",
-      "dashboardPageId": "38d5b087-b9f3-810b-a1b3-ea69810c2e43",
-      "todoDataSourceId": "b5b0d23a-efc0-4368-b0a0-c85bab97fca5",
+      "dashboardPageId": "3075b087-b9f3-808d-82ba-ec643b4350c9",
+      "todoDataSourceId": "3075b087-b9f3-8127-8d23-000b5db43d3a",
       "domains": [
         "crewline.ai"
       ],
@@ -22,7 +22,7 @@
         "Frederik",
         "Hugo"
       ],
-      "titleField": "Task"
+      "titleField": "Name"
     },
     {
       "name": "Hassans",
